@@ -12,6 +12,7 @@ import {
   TurnState,
   TeamsAdapter,
 } from "@microsoft/teams-ai";
+import { NextResponse } from "next/server";
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -82,10 +83,11 @@ app.activity(
   }
 );
 
-export async function POST(req: any, res: any): Promise<void> {
+export async function POST(req: any, res: any): Promise<NextResponse> {
   // Route received a request to adapter for processing
   await adapter.process(req, res, async (context) => {
     // Dispatch to application for routing
     await app.run(context);
   });
+  return NextResponse.next();
 }
