@@ -80,6 +80,7 @@ const app = new ApplicationBuilder()
 app.activity(
   ActivityTypes.Message,
   async (context: TurnContext, _state: TurnState) => {
+    console.log("sending message activity");
     await context.sendActivity("hello world");
   }
 );
@@ -128,12 +129,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         },
       };
       try {
+        console.log("parsing req.json()");
         const body = await req.json();
         const headersRecord: Record<string, string> = {};
         req.headers.forEach((value, key) => {
           headersRecord[value] = key;
         });
         // Route received a request to adapter for processing
+        console.log("calling adapter.process()");
         await adapter.process(
           {
             body,
@@ -143,7 +146,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           res,
           async (context) => {
             // Dispatch to application for routing
-            await app.run(context);
+            console.log("calling app.run(context)")
+            const dispatched = await app.run(context);
+            console.log(`finished app.run(context), dispatched: ${dispatched}`);
           }
         );
         processed = true;
