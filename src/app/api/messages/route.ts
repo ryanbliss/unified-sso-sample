@@ -87,6 +87,7 @@ app.activity(
 interface ResponseHolder {
   status: number;
   body: unknown;
+  headers: Headers;
 }
 
 export async function POST(req: any): Promise<NextResponse> {
@@ -96,6 +97,7 @@ export async function POST(req: any): Promise<NextResponse> {
       let ended = false;
       let status: number = 500;
       let body: unknown;
+      let headers: Headers = new Headers();
       const res: BotResponse = {
         socket: undefined,
         end: function (): unknown {
@@ -104,12 +106,17 @@ export async function POST(req: any): Promise<NextResponse> {
             resolve({
               status,
               body,
+              headers,
             });
           }
           return;
         },
         header: function (name: string, value: unknown): unknown {
-          throw new Error("Function not implemented.");
+          headers.append(
+            name,
+            typeof value === "string" ? value : JSON.stringify(value)
+          );
+          return;
         },
         send: function (sendBody?: unknown): unknown {
           body = sendBody;
@@ -131,6 +138,7 @@ export async function POST(req: any): Promise<NextResponse> {
           resolve({
             status,
             body,
+            headers,
           });
         }
       } catch (err) {
@@ -141,7 +149,10 @@ export async function POST(req: any): Promise<NextResponse> {
 
   try {
     let resHolder = await resPromise;
-    return NextResponse.json(resHolder.body, { status: resHolder.status });
+    return NextResponse.json(resHolder.body, {
+      status: resHolder.status,
+      headers: resHolder.headers,
+    });
   } catch (err) {
     console.error(err);
     return NextResponse.json(
