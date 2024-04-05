@@ -92,6 +92,7 @@ export async function middleware(request: any) {
     // Dispatch to application for routing
     await app.run(context);
   });
+  console.log("finished process");
   return response;
 }
 
