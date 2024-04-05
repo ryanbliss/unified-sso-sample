@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 import {
@@ -14,6 +12,7 @@ import {
   TurnState,
   TeamsAdapter,
 } from "@microsoft/teams-ai";
+import { NextResponse } from "next/server";
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -84,19 +83,12 @@ app.activity(
   }
 );
 
-// This function can be marked `async` if using `await` inside
-export async function middleware(request: any) {
-  const response = NextResponse.next();
+export async function POST(req: any): Promise<NextResponse> {
+  const res = new NextResponse();
   // Route received a request to adapter for processing
-  await adapter.process(request, response as any, async (context) => {
+  await adapter.process(req, res as any, async (context) => {
     // Dispatch to application for routing
     await app.run(context);
   });
-  console.log("finished process");
-  return response;
+  return res;
 }
-
-// See "Matching Paths" below to learn more
-export const config = {
-  matcher: "/api/messages",
-};
