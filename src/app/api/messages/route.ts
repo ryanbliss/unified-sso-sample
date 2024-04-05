@@ -5,6 +5,7 @@ import {
   ConfigurationServiceClientCredentialFactory,
   MemoryStorage,
   TurnContext,
+  Response as BotResponse,
 } from "botbuilder";
 
 import {
@@ -83,26 +84,78 @@ app.activity(
   }
 );
 
+interface ResponseHolder {
+  status: number;
+  body: unknown;
+}
+
 export async function POST(req: any): Promise<NextResponse> {
-  const res = new NextResponse();
+  const resPromise: Promise<ResponseHolder> = new Promise<ResponseHolder>(
+    async (resolve, reject) => {
+      let processed = false;
+      let ended = false;
+      let status: number = 500;
+      let body: unknown;
+      const res: BotResponse = {
+        socket: undefined,
+        end: function (): unknown {
+          ended = true;
+          if (processed) {
+            resolve({
+              status,
+              body,
+            });
+          }
+          return;
+        },
+        header: function (name: string, value: unknown): unknown {
+          throw new Error("Function not implemented.");
+        },
+        send: function (sendBody?: unknown): unknown {
+          body = sendBody;
+          return;
+        },
+        status: function (code: number): unknown {
+          status = code;
+          return;
+        },
+      };
+      try {
+        // Route received a request to adapter for processing
+        await adapter.process(req, res as any, async (context) => {
+          // Dispatch to application for routing
+          await app.run(context);
+        });
+        processed = true;
+        if (ended) {
+          resolve({
+            status,
+            body,
+          });
+        }
+      } catch (err) {
+        reject(err);
+      }
+    }
+  );
+
   try {
-    // Route received a request to adapter for processing
-    await adapter.process(req, res as any, async (context) => {
-      // Dispatch to application for routing
-      await app.run(context);
-    });
+    let resHolder = await resPromise;
+    return NextResponse.json(resHolder.body, { status: resHolder.status });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({
-      error:
-        err instanceof Error
-          ? {
-              message: err.message,
-            }
-          : {
-              message: "An unknown error occurred",
-            },
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? {
+                message: err.message,
+              }
+            : {
+                message: "An unknown error occurred",
+              },
+      },
+      { status: 500 }
+    );
   }
-  return res;
 }
