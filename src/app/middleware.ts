@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 import {
@@ -12,7 +14,6 @@ import {
   TurnState,
   TeamsAdapter,
 } from "@microsoft/teams-ai";
-import { NextResponse } from "next/server";
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -54,25 +55,25 @@ adapter.onTurnError = onTurnErrorHandler;
 const storage = new MemoryStorage();
 const app = new ApplicationBuilder()
   .withStorage(storage)
-//   .withAuthentication(adapter, {
-//     settings: {
-//       graph: {
-//         connectionName: process.env.OAUTH_CONNECTION_NAME ?? "",
-//         title: "Sign in",
-//         text: "Please sign in to use the bot.",
-//         endOnInvalidMessage: true,
-//         tokenExchangeUri: process.env.TOKEN_EXCHANGE_URI ?? "", // this is required for SSO
-//         enableSso: true,
-//       },
-//     },
-//     autoSignIn: (context: TurnContext) => {
-//       // Disable auto sign in for message activities
-//       if (context.activity.type == ActivityTypes.Message) {
-//         return Promise.resolve(false);
-//       }
-//       return Promise.resolve(true);
-//     },
-//   })
+  //   .withAuthentication(adapter, {
+  //     settings: {
+  //       graph: {
+  //         connectionName: process.env.OAUTH_CONNECTION_NAME ?? "",
+  //         title: "Sign in",
+  //         text: "Please sign in to use the bot.",
+  //         endOnInvalidMessage: true,
+  //         tokenExchangeUri: process.env.TOKEN_EXCHANGE_URI ?? "", // this is required for SSO
+  //         enableSso: true,
+  //       },
+  //     },
+  //     autoSignIn: (context: TurnContext) => {
+  //       // Disable auto sign in for message activities
+  //       if (context.activity.type == ActivityTypes.Message) {
+  //         return Promise.resolve(false);
+  //       }
+  //       return Promise.resolve(true);
+  //     },
+  //   })
   .build();
 
 // Handle message activities
@@ -83,11 +84,18 @@ app.activity(
   }
 );
 
-export async function POST(req: any, res: any): Promise<NextResponse> {
+// This function can be marked `async` if using `await` inside
+export async function middleware(request: any) {
+  const response = NextResponse.next();
   // Route received a request to adapter for processing
-  await adapter.process(req, res, async (context) => {
+  await adapter.process(request, response as any, async (context) => {
     // Dispatch to application for routing
     await app.run(context);
   });
-  return NextResponse.next();
+  return response;
 }
+
+// See "Matching Paths" below to learn more
+export const config = {
+  matcher: "/api/messages",
+};
