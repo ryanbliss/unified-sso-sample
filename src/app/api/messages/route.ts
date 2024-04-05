@@ -138,7 +138,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const body = await req.json();
         const headersRecord: Record<string, string> = {};
         req.headers.forEach((value, key) => {
-          headersRecord[value] = key;
+          headersRecord[key] = value;
         });
         // Route received a request to adapter for processing
         console.log("calling adapter.process()");
