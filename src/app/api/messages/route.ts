@@ -85,10 +85,24 @@ app.activity(
 
 export async function POST(req: any): Promise<NextResponse> {
   const res = new NextResponse();
-  // Route received a request to adapter for processing
-  await adapter.process(req, res as any, async (context) => {
-    // Dispatch to application for routing
-    await app.run(context);
-  });
+  try {
+    // Route received a request to adapter for processing
+    await adapter.process(req, res as any, async (context) => {
+      // Dispatch to application for routing
+      await app.run(context);
+    });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({
+      error:
+        err instanceof Error
+          ? {
+              message: err.message,
+            }
+          : {
+              message: "An unknown error occurred",
+            },
+    }, { status: 500 });
+  }
   return res;
 }
