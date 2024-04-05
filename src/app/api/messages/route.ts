@@ -13,7 +13,7 @@ import {
   TurnState,
   TeamsAdapter,
 } from "@microsoft/teams-ai";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -90,7 +90,7 @@ interface ResponseHolder {
   headers: Headers;
 }
 
-export async function POST(req: any): Promise<NextResponse> {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   const resPromise: Promise<ResponseHolder> = new Promise<ResponseHolder>(
     async (resolve, reject) => {
       let processed = false;
@@ -128,11 +128,24 @@ export async function POST(req: any): Promise<NextResponse> {
         },
       };
       try {
-        // Route received a request to adapter for processing
-        await adapter.process(req, res as any, async (context) => {
-          // Dispatch to application for routing
-          await app.run(context);
+        const body = await req.json();
+        const headersRecord: Record<string, string> = {};
+        req.headers.forEach((value, key) => {
+          headersRecord[value] = key;
         });
+        // Route received a request to adapter for processing
+        await adapter.process(
+          {
+            body,
+            headers: headersRecord,
+            method: req.method,
+          },
+          res,
+          async (context) => {
+            // Dispatch to application for routing
+            await app.run(context);
+          }
+        );
         processed = true;
         if (ended) {
           resolve({
