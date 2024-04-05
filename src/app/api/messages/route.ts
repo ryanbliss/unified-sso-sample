@@ -92,6 +92,11 @@ interface ResponseHolder {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  console.log(
+    "POST /api/messages for w/ env variables",
+    process.env.BOT_ID,
+    process.env.BOT_PASSWORD
+  );
   const resPromise: Promise<ResponseHolder> = new Promise<ResponseHolder>(
     async (resolve, reject) => {
       let processed = false;
@@ -146,7 +151,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           res,
           async (context) => {
             // Dispatch to application for routing
-            console.log("calling app.run(context)")
+            console.log("calling app.run(context)");
             const dispatched = await app.run(context);
             console.log(`finished app.run(context), dispatched: ${dispatched}`);
           }
