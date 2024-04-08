@@ -58,6 +58,6 @@
   "validDomains": ["unified-sso-sample.vercel.app", "*.botframework.com"],
   "webApplicationInfo": {
     "id": "ce0c57f0-5fea-482a-9efa-3810af5ec6dd",
-    "resource": "api://botid-ce0c57f0-5fea-482a-9efa-3810af5ec6dd"
+    "resource": "api://unified-sso-sample.vercel.app/botid-ce0c57f0-5fea-482a-9efa-3810af5ec6dd"
   }
 }

@@ -55,25 +55,22 @@ adapter.onTurnError = onTurnErrorHandler;
 const storage = new MemoryStorage();
 const app = new ApplicationBuilder()
   .withStorage(storage)
-  //   .withAuthentication(adapter, {
-  //     settings: {
-  //       graph: {
-  //         connectionName: process.env.OAUTH_CONNECTION_NAME ?? "",
-  //         title: "Sign in",
-  //         text: "Please sign in to use the bot.",
-  //         endOnInvalidMessage: true,
-  //         tokenExchangeUri: process.env.TOKEN_EXCHANGE_URI ?? "", // this is required for SSO
-  //         enableSso: true,
-  //       },
-  //     },
-  //     autoSignIn: (context: TurnContext) => {
-  //       // Disable auto sign in for message activities
-  //       if (context.activity.type == ActivityTypes.Message) {
-  //         return Promise.resolve(false);
-  //       }
-  //       return Promise.resolve(true);
-  //     },
-  //   })
+  .withAuthentication(adapter, {
+    settings: {
+      graph: {
+        scopes: ["User.Read"],
+        msalConfig: {
+          auth: {
+            clientId: process.env.BOT_ID!,
+            clientSecret: process.env.BOT_PASSWORD!,
+            authority: `${process.env.AAD_APP_OAUTH_AUTHORITY_HOST}/${process.env.AAD_APP_TENANT_ID}`,
+          },
+        },
+        signInLink: `https://${process.env.BOT_DOMAIN}/auth/start`,
+        endOnInvalidMessage: true,
+      },
+    },
+  })
   .build();
 
 // Handle message activities
