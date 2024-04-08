@@ -170,9 +170,7 @@ export default function AuthStart() {
 
     // Return the base64-urlencoded sha256 hash for the PKCE challenge
     async function pkceChallengeFromVerifier(v: string | undefined) {
-      // @ts-ignore-next
-      hashed = await sha256(v);
-      // @ts-ignore-next
+      const hashed = await sha256(v);
       return base64urlencode(hashed);
     }
   }, []);
