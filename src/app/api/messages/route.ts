@@ -107,6 +107,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const res: BotResponse = {
         socket: undefined,
         end: function (): unknown {
+          console.log("BotResponse.end");
           ended = true;
           if (processed) {
             resolve({
@@ -125,10 +126,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           return;
         },
         send: function (sendBody?: unknown): unknown {
+          console.log("BotResponse.send");
           body = sendBody;
           return;
         },
         status: function (code: number): unknown {
+          console.log("BotResponse.status code:", code);
           status = code;
           return;
         },
