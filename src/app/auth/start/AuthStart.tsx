@@ -21,7 +21,11 @@ export default function AuthStart() {
       //   await response.json();
       // TODO: initiate account linking
     }
-    auth().catch((err) => console.error(err));
+    teamsJs.app.initialize()
+        .then(async () => {
+            await auth();
+        })
+        .catch((err) => console.error(err));
   }, []);
 
   return <></>;
