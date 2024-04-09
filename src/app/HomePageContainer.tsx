@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import * as teamsJs from "@microsoft/teams-js";
 import { FlexColumn } from "@/components/flex";
 import { Button, Text } from "@fluentui/react-components";
+import { isSdkError } from "@/utils/teams-js-type-guards";
 
 export default function HomePageContainer() {
   const [authError, setAuthError] = useState<string>();
@@ -11,7 +12,7 @@ export default function HomePageContainer() {
     (err: unknown, silent?: boolean) => {
       let prefix: string = "";
       let message: string = "An unknown error occurred";
-      if (teamsJs.isSdkError(err)) {
+      if (isSdkError(err)) {
         prefix = `[${err.errorCode}] `;
         message = err.message ?? "undefined";
       } else if (err instanceof Error) {
