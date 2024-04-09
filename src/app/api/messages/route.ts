@@ -12,8 +12,17 @@ import {
   ApplicationBuilder,
   TurnState,
   TeamsAdapter,
+  AuthError,
 } from "@microsoft/teams-ai";
 import { NextRequest, NextResponse } from "next/server";
+import { createUserProfileCard, createViewProfileCard } from "./cards";
+import { getUserDetailsFromGraph } from "./graph";
+
+interface ConversationState {
+  count: number;
+}
+type ApplicationTurnState = TurnState<ConversationState>;
+const USE_CARD_AUTH = process.env.AUTH_TYPE === "card";
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -53,34 +62,131 @@ adapter.onTurnError = onTurnErrorHandler;
 
 // Define storage and application
 const storage = new MemoryStorage();
-const app = new ApplicationBuilder()
+const app = new ApplicationBuilder<ApplicationTurnState>()
   .withStorage(storage)
   .withAuthentication(adapter, {
-    settings: {
-      graph: {
-        scopes: ["User.Read"],
-        msalConfig: {
-          auth: {
-            clientId: process.env.BOT_ID!,
-            clientSecret: process.env.BOT_PASSWORD!,
-            authority: `${process.env.AAD_APP_OAUTH_AUTHORITY_HOST}/${process.env.AAD_APP_TENANT_ID}`,
+    autoSignIn: (context: TurnContext) => {
+      // Disable auto sign in for message activities
+      if (USE_CARD_AUTH && context.activity.type == ActivityTypes.Message) {
+        return Promise.resolve(false);
+      }
+      return Promise.resolve(true);
+    },
+    settings: USE_CARD_AUTH
+      ? {
+          graph: {
+            connectionName: process.env.OAUTH_CONNECTION_NAME ?? "",
+            title: "Sign in",
+            text: "Please sign in to use the bot.",
+            endOnInvalidMessage: true,
+            tokenExchangeUri: process.env.TOKEN_EXCHANGE_URI ?? "", // this is required for SSO
+            enableSso: true,
+          },
+        }
+      : {
+          graph: {
+            scopes: ["User.Read"],
+            msalConfig: {
+              auth: {
+                clientId: process.env.BOT_ID!,
+                clientSecret: process.env.BOT_PASSWORD!,
+                authority: `${process.env.AAD_APP_OAUTH_AUTHORITY_HOST}/${process.env.AAD_APP_TENANT_ID}`,
+              },
+            },
+            signInLink: `https://${process.env.BOT_DOMAIN}/auth/start`,
+            endOnInvalidMessage: true,
           },
         },
-        signInLink: `https://${process.env.BOT_DOMAIN}/auth/start`,
-        endOnInvalidMessage: true,
-      },
-    },
   })
   .build();
 
-// Handle message activities
-app.activity(
-  ActivityTypes.Message,
-  async (context: TurnContext, _state: TurnState) => {
-    console.log("sending message activity");
-    await context.sendActivity("hello world");
+// Listen for user to say '/reset' and then delete conversation state
+app.message(
+  "/reset",
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    state.deleteConversationState();
+    await context.sendActivity(
+      `Ok I've deleted the current conversation state.`
+    );
   }
 );
+
+app.message(
+  "/signout",
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    await app.authentication.signOutUser(context, state);
+
+    // Echo back users request
+    await context.sendActivity(`You have signed out`);
+  }
+);
+
+// Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
+app.activity(
+  ActivityTypes.Message,
+  async (context: TurnContext, _state: ApplicationTurnState) => {
+    if (USE_CARD_AUTH) {
+      const initialCard = createViewProfileCard();
+      await context.sendActivity({ attachments: [initialCard] });
+    } else {
+      console.log("sending message activity");
+      await context.sendActivity("hello world");
+    }
+  }
+);
+
+// Handle sign in adaptive card button click
+app.adaptiveCards.actionExecute('signin', async (_context: TurnContext, state: ApplicationTurnState) => {
+  const token = state.temp.authTokens['graph'];
+  if (!token) {
+      throw new Error('No auth token found in state. Authentication failed.');
+  }
+
+  const user = await getUserDetailsFromGraph(token);
+  const profileCard = createUserProfileCard(user.displayName, user.profilePhoto);
+
+  return profileCard.content;
+});
+
+// Handle sign out adaptive card button click
+app.adaptiveCards.actionExecute('signout', async (context: TurnContext, state: ApplicationTurnState) => {
+  await app.authentication.signOutUser(context, state);
+
+  const initialCard = createViewProfileCard();
+
+  return initialCard.content;
+});
+
+// Auth handlers
+
+app.authentication
+  .get("graph")
+  .onUserSignInSuccess(
+    async (context: TurnContext, state: ApplicationTurnState) => {
+      // Successfully logged in
+      await context.sendActivity("Successfully logged in");
+      await context.sendActivity(
+        `Token string length: ${state.temp.authTokens["graph"]!.length}`
+      );
+      await context.sendActivity(
+        `This is what you said before the AuthFlow started: ${context.activity.text}`
+      );
+    }
+  );
+
+app.authentication
+  .get("graph")
+  .onUserSignInFailure(
+    async (
+      context: TurnContext,
+      _state: ApplicationTurnState,
+      error: AuthError
+    ) => {
+      // Failed to login
+      await context.sendActivity("Failed to login");
+      await context.sendActivity(`Error message: ${error.message}`);
+    }
+  );
 
 interface ResponseHolder {
   status: number;
