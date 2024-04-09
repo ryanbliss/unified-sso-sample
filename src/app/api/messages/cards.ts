@@ -40,6 +40,12 @@ export function createUserProfileCard(
   displayName: string,
   profilePhoto: string
 ): Attachment {
+  console.log(
+    "cards.ts createUserProfileCard: building card for displayName",
+    displayName,
+    "and profilePhoto",
+    profilePhoto
+  );
   return CardFactory.adaptiveCard({
     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
     version: "1.5",

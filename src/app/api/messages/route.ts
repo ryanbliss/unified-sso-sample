@@ -155,6 +155,7 @@ app.adaptiveCards.actionExecute(
       user.displayName,
       user.profilePhoto
     );
+    console.log("app.adaptiveCards.actionExecute signin: created card");
 
     return profileCard.content;
   }
