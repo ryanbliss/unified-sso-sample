@@ -174,8 +174,9 @@ app.adaptiveCards.actionExecute(
       user.profilePhoto
     );
     console.log("app.adaptiveCards.actionExecute signin: created card");
+    return user.displayName;
 
-    return profileCard.content;
+    // return profileCard.content;
   }
 );
 
