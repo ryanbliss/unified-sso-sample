@@ -134,12 +134,11 @@ app.activity(
         console.log("app.activity .Message: already logged in, graph start");
         const user = await getUserDetailsFromGraph(token);
         console.log("app.activity .Message: graph end");
-        card = createUserProfileCard(
-          user.displayName,
-          user.profilePhoto
-        );
+        card = createUserProfileCard(user.displayName, user.profilePhoto);
       } else {
-        console.log("app.activity .Message: no token in _state, sending sign in card");
+        console.log(
+          "app.activity .Message: no token in _state, sending sign in card"
+        );
         card = createSignInCard();
       }
 
@@ -267,7 +266,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           return;
         },
         send: function (sendBody?: unknown): unknown {
-          console.log("BotResponse.send");
+          console.log("BotResponse.send with body", JSON.stringify(sendBody));
           body = sendBody;
           return;
         },

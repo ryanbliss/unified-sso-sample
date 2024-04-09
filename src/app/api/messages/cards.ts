@@ -21,7 +21,7 @@ export function createSignInCard(): Attachment {
         actions: [
           {
             type: "Action.Execute",
-            title: "Sign in to view profile",
+            title: "Sign in",
             verb: "signin",
           },
         ],
@@ -54,7 +54,7 @@ export function createUserProfileCard(
       action: {
         fallback: "drop",
         type: "Action.Execute",
-        title: "Sign in to view profile",
+        title: "Sign in",
         verb: "signin",
       },
     },
