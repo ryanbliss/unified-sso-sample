@@ -46,7 +46,7 @@ export function createUserProfileCard(
     "and profilePhoto",
     profilePhoto
   );
-  return CardFactory.adaptiveCard({
+  const card = CardFactory.adaptiveCard({
     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
     version: "1.5",
     type: "AdaptiveCard",
@@ -80,4 +80,8 @@ export function createUserProfileCard(
       },
     ],
   });
+
+  console.log("cards.ts createUserProfileCard:", JSON.stringify(card));
+
+  return card;
 }
