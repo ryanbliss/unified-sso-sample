@@ -129,11 +129,8 @@ app.activity(
     if (USE_CARD_AUTH) {
       console.log("app.activity .Message: start");
       let card: Attachment;
-      const token = _state.temp.authTokens["graph"];
-      if (!token) {
-        console.log("app.activity .Message: no token in _state, sending sign in card");
-        card = createSignInCard();
-      } else {
+      const token = _state.temp.authTokens?.["graph"];
+      if (token) {
         console.log("app.activity .Message: already logged in, graph start");
         const user = await getUserDetailsFromGraph(token);
         console.log("app.activity .Message: graph end");
@@ -141,6 +138,9 @@ app.activity(
           user.displayName,
           user.profilePhoto
         );
+      } else {
+        console.log("app.activity .Message: no token in _state, sending sign in card");
+        card = createSignInCard();
       }
 
       console.log("app.activity .Message: context.sendActivity with card");
