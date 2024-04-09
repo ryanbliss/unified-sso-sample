@@ -136,57 +136,68 @@ app.activity(
 );
 
 // Handle sign in adaptive card button click
-app.adaptiveCards.actionExecute('signin', async (_context: TurnContext, state: ApplicationTurnState) => {
-  const token = state.temp.authTokens['graph'];
-  if (!token) {
-      throw new Error('No auth token found in state. Authentication failed.');
+app.adaptiveCards.actionExecute(
+  "signin",
+  async (_context: TurnContext, state: ApplicationTurnState) => {
+    const token = state.temp.authTokens["graph"];
+    if (!token) {
+      throw new Error("No auth token found in state. Authentication failed.");
+    }
+
+    const user = await getUserDetailsFromGraph(token);
+    const profileCard = createUserProfileCard(
+      user.displayName,
+      user.profilePhoto
+    );
+
+    return profileCard.content;
   }
-
-  const user = await getUserDetailsFromGraph(token);
-  const profileCard = createUserProfileCard(user.displayName, user.profilePhoto);
-
-  return profileCard.content;
-});
+);
 
 // Handle sign out adaptive card button click
-app.adaptiveCards.actionExecute('signout', async (context: TurnContext, state: ApplicationTurnState) => {
-  await app.authentication.signOutUser(context, state);
+app.adaptiveCards.actionExecute(
+  "signout",
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    await app.authentication.signOutUser(context, state);
 
-  const initialCard = createViewProfileCard();
+    const initialCard = createViewProfileCard();
 
-  return initialCard.content;
-});
+    return initialCard.content;
+  }
+);
 
 // Auth handlers
 
-app.authentication
-  .get("graph")
-  .onUserSignInSuccess(
-    async (context: TurnContext, state: ApplicationTurnState) => {
-      // Successfully logged in
-      await context.sendActivity("Successfully logged in");
-      await context.sendActivity(
-        `Token string length: ${state.temp.authTokens["graph"]!.length}`
-      );
-      await context.sendActivity(
-        `This is what you said before the AuthFlow started: ${context.activity.text}`
-      );
-    }
-  );
+if (!USE_CARD_AUTH) {
+  app.authentication
+    .get("graph")
+    .onUserSignInSuccess(
+      async (context: TurnContext, state: ApplicationTurnState) => {
+        // Successfully logged in
+        await context.sendActivity("Successfully logged in");
+        await context.sendActivity(
+          `Token string length: ${state.temp.authTokens["graph"]!.length}`
+        );
+        await context.sendActivity(
+          `This is what you said before the AuthFlow started: ${context.activity.text}`
+        );
+      }
+    );
 
-app.authentication
-  .get("graph")
-  .onUserSignInFailure(
-    async (
-      context: TurnContext,
-      _state: ApplicationTurnState,
-      error: AuthError
-    ) => {
-      // Failed to login
-      await context.sendActivity("Failed to login");
-      await context.sendActivity(`Error message: ${error.message}`);
-    }
-  );
+  app.authentication
+    .get("graph")
+    .onUserSignInFailure(
+      async (
+        context: TurnContext,
+        _state: ApplicationTurnState,
+        error: AuthError
+      ) => {
+        // Failed to login
+        await context.sendActivity("Failed to login");
+        await context.sendActivity(`Error message: ${error.message}`);
+      }
+    );
+}
 
 interface ResponseHolder {
   status: number;
