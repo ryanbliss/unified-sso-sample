@@ -139,12 +139,18 @@ app.activity(
 app.adaptiveCards.actionExecute(
   "signin",
   async (_context: TurnContext, state: ApplicationTurnState) => {
+    console.log("app.adaptiveCards.actionExecute signin: start");
     const token = state.temp.authTokens["graph"];
     if (!token) {
+      console.error(
+        "app.adaptiveCards.actionExecute signin: No auth token found in state. Authentication failed."
+      );
       throw new Error("No auth token found in state. Authentication failed.");
     }
+    console.log("app.adaptiveCards.actionExecute signin: graph start");
 
     const user = await getUserDetailsFromGraph(token);
+    console.log("app.adaptiveCards.actionExecute signin: graph end");
     const profileCard = createUserProfileCard(
       user.displayName,
       user.profilePhoto
@@ -158,7 +164,9 @@ app.adaptiveCards.actionExecute(
 app.adaptiveCards.actionExecute(
   "signout",
   async (context: TurnContext, state: ApplicationTurnState) => {
+    console.log("app.adaptiveCards.actionExecute signout: start");
     await app.authentication.signOutUser(context, state);
+    console.log("app.adaptiveCards.actionExecute signout: success");
 
     const initialCard = createViewProfileCard();
 
