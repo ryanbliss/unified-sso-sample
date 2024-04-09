@@ -37,7 +37,6 @@ export default function HomePageContainer() {
       try {
         const token = await teamsJs.authentication.getAuthToken({
           silent,
-          claims: ["User.Read"]
         });
         setToken(token);
       } catch (err: unknown) {
