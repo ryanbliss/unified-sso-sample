@@ -315,6 +315,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     let resHolder = await resPromise;
+    console.log(
+      "route returning NextResponse with body",
+      JSON.stringify(resHolder.body),
+      "headers",
+      JSON.stringify(resHolder.headers)
+    );
     return NextResponse.json(resHolder.body, {
       status: resHolder.status,
       headers: resHolder.headers,
