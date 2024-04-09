@@ -242,17 +242,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       let processed = false;
       let ended = false;
       let status: number = 500;
-      let body: unknown;
+      let resBody: unknown;
       let headers: Headers = new Headers();
       const res: BotResponse = {
         socket: undefined,
         end: function (): unknown {
-          console.log("BotResponse.end with body", JSON.stringify(body));
+          console.log("BotResponse.end with body", JSON.stringify(resBody));
           ended = true;
           if (processed) {
             resolve({
               status,
-              body,
+              body: resBody,
               headers,
             });
           }
@@ -267,7 +267,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         },
         send: function (sendBody?: unknown): unknown {
           console.log("BotResponse.send with body", JSON.stringify(sendBody));
-          body = sendBody;
+          resBody = sendBody;
           return;
         },
         status: function (code: number): unknown {
