@@ -174,9 +174,8 @@ app.adaptiveCards.actionExecute(
       user.profilePhoto
     );
     console.log("app.adaptiveCards.actionExecute signin: created card");
-    return user.displayName;
 
-    // return profileCard.content;
+    return profileCard.content;
   }
 );
 
@@ -249,7 +248,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const res: BotResponse = {
         socket: undefined,
         end: function (): unknown {
-          console.log("BotResponse.end");
+          console.log("BotResponse.end with body", JSON.stringify(body));
           ended = true;
           if (processed) {
             resolve({
