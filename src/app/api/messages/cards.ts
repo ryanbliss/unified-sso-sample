@@ -3,7 +3,7 @@ import { Attachment, CardFactory } from "botbuilder";
 /**
  * @returns {any} initial adaptive card.
  */
-export function createViewProfileCard(): Attachment {
+export function createSignInCard(): Attachment {
   return CardFactory.adaptiveCard({
     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
     version: "1.5",

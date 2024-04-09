@@ -6,6 +6,7 @@ import {
   MemoryStorage,
   TurnContext,
   Response as BotResponse,
+  Attachment,
 } from "botbuilder";
 
 import {
@@ -15,7 +16,7 @@ import {
   AuthError,
 } from "@microsoft/teams-ai";
 import { NextRequest, NextResponse } from "next/server";
-import { createUserProfileCard, createViewProfileCard } from "./cards";
+import { createUserProfileCard, createSignInCard } from "./cards";
 import { getUserDetailsFromGraph } from "./graph";
 
 interface ConversationState {
@@ -126,8 +127,25 @@ app.activity(
   ActivityTypes.Message,
   async (context: TurnContext, _state: ApplicationTurnState) => {
     if (USE_CARD_AUTH) {
-      const initialCard = createViewProfileCard();
-      await context.sendActivity({ attachments: [initialCard] });
+      console.log("app.activity .Message: start");
+      let card: Attachment;
+      const token = _state.temp.authTokens["graph"];
+      if (!token) {
+        console.log("app.activity .Message: no token in _state, sending sign in card");
+        card = createSignInCard();
+      } else {
+        console.log("app.activity .Message: already logged in, graph start");
+        const user = await getUserDetailsFromGraph(token);
+        console.log("app.activity .Message: graph end");
+        card = createUserProfileCard(
+          user.displayName,
+          user.profilePhoto
+        );
+      }
+
+      console.log("app.activity .Message: context.sendActivity with card");
+      await context.sendActivity({ attachments: [card] });
+      console.log("app.activity .Message: context.sendActivity sent");
     } else {
       console.log("sending message activity");
       await context.sendActivity("hello world");
@@ -169,7 +187,7 @@ app.adaptiveCards.actionExecute(
     await app.authentication.signOutUser(context, state);
     console.log("app.adaptiveCards.actionExecute signout: success");
 
-    const initialCard = createViewProfileCard();
+    const initialCard = createSignInCard();
 
     return initialCard.content;
   }
