@@ -9,7 +9,6 @@ import {
   Activity,
   ConversationReference,
 } from "botbuilder";
-
 import {
   ApplicationBuilder,
   TurnState,
@@ -25,6 +24,12 @@ interface ConversationState {
 type ApplicationTurnState = TurnState<ConversationState>;
 const USE_CARD_AUTH = process.env.AUTH_TYPE === "card";
 
+/**
+ * Stored references to conversations, which is used for sending proactive messages.
+ * 
+ * @remarks
+ * In production, you should store these objects in a database.
+ */
 const conversationReferences: Map<
   string,
   Partial<ConversationReference>
@@ -133,6 +138,7 @@ botApp.message(
   }
 );
 
+// Get the activity object, which is useful for debugging
 botApp.message(
   "/activity",
   async (context: TurnContext, state: ApplicationTurnState) => {
@@ -251,7 +257,7 @@ if (!USE_CARD_AUTH) {
 }
 
 /**
- * Sends a message.
+ * Sends a message for a given thread reference identifier.
  *
  * @param threadReferenceId use userAadId for personal scope, and conversation id for other scopes
  * @param activityOrText activity to send
@@ -263,8 +269,9 @@ export async function sendMessage(
 ) {
   const conversationReference = conversationReferences.get(threadReferenceId);
   if (!conversationReference) {
-    throw new Error("bot-app.ts addConversationReference: unable to find threadReferenceId");
+    throw new Error("bot-app.ts sendMessage: unable to find threadReferenceId");
   }
+  console.log("bot-app.ts sendMessage: sending message");
   return await botAdapter.continueConversationAsync(
     process.env.BOT_ID!,
     conversationReference,
@@ -274,6 +281,11 @@ export async function sendMessage(
   );
 }
 
+/**
+ * Store the conversation reference so that we can send "proactive notifications" later.
+ *
+ * @param activity recent message activity to store a reference to
+ */
 function addConversationReference(activity: Activity) {
   const conversationReference = TurnContext.getConversationReference(activity);
   if (!conversationReference.conversation) return;
