@@ -1,13 +1,16 @@
 "use client";
 import { useCallback, useState } from "react";
 import * as teamsJs from "@microsoft/teams-js";
-import { FlexColumn } from "@/components/flex";
-import { Button, Text } from "@fluentui/react-components";
+import { FlexColumn, FlexRow } from "@/components/flex";
+import { Button, Text, Title3 } from "@fluentui/react-components";
 import { isSdkError } from "@/utils/teams-js-type-guards";
+import { useTeamsClientContext } from "@/context-providers";
+import CodeBlock from "@/components/code-block/CodeBlock";
 
 export default function HomePageContainer() {
   const [authError, setAuthError] = useState<string>();
   const [token, setToken] = useState<string>();
+  const { teamsContext } = useTeamsClientContext();
   const setUnknownAuthError = useCallback(
     (err: unknown, silent?: boolean) => {
       let prefix: string = "";
@@ -49,15 +52,22 @@ export default function HomePageContainer() {
   return (
     <main>
       <FlexColumn vAlign="center">
+        <Title3>{"Auth:"}</Title3>
         {authError && <Text>{authError}</Text>}
-        {token && <Text>{token}</Text>}
-        {!token && (
-            <Button onClick={() => {
+        {token && <CodeBlock text={token} />}
+        <FlexRow>
+          {!token && (
+            <Button
+              onClick={() => {
                 authenticateWithTeamsSSO(false);
-            }}>
-                {"Log in"}
+              }}
+            >
+              {"Log in"}
             </Button>
-        )}
+          )}
+        </FlexRow>
+        <Title3>{"Tab context:"}</Title3>
+        {teamsContext && <CodeBlock text={JSON.stringify(teamsContext)} />}
       </FlexColumn>
     </main>
   );
