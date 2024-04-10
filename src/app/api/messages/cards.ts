@@ -63,10 +63,10 @@ export function createUserProfileCard(
         type: "TextBlock",
         text: "Hello: " + displayName,
       },
-      // {
-      //   type: "Image",
-      //   url: profilePhoto,
-      // },
+      {
+        type: "Image",
+        url: profilePhoto,
+      },
       {
         type: "ActionSet",
         fallback: "drop",
