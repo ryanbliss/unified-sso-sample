@@ -229,6 +229,7 @@ interface ResponseHolder {
   status: number;
   body: unknown;
   headers: Headers;
+  info: string;
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -254,6 +255,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
               status,
               body: resBody,
               headers,
+              info: "end",
             });
           }
           return;
@@ -303,8 +305,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         if (ended) {
           resolve({
             status,
-            body,
+            body: resBody,
             headers,
+            info: "postProcess",
           });
         }
       } catch (err) {
@@ -319,7 +322,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       "route returning NextResponse with body",
       JSON.stringify(resHolder.body),
       "headers",
-      JSON.stringify(resHolder.headers)
+      JSON.stringify(resHolder.headers),
+      "info",
+      resHolder.info
     );
     return NextResponse.json(resHolder.body, {
       status: resHolder.status,
