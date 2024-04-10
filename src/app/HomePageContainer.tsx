@@ -51,10 +51,46 @@ export default function HomePageContainer() {
 
   return (
     <main>
-      <FlexColumn vAlign="center">
+      <FlexColumn vAlign="center" marginSpacer="small">
         <Title3>{"Auth:"}</Title3>
         {authError && <Text>{authError}</Text>}
-        {token && <CodeBlock text={token} />}
+        {token && (
+          <>
+            <CodeBlock text={token} />
+            <FlexRow>
+              <Button
+                onClick={() => {
+                  if (!teamsContext) return;
+                  console.log("HomePageContainer: sending message");
+                  let scope = "personal";
+                  if (!!teamsContext.chat) {
+                    scope = "chat";
+                  } else if (!!teamsContext.channel) {
+                    scope = "channel";
+                  }
+                  const threadId =
+                    teamsContext.chat?.id ?? teamsContext.channel?.id;
+                  fetch("/api/messages/send", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: token,
+                    },
+                    body: JSON.stringify({
+                      scope,
+                      threadId,
+                      data: teamsContext,
+                    }),
+                  })
+                    .then((res) => console.log(res))
+                    .catch((err) => console.error(err));
+                }}
+              >
+                {"Send message"}
+              </Button>
+            </FlexRow>
+          </>
+        )}
         <FlexRow>
           {!token && (
             <Button

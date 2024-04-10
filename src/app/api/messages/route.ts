@@ -1,9 +1,6 @@
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
-import botbuilder, { Response as BotResponse } from "botbuilder";
-import teamsai from "@microsoft/teams-ai";
-import { Client } from "@microsoft/microsoft-graph-client";
-import "isomorphic-fetch";
+import { Response as BotResponse } from "botbuilder";
 import { NextRequest, NextResponse } from "next/server";
 import { botAdapter, botApp } from "@/bot/bot-app";
 

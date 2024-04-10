@@ -6,6 +6,8 @@ import {
   MemoryStorage,
   TurnContext,
   Attachment,
+  Activity,
+  ConversationReference,
 } from "botbuilder";
 
 import {
@@ -22,6 +24,11 @@ interface ConversationState {
 }
 type ApplicationTurnState = TurnState<ConversationState>;
 const USE_CARD_AUTH = process.env.AUTH_TYPE === "card";
+
+const conversationReferences: Map<
+  string,
+  Partial<ConversationReference>
+> = new Map();
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -103,6 +110,9 @@ export const botApp = new ApplicationBuilder<ApplicationTurnState>()
 botApp.message(
   "/reset",
   async (context: TurnContext, state: ApplicationTurnState) => {
+    // Store conversation reference
+    addConversationReference(context.activity);
+
     state.deleteConversationState();
     await context.sendActivity(
       `Ok I've deleted the current conversation state.`
@@ -113,6 +123,9 @@ botApp.message(
 botApp.message(
   "/signout",
   async (context: TurnContext, state: ApplicationTurnState) => {
+    // Store conversation reference
+    addConversationReference(context.activity);
+
     await botApp.authentication.signOutUser(context, state);
 
     // Echo back users request
@@ -123,6 +136,9 @@ botApp.message(
 botApp.message(
   "/activity",
   async (context: TurnContext, state: ApplicationTurnState) => {
+    // Store conversation reference
+    addConversationReference(context.activity);
+    // Send message
     await context.sendActivity(JSON.stringify(context.activity));
   }
 );
@@ -131,6 +147,10 @@ botApp.message(
 botApp.activity(
   ActivityTypes.Message,
   async (context: TurnContext, _state: ApplicationTurnState) => {
+    // Store conversation reference
+    addConversationReference(context.activity);
+
+    // Handle message
     if (USE_CARD_AUTH) {
       console.log("app.activity .Message: start");
       let card: Attachment;
@@ -230,4 +250,53 @@ if (!USE_CARD_AUTH) {
     );
 }
 
-// export function sendMessage();
+/**
+ * Sends a message.
+ *
+ * @param threadReferenceId use userAadId for personal scope, and conversation id for other scopes
+ * @param activityOrText activity to send
+ * @returns void promise
+ */
+export async function sendMessage(
+  threadReferenceId: string,
+  activityOrText: string | Partial<Activity>
+) {
+  const conversationReference = conversationReferences.get(threadReferenceId);
+  if (!conversationReference) {
+    throw new Error("bot-app.ts addConversationReference: unable to find threadReferenceId");
+  }
+  return await botAdapter.continueConversationAsync(
+    process.env.BOT_ID!,
+    conversationReference,
+    async (context: TurnContext) => {
+      await context.sendActivity(activityOrText);
+    }
+  );
+}
+
+function addConversationReference(activity: Activity) {
+  const conversationReference = TurnContext.getConversationReference(activity);
+  if (!conversationReference.conversation) return;
+  console.log(
+    "bot-app.ts addConversationReference: adding reference for conversation reference",
+    JSON.stringify(conversationReference.conversation)
+  );
+  if (conversationReference.conversation.conversationType === "personal") {
+    // For personal scope we use the user id
+    // The bot will never have an aadObjectId
+    const userAadId =
+      activity.from.aadObjectId ?? activity.recipient.aadObjectId;
+    if (!userAadId) {
+      console.error(
+        "bot-app.ts addConversationReference: unable to add reference for user that doesn't have aadObjectId"
+      );
+      return;
+    }
+    conversationReferences.set(userAadId, conversationReference);
+    return;
+  }
+  conversationReferences.set(
+    conversationReference.conversation.id,
+    conversationReference
+  );
+}
