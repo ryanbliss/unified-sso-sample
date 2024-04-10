@@ -240,7 +240,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   );
   const resPromise: Promise<ResponseHolder> = new Promise<ResponseHolder>(
     async (resolve, reject) => {
-      let processed = false;
       let ended = false;
       let status: number = 500;
       let resBody: unknown;
@@ -250,14 +249,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         end: function (): unknown {
           console.log("BotResponse.end with body", JSON.stringify(resBody));
           ended = true;
-          if (processed) {
-            resolve({
-              status,
-              body: resBody,
-              headers,
-              info: "end",
-            });
-          }
           return;
         },
         header: function (name: string, value: unknown): unknown {
@@ -301,15 +292,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             console.log(`finished app.run(context), dispatched: ${dispatched}`);
           }
         );
-        processed = true;
-        if (ended) {
-          resolve({
-            status,
-            body: resBody,
-            headers,
-            info: "postProcess",
-          });
+        if (!ended) {
+          throw new Error("Trying to resolve ResponseHolder before ended was called");
         }
+        resolve({
+          status,
+          body: resBody,
+          headers,
+          info: "postProcess",
+        });
       } catch (err) {
         reject(err);
       }
@@ -326,7 +317,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       "info",
       resHolder.info
     );
-    return NextResponse.json(resHolder.body, {
+    return NextResponse.json(resHolder.body ?? {}, {
       status: resHolder.status,
       headers: resHolder.headers,
     });
