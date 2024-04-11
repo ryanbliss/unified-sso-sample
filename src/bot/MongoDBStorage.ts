@@ -28,7 +28,7 @@ export class MongoDBStorage implements Storage {
     const data: StoreItems = {};
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      const item: string = this.memory[key];
+      const item = this.memory[key];
       if (item) {
         console.log("MongoDBStorage.read: found item in memory with key", key, "and value", item);
         data[key] = JSON.parse(item);
@@ -58,9 +58,11 @@ export class MongoDBStorage implements Storage {
   async write(changes: StoreItems): Promise<void> {
     console.log("MongoDBStorage.write: writing changes");
     const saveItem = async (key: string, item: any): Promise<void> => {
-      const clone: any = { ...item };
+      console.log("MongoDBStorage.write: cloning item", item);
+      const clone: any = Object.assign({}, item);
       clone.eTag = (this.etag++).toString();
       const stringifiedClone = JSON.stringify(clone);
+      console.log("MongoDBStorage.write: saving stringifiedClone", stringifiedClone);
       try {
         await upsertBotValue(key, stringifiedClone);
         this.memory[key] = stringifiedClone;
