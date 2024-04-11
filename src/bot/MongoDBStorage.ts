@@ -98,12 +98,12 @@ export class MongoDBStorage implements Storage {
    * @returns {Promise<void>} A promise representing the async operation.
    */
   async delete(keys: string[]): Promise<void> {
-    console.log("MongoDBStorage.ddelete: deleting");
+    console.log("MongoDBStorage.delete: deleting");
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       await deleteBotValue(key);
       this.memory[key] = <any>undefined;
     }
-    console.log("MongoDBStorage.write: done");
+    console.log("MongoDBStorage.delete: done");
   }
 }

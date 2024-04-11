@@ -15,7 +15,10 @@ import {
 } from "@microsoft/teams-ai";
 import { createUserProfileCard, createSignInCard } from "./cards";
 import { getUserDetailsFromGraph } from "./graph";
-import { findReference, upsertReference } from "@/database/conversation-references";
+import {
+  findReference,
+  upsertReference,
+} from "@/database/conversation-references";
 import { MongoDBStorage } from "./MongoDBStorage";
 
 interface ConversationState {
@@ -104,6 +107,7 @@ export const botApp = new ApplicationBuilder<ApplicationTurnState>()
 botApp.message(
   "/reset",
   async (context: TurnContext, state: ApplicationTurnState) => {
+    console.log("bot-app.message /reset:", JSON.stringify(state));
     // Store conversation reference
     addConversationReference(context.activity).catch((err) =>
       console.error(err)
@@ -119,6 +123,7 @@ botApp.message(
 botApp.message(
   "/signout",
   async (context: TurnContext, state: ApplicationTurnState) => {
+    console.log("bot-app.message /signout:", JSON.stringify(state));
     // Store conversation reference
     addConversationReference(context.activity).catch((err) =>
       console.error(err)
@@ -155,7 +160,10 @@ botApp.activity(
 
     // Handle message
     if (USE_CARD_AUTH) {
-      console.log("app.activity .Message: start with turn state", JSON.stringify(_state));
+      console.log(
+        "app.activity .Message: start with turn state",
+        JSON.stringify(_state)
+      );
       let card: Attachment;
       const token = _state.temp.authTokens?.["graph"];
       if (token) {
@@ -184,7 +192,10 @@ botApp.activity(
 botApp.adaptiveCards.actionExecute(
   "signin",
   async (_context: TurnContext, state: ApplicationTurnState) => {
-    console.log("app.adaptiveCards.actionExecute signin: start");
+    console.log(
+      "app.adaptiveCards.actionExecute signin: start with state",
+      JSON.stringify(state)
+    );
     const token = state.temp.authTokens["graph"];
     if (!token) {
       console.error(
@@ -210,7 +221,10 @@ botApp.adaptiveCards.actionExecute(
 botApp.adaptiveCards.actionExecute(
   "signout",
   async (context: TurnContext, state: ApplicationTurnState) => {
-    console.log("app.adaptiveCards.actionExecute signout: start");
+    console.log(
+      "app.adaptiveCards.actionExecute signout: start with state",
+      JSON.stringify(state)
+    );
     await botApp.authentication.signOutUser(context, state);
     console.log("app.adaptiveCards.actionExecute signout: success");
 
@@ -302,12 +316,16 @@ async function addConversationReference(activity: Activity): Promise<void> {
       return;
     }
     await upsertReference(userAadId, conversationReference);
-    console.log("bot-app.ts addConversationReference: upserted conversation reference");
+    console.log(
+      "bot-app.ts addConversationReference: upserted conversation reference"
+    );
     return;
   }
   await upsertReference(
     conversationReference.conversation.id,
     conversationReference
   );
-  console.log("bot-app.ts addConversationReference: upserted conversation reference");
+  console.log(
+    "bot-app.ts addConversationReference: upserted conversation reference"
+  );
 }
