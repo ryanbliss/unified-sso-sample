@@ -226,7 +226,10 @@ botApp.adaptiveCards.actionExecute(
       JSON.stringify(state)
     );
     await botApp.authentication.signOutUser(context, state);
-    console.log("app.adaptiveCards.actionExecute signout: success");
+    console.log(
+      "app.adaptiveCards.actionExecute signout: success",
+      JSON.stringify(state)
+    );
 
     const initialCard = createSignInCard();
 
