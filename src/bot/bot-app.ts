@@ -16,7 +16,7 @@ import {
 import { createUserProfileCard, createSignInCard } from "./cards";
 import { getUserDetailsFromGraph } from "./graph";
 import { findReference, upsertReference } from "@/database/conversation-references";
-import { MongoDBStorage } from "./MongodbStorage";
+import { MongoDBStorage } from "./MongoDBStorage";
 
 interface ConversationState {
   count: number;
