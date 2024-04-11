@@ -17,24 +17,13 @@ import {
 } from "@microsoft/teams-ai";
 import { createUserProfileCard, createSignInCard } from "./cards";
 import { getUserDetailsFromGraph } from "./graph";
-import { upsertReference } from "@/database/conversation-references";
+import { findReference, upsertReference } from "@/database/conversation-references";
 
 interface ConversationState {
   count: number;
 }
 type ApplicationTurnState = TurnState<ConversationState>;
 const USE_CARD_AUTH = process.env.AUTH_TYPE === "card";
-
-/**
- * Stored references to conversations, which is used for sending proactive messages.
- *
- * @remarks
- * In production, you should store these objects in a database.
- */
-const conversationReferences: Map<
-  string,
-  Partial<ConversationReference>
-> = new Map();
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -276,7 +265,7 @@ export async function sendMessage(
   threadReferenceId: string,
   activityOrText: string | Partial<Activity>
 ) {
-  const conversationReference = conversationReferences.get(threadReferenceId);
+  const conversationReference = await findReference(threadReferenceId);
   if (!conversationReference) {
     throw new Error("bot-app.ts sendMessage: unable to find threadReferenceId");
   }
@@ -314,14 +303,12 @@ async function addConversationReference(activity: Activity): Promise<void> {
       return;
     }
     await upsertReference(userAadId, conversationReference);
+    console.log("bot-app.ts addConversationReference: upserted conversation reference");
     return;
   }
   await upsertReference(
     conversationReference.conversation.id,
     conversationReference
   );
-  conversationReferences.set(
-    conversationReference.conversation.id,
-    conversationReference
-  );
+  console.log("bot-app.ts addConversationReference: upserted conversation reference");
 }
