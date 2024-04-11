@@ -21,6 +21,7 @@ export class MongoDBStorage implements Storage {
    * @returns The read items.
    */
   async read(keys: string[]): Promise<StoreItems> {
+    console.log("MongoDBStorage.read: reading changes");
     if (!keys) {
       throw new ReferenceError("Keys are required when reading.");
     }
@@ -41,6 +42,7 @@ export class MongoDBStorage implements Storage {
         }
       }
     }
+    console.log("MongoDBStorage.read: done", data);
     return data;
   }
 
@@ -51,6 +53,7 @@ export class MongoDBStorage implements Storage {
    * @returns {Promise<void>} A promise representing the async operation.
    */
   async write(changes: StoreItems): Promise<void> {
+    console.log("MongoDBStorage.write: writing changes");
     const saveItem = async (key: string, item: any): Promise<void> => {
       const clone: any = { ...item };
       clone.eTag = (this.etag++).toString();
@@ -85,6 +88,7 @@ export class MongoDBStorage implements Storage {
         }
       }
     }
+    console.log("MongoDBStorage.write: done");
   }
 
   /**
@@ -94,10 +98,12 @@ export class MongoDBStorage implements Storage {
    * @returns {Promise<void>} A promise representing the async operation.
    */
   async delete(keys: string[]): Promise<void> {
+    console.log("MongoDBStorage.ddelete: deleting");
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       await deleteBotValue(key);
       this.memory[key] = <any>undefined;
     }
+    console.log("MongoDBStorage.write: done");
   }
 }
