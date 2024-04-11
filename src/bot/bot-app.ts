@@ -152,6 +152,10 @@ botApp.activity(
     addConversationReference(context.activity).catch((err) =>
       console.error(err)
     );
+    const loadWasNeeded = await _state.load(context, storage);
+    if (!loadWasNeeded) {
+      console.log("app.activity .Message: loaded state unnecessarily");
+    }
 
     // Handle message
     if (USE_CARD_AUTH) {
