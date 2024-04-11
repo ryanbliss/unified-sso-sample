@@ -17,6 +17,7 @@ import {
 } from "@microsoft/teams-ai";
 import { createUserProfileCard, createSignInCard } from "./cards";
 import { getUserDetailsFromGraph } from "./graph";
+import { upsertReference } from "@/database/conversation-references";
 
 interface ConversationState {
   count: number;
@@ -26,7 +27,7 @@ const USE_CARD_AUTH = process.env.AUTH_TYPE === "card";
 
 /**
  * Stored references to conversations, which is used for sending proactive messages.
- * 
+ *
  * @remarks
  * In production, you should store these objects in a database.
  */
@@ -116,7 +117,9 @@ botApp.message(
   "/reset",
   async (context: TurnContext, state: ApplicationTurnState) => {
     // Store conversation reference
-    addConversationReference(context.activity);
+    addConversationReference(context.activity).catch((err) =>
+      console.error(err)
+    );
 
     state.deleteConversationState();
     await context.sendActivity(
@@ -129,7 +132,9 @@ botApp.message(
   "/signout",
   async (context: TurnContext, state: ApplicationTurnState) => {
     // Store conversation reference
-    addConversationReference(context.activity);
+    addConversationReference(context.activity).catch((err) =>
+      console.error(err)
+    );
 
     await botApp.authentication.signOutUser(context, state);
 
@@ -143,7 +148,9 @@ botApp.message(
   "/activity",
   async (context: TurnContext, state: ApplicationTurnState) => {
     // Store conversation reference
-    addConversationReference(context.activity);
+    addConversationReference(context.activity).catch((err) =>
+      console.error(err)
+    );
     // Send message
     await context.sendActivity(JSON.stringify(context.activity));
   }
@@ -154,7 +161,9 @@ botApp.activity(
   ActivityTypes.Message,
   async (context: TurnContext, _state: ApplicationTurnState) => {
     // Store conversation reference
-    addConversationReference(context.activity);
+    addConversationReference(context.activity).catch((err) =>
+      console.error(err)
+    );
 
     // Handle message
     if (USE_CARD_AUTH) {
@@ -286,7 +295,7 @@ export async function sendMessage(
  *
  * @param activity recent message activity to store a reference to
  */
-function addConversationReference(activity: Activity) {
+async function addConversationReference(activity: Activity): Promise<void> {
   const conversationReference = TurnContext.getConversationReference(activity);
   if (!conversationReference.conversation) return;
   console.log(
@@ -304,9 +313,13 @@ function addConversationReference(activity: Activity) {
       );
       return;
     }
-    conversationReferences.set(userAadId, conversationReference);
+    await upsertReference(userAadId, conversationReference);
     return;
   }
+  await upsertReference(
+    conversationReference.conversation.id,
+    conversationReference
+  );
   conversationReferences.set(
     conversationReference.conversation.id,
     conversationReference
