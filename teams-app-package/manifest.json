@@ -1,7 +1,7 @@
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.15/MicrosoftTeams.schema.json",
-  "version": "1.0.0",
-  "manifestVersion": "1.15",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "version": "1.0.1",
+  "manifestVersion": "1.16",
   "id": "c86b8bf3-ce41-464a-ab22-84de1e8a4f96",
   "packageName": "ryanbliss.unify.app",
   "name": {
@@ -33,11 +33,13 @@
       "entityId": "5c74502b-ff48-455e-a57b-20c9d458b323",
       "name": "Dashboard",
       "contentUrl": "https://unified-sso-sample.vercel.app",
-      "scopes": [
-        "personal"
-      ],
+      "scopes": ["personal", "team", "groupChat"],
       "context": [
-        "personalTab"
+        "personalTab",
+        "privateChatTab",
+        "meetingChatTab",
+        "channelTab",
+        "meetingSidePanel"
       ]
     },
     {

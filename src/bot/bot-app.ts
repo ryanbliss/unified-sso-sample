@@ -39,11 +39,12 @@ export const botAdapter = new TeamsAdapter(
 );
 
 // Catch-all for errors.
-const onTurnErrorHandler = async (context: any, error: any) => {
+const onTurnErrorHandler = async (context: TurnContext, error: any) => {
   // This check writes out errors to console log .vs. app insights.
   // NOTE: In production environment, you should consider logging this to Azure
   //       application insights.
   console.error(`\n [onTurnError] unhandled error: ${error.toString()}`);
+  
 
   // Send a trace activity, which will be displayed in Bot Framework Emulator
   await context.sendTraceActivity(

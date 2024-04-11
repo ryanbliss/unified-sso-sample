@@ -30,10 +30,13 @@ export class MongoDBStorage implements Storage {
       const key = keys[i];
       const item: string = this.memory[key];
       if (item) {
+        console.log("MongoDBStorage.read: found item in memory with key", key, "and value", item);
         data[key] = JSON.parse(item);
       } else {
         try {
+          console.log("MongoDBStorage.read: getting item with key", key);
           const value = await getBotValue(key);
+          console.log("MongoDBStorage.read: got item from MongoDB with key", key, "and value", value);
           const parsedValue = JSON.parse(value);
           this.memory[key] = parsedValue;
           data[key] = parsedValue;
