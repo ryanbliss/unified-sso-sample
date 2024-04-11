@@ -82,3 +82,33 @@ export function createUserProfileCard(
     ],
   });
 }
+
+/**
+ * @returns {any} initial adaptive card.
+ */
+export function testCard(text: string): Attachment {
+  return CardFactory.adaptiveCard({
+    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+    version: "1.5",
+    type: "AdaptiveCard",
+    body: [
+      {
+        type: "TextBlock",
+        text: text,
+        size: "Medium",
+        weight: "Bolder",
+      },
+      {
+        type: "ActionSet",
+        fallback: "drop",
+        actions: [
+          {
+            type: "Action.Execute",
+            title: "Test",
+            verb: "test",
+          },
+        ],
+      },
+    ],
+  });
+}

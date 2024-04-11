@@ -13,7 +13,7 @@ import {
   TeamsAdapter,
   AuthError,
 } from "@microsoft/teams-ai";
-import { createUserProfileCard, createSignInCard } from "./cards";
+import { createUserProfileCard, createSignInCard, testCard } from "./cards";
 import { getUserDetailsFromGraph } from "./graph";
 import {
   findReference,
@@ -149,6 +149,24 @@ botApp.message(
   }
 );
 
+// Test
+botApp.message(
+  "/test",
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    console.log(
+      "app.message /test: start with state",
+      JSON.stringify(state)
+    );
+    // Store conversation reference
+    addConversationReference(context.activity).catch((err) =>
+      console.error(err)
+    );
+    // Send message
+    const card = testCard("Let's go a 'buggin");
+    await context.sendActivity({ attachments: [card] });
+  }
+);
+
 // Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
 botApp.activity(
   ActivityTypes.Message,
@@ -232,6 +250,20 @@ botApp.adaptiveCards.actionExecute(
     );
 
     const initialCard = createSignInCard();
+
+    return initialCard.content;
+  }
+);
+
+// Test
+botApp.adaptiveCards.actionExecute(
+  "test",
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    console.log(
+      "app.adaptiveCards.actionExecute test: start with state",
+      JSON.stringify(state)
+    );
+    const initialCard = testCard("A 'buggin we did");
 
     return initialCard.content;
   }
