@@ -15,8 +15,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       "/api/messages/route.ts: invalid body, must be of type ISendMessageInputBase"
     );
   }
-  const threadReferenceId =
-    json.scope === "personal" ? jwtPayload["oid"] : json.threadId;
+  const threadReferenceId = json.threadId ?? jwtPayload["oid"];
   if (typeof threadReferenceId !== "string") {
     throw new Error("/api/messages/route.ts: invalid thread reference id");
   }

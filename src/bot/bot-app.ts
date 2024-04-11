@@ -292,7 +292,7 @@ async function addConversationReference(activity: Activity): Promise<void> {
     JSON.stringify(conversationReference.conversation)
   );
   if (conversationReference.conversation.conversationType === "personal") {
-    // For personal scope we use the user id
+    // For personal scope we use the user id, because personal tabs don't include `chat` in `app.getContext()`
     // The bot will never have an aadObjectId
     const userAadId =
       activity.from.aadObjectId ?? activity.recipient.aadObjectId;

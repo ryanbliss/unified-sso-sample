@@ -50,7 +50,7 @@ export async function findReference(
   const referenceDoc = await collection.findOne(query, options);
   if (!referenceDoc) {
     throw new Error(
-      "conversation-references findReference: reference not found for id" +
+      "conversation-references findReference: reference not found for id " +
         referenceId
     );
   }
