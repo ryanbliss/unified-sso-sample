@@ -153,15 +153,14 @@ botApp.message(
 botApp.message(
   "/test",
   async (context: TurnContext, state: ApplicationTurnState) => {
-    console.log(
-      "app.message /test: start with state",
-      JSON.stringify(state)
-    );
+    console.log("app.message /test: start with state", JSON.stringify(state));
     // Store conversation reference
     addConversationReference(context.activity).catch((err) =>
       console.error(err)
     );
     // Send message
+    await botApp.authentication.signUserIn(context, state);
+    console.log("app.message /test: sign in state", JSON.stringify(state));
     const card = testCard("Let's go a 'buggin");
     await context.sendActivity({ attachments: [card] });
   }
@@ -271,36 +270,34 @@ botApp.adaptiveCards.actionExecute(
 
 // Auth handlers
 
-if (!USE_CARD_AUTH) {
-  botApp.authentication
-    .get("graph")
-    .onUserSignInSuccess(
-      async (context: TurnContext, state: ApplicationTurnState) => {
-        // Successfully logged in
-        await context.sendActivity("Successfully logged in");
-        await context.sendActivity(
-          `Token string length: ${state.temp.authTokens["graph"]!.length}`
-        );
-        await context.sendActivity(
-          `This is what you said before the AuthFlow started: ${context.activity.text}`
-        );
-      }
-    );
+botApp.authentication
+  .get("graph")
+  .onUserSignInSuccess(
+    async (context: TurnContext, state: ApplicationTurnState) => {
+      // Successfully logged in
+      await context.sendActivity("Successfully logged in");
+      await context.sendActivity(
+        `Token string length: ${state.temp.authTokens["graph"]!.length}`
+      );
+      await context.sendActivity(
+        `This is what you said before the AuthFlow started: ${context.activity.text}`
+      );
+    }
+  );
 
-  botApp.authentication
-    .get("graph")
-    .onUserSignInFailure(
-      async (
-        context: TurnContext,
-        _state: ApplicationTurnState,
-        error: AuthError
-      ) => {
-        // Failed to login
-        await context.sendActivity("Failed to login");
-        await context.sendActivity(`Error message: ${error.message}`);
-      }
-    );
-}
+botApp.authentication
+  .get("graph")
+  .onUserSignInFailure(
+    async (
+      context: TurnContext,
+      _state: ApplicationTurnState,
+      error: AuthError
+    ) => {
+      // Failed to login
+      await context.sendActivity("Failed to login");
+      await context.sendActivity(`Error message: ${error.message}`);
+    }
+  );
 
 /**
  * Sends a message for a given thread reference identifier.
