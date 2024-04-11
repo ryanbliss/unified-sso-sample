@@ -7,7 +7,6 @@ import {
   TurnContext,
   Attachment,
   Activity,
-  ConversationReference,
 } from "botbuilder";
 import {
   ApplicationBuilder,
@@ -156,7 +155,7 @@ botApp.activity(
 
     // Handle message
     if (USE_CARD_AUTH) {
-      console.log("app.activity .Message: start");
+      console.log("app.activity .Message: start with turn state", JSON.stringify(_state));
       let card: Attachment;
       const token = _state.temp.authTokens?.["graph"];
       if (token) {
