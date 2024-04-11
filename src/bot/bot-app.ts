@@ -3,7 +3,6 @@
 import {
   ActivityTypes,
   ConfigurationServiceClientCredentialFactory,
-  MemoryStorage,
   TurnContext,
   Attachment,
   Activity,
@@ -17,6 +16,7 @@ import {
 import { createUserProfileCard, createSignInCard } from "./cards";
 import { getUserDetailsFromGraph } from "./graph";
 import { findReference, upsertReference } from "@/database/conversation-references";
+import { MongoDBStorage } from "./MongodbStorage";
 
 interface ConversationState {
   count: number;
@@ -61,7 +61,7 @@ const onTurnErrorHandler = async (context: any, error: any) => {
 botAdapter.onTurnError = onTurnErrorHandler;
 
 // Define storage and application
-const storage = new MemoryStorage();
+const storage = new MongoDBStorage();
 export const botApp = new ApplicationBuilder<ApplicationTurnState>()
   .withStorage(storage)
   .withAuthentication(botAdapter, {
@@ -152,10 +152,6 @@ botApp.activity(
     addConversationReference(context.activity).catch((err) =>
       console.error(err)
     );
-    const loadWasNeeded = await _state.load(context, storage);
-    if (!loadWasNeeded) {
-      console.log("app.activity .Message: loaded state unnecessarily");
-    }
 
     // Handle message
     if (USE_CARD_AUTH) {

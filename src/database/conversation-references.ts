@@ -1,6 +1,6 @@
 import { ConversationReference } from "botbuilder";
 import clientPromise from "./mongodb-client";
-import { Collection, Db } from "mongodb";
+import { Collection } from "mongodb";
 
 interface ConversationReferenceDocument {
   id: string;
