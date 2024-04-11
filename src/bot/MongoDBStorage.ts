@@ -55,8 +55,13 @@ export class MongoDBStorage implements Storage {
       const clone: any = { ...item };
       clone.eTag = (this.etag++).toString();
       const stringifiedClone = JSON.stringify(clone);
-      await upsertBotValue(key, stringifiedClone);
-      this.memory[key] = stringifiedClone;
+      try {
+        await upsertBotValue(key, stringifiedClone);
+        this.memory[key] = stringifiedClone;
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
     };
 
     if (!changes) {
