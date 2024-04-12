@@ -6,11 +6,13 @@ import { Button, Text, Title3 } from "@fluentui/react-components";
 import { isSdkError } from "@/utils/teams-js-type-guards";
 import { useTeamsClientContext } from "@/context-providers";
 import CodeBlock from "@/components/code-block/CodeBlock";
+import { useRouter } from "next/navigation";
 
 export default function HomePageContainer() {
   const [authError, setAuthError] = useState<string>();
   const [token, setToken] = useState<string>();
   const { teamsContext } = useTeamsClientContext();
+  const router = useRouter();
   const setUnknownAuthError = useCallback(
     (err: unknown, silent?: boolean) => {
       let prefix: string = "";
@@ -87,6 +89,11 @@ export default function HomePageContainer() {
                 }}
               >
                 {"Send message"}
+              </Button>
+              <Button onClick={() => {
+                router.push("/api/auth/signout");
+              }}>
+                {"Sign out"}
               </Button>
             </FlexRow>
           </>

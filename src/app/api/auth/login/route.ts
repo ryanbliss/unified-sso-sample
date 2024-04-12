@@ -37,9 +37,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const response = NextResponse.json({
-    success: true,
-  });
   const token = signAppToken(user, "email");
   cookieStore.set({
     name: "Authorization",
@@ -47,7 +44,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     sameSite: "none",
     secure: true,
   });
-  return response;
+  const connections: string[] = [];
+  if (user.connections?.aad) {
+    connections.push("aad");
+  }
+  return NextResponse.json({
+    success: true,
+    connections,
+  });
 }
 
 interface ILoginBody {

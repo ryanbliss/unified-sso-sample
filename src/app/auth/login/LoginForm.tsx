@@ -1,15 +1,54 @@
 "use client";
 
 import { FlexRow } from "@/components/flex";
-import { Button, Input } from "@fluentui/react-components";
-import { FC, useState } from "react";
+import { Button, Input, Text, tokens } from "@fluentui/react-components";
+import { FC, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export const LoginForm: FC<{}> = (props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<Error>();
 
   const router = useRouter();
+
+  const onLogin = async () => {
+    try {
+      // Log in
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+      const body = await res.json();
+      const connections: unknown = body?.connections;
+      if (Array.isArray(connections)) {
+        if (connections.length === 0) {
+          // For this sample, we go straight to the connections page if not already connected to AAD.
+          // This is where users will connect their account to Teams, if needed.
+          router.push("/connections");
+          return;
+        }
+      }
+      router.push("/");
+    } catch (err) {
+      console.error(err);
+      if (err instanceof Error) {
+        setAuthError(err);
+      } else {
+        setAuthError(
+          new Error(
+            "An unknown error occurred. Check the console logs for more information."
+          )
+        );
+      }
+    }
+  };
 
   return (
     <>
@@ -28,25 +67,17 @@ export const LoginForm: FC<{}> = (props) => {
         }}
       />
       <FlexRow>
-        <Button
-          onClick={async () => {
-            // Log in
-            await fetch("/api/auth/login", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                email,
-                password,
-              }),
-            });
-            router.push("/");
+        <Button onClick={onLogin}>{"Log in"}</Button>
+      </FlexRow>
+      {!!authError && (
+        <Text
+          style={{
+            color: tokens.colorPaletteRedForeground1,
           }}
         >
-          {"Log in"}
-        </Button>
-      </FlexRow>
+          {authError.message}
+        </Text>
+      )}
     </>
   );
 };
