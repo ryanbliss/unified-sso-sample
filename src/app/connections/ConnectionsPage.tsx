@@ -70,12 +70,12 @@ export default function ConnectionsPage() {
               }
             </Text>
           </FlexRow>
-          {loading && (
+          {!loading && (
             <FlexRow>
               <Button onClick={authorizeAndLinkAccount}>{"Authorize"}</Button>
             </FlexRow>
           )}
-          {!loading && <Spinner />}
+          {loading && <Spinner />}
         </Card>
         {!!authError ||
           (!!accountLinkError && (
