@@ -111,7 +111,7 @@ export async function findUser(email: string): Promise<IUser | null> {
  * @param tid tid to lookup user by
  * @returns IUser object
  */
-export async function findAADUser(oid: string, tid: string): Promise<IUser> {
+export async function findAADUser(oid: string, tid: string): Promise<IUser | null> {
   // Get the MongoDB collection
   const collection = await getCollection();
   // Query for a movie that has the title 'The Room'
@@ -127,9 +127,8 @@ export async function findAADUser(oid: string, tid: string): Promise<IUser> {
   // Execute query
   const referenceDoc = await collection.findOne(query, options);
   if (!referenceDoc) {
-    throw new Error(
-      `user findUser: user not found for oid ${oid} and/or tid ${tid}`
-    );
+    console.warn(`user findUser: user not found for oid ${oid} and/or tid ${tid}`);
+    return null;
   }
   return referenceDoc;
 }

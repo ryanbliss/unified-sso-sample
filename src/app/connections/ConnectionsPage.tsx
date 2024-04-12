@@ -33,13 +33,17 @@ export default function ConnectionsPage() {
     }
     if (!authToken) return;
     try {
-      await fetch("/api/auth/link/teams-aad", {
+      const res = await fetch("/api/auth/link/teams-aad", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: authToken,
         },
       });
+      const body = await res.json();
+      if (res.status !== 200) {
+        throw new Error(body.error);
+      }
     } catch (err) {
       setLoading(false);
       console.error(err);
