@@ -3,6 +3,7 @@ import {
   AuthenticationResult,
   AccountInfo,
 } from "@azure/msal-node";
+import jwt from "jsonwebtoken";
 import validateTeamsToken from "./teams-token-utils";
 
 // Creating MSAL client
@@ -53,3 +54,11 @@ function isIValidatedAuthenticationResult(
 ): value is IValidatedAuthenticationResult {
   return value.account !== null;
 }
+
+export const decodeMSALToken = (token: string): jwt.JwtPayload => {
+  const payload = jwt.decode(token);
+  if (payload === null || typeof payload === "string") {
+    throw new Error("Invalid token type");
+  }
+  return payload;
+};

@@ -1,4 +1,4 @@
-import { IAuthConnections, IUser, IUserPasswordless } from "@/database/user";
+import { IUser, IUserPasswordless } from "@/database/user";
 import jwt from "jsonwebtoken";
 
 /**

@@ -20,6 +20,7 @@ import {
   upsertReference,
 } from "@/database/conversation-references";
 import { MongoDBStorage } from "./MongoDBStorage";
+import { findAADUser } from "@/database/user";
 
 interface ConversationState {
   count: number;
@@ -44,7 +45,6 @@ const onTurnErrorHandler = async (context: TurnContext, error: any) => {
   // NOTE: In production environment, you should consider logging this to Azure
   //       application insights.
   console.error(`\n [onTurnError] unhandled error: ${error.toString()}`);
-  
 
   // Send a trace activity, which will be displayed in Bot Framework Emulator
   await context.sendTraceActivity(
@@ -146,7 +146,39 @@ botApp.message(
       console.error(err)
     );
     // Send message
-    await context.sendActivity(JSON.stringify(context.activity));
+    await context.sendActivity(JSON.stringify(context.activity, null, 4));
+  }
+);
+
+// Get app user info
+botApp.message(
+  "/user",
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    // Store conversation reference
+    addConversationReference(context.activity).catch((err) =>
+      console.error(err)
+    );
+    if (!context.activity.from.aadObjectId) {
+      await context.sendActivity("This user does not have a valid aadObjectId");
+    }
+    if (!context.activity.conversation.tenantId) {
+      await context.sendActivity(
+        "This conversation does not have a valid tenantId"
+      );
+    }
+    console.log("bot-app.message /user:", JSON.stringify(state.temp.authTokens["graph"], null, 2));
+    const user = await findAADUser(
+      context.activity.from.aadObjectId!,
+      context.activity.conversation.tenantId!
+    );
+    if (!user) {
+      await context.sendActivity("No account linked to this AAD user");
+      return;
+    }
+    // Send message
+    await context.sendActivity(
+      `${user.email} is logged in to app & linked to AAD user ${context.activity.from.aadObjectId}`
+    );
   }
 );
 
