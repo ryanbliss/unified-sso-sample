@@ -16,7 +16,7 @@ const CodeBlock: FC<{
         lineHeight: "200%",
       }}
     >
-      {props.text}
+      {JSON.stringify(props.text, null, 4)}
     </div>
   );
 };

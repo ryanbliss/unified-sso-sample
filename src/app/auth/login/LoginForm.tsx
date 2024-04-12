@@ -26,6 +26,9 @@ export const LoginForm: FC<{}> = (props) => {
         }),
       });
       const body = await res.json();
+      if (res.status !== 200) {
+        throw new Error(body.error);
+      }
       const connections: unknown = body?.connections;
       if (Array.isArray(connections)) {
         if (connections.length === 0) {
