@@ -81,7 +81,14 @@ export async function upsertUser(user: IUserBase): Promise<IUser> {
     throw new Error("user upsertUser: user was not acknowledged");
   }
   if (!result.upsertedId) {
-    throw new Error("user upsertUser: no upsertedId");
+    // MongoDB only returns the upsertedId for new objects
+    const updatedUser = await findUser(user.email);
+    if (!updatedUser) {
+      throw new Error(
+        "user upsertUser: user not found after write acknowledged"
+      );
+    }
+    return updatedUser;
   }
   return {
     _id: result.upsertedId,
@@ -114,7 +121,10 @@ export async function findUser(email: string): Promise<IUser | null> {
  * @param tid tid to lookup user by
  * @returns IUser object
  */
-export async function findAADUser(oid: string, tid: string): Promise<IUser | null> {
+export async function findAADUser(
+  oid: string,
+  tid: string
+): Promise<IUser | null> {
   // Get the MongoDB collection
   const collection = await getCollection();
   // Query for a movie that has the title 'The Room'
@@ -130,7 +140,9 @@ export async function findAADUser(oid: string, tid: string): Promise<IUser | nul
   // Execute query
   const referenceDoc = await collection.findOne(query, options);
   if (!referenceDoc) {
-    console.warn(`user findUser: user not found for oid ${oid} and/or tid ${tid}`);
+    console.warn(
+      `user findUser: user not found for oid ${oid} and/or tid ${tid}`
+    );
     return null;
   }
   return referenceDoc;
