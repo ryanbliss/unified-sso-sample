@@ -1,5 +1,6 @@
 import { sendMessage } from "@/bot/bot-app";
-import validateTeamsToken from "@/utils/token-utils";
+import { exchangeTeamsTokenForMSAToken } from "@/utils/msal-token-utils";
+import validateTeamsToken from "@/utils/teams-token-utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -8,6 +9,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     throw new Error("/api/messages/route.ts: no 'Authorization' header");
   }
   const jwtPayload = await validateTeamsToken(token);
+  await exchangeTeamsTokenForMSAToken(token);
   const json = await req.json();
   console.log("/api/messages/route.ts body:", json);
   if (!isISendMessageInputBase(json)) {

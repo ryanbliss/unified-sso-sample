@@ -1,7 +1,7 @@
 import { findAADUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken } from "@/utils/app-auth-utils";
-import validateTeamsToken from "@/utils/token-utils";
+import validateTeamsToken from "@/utils/teams-token-utils";
 
 /**
  * Rudimentary login implementation that exchanges Teams AAD token for app token.

@@ -1,7 +1,7 @@
 import { findAADUser, findUser, upsertUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken, validateAppToken } from "@/utils/app-auth-utils";
-import validateTeamsToken from "@/utils/token-utils";
+import validateTeamsToken from "@/utils/teams-token-utils";
 
 /**
  * Rudimentary account linking implementation that links app account with AAD account.
