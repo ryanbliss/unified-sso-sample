@@ -154,6 +154,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   });
   // Mint new token with updated user info
   const token = signAppToken(updatedUser, "aad");
-  cookieStore.set("Authorization", token);
+  cookieStore.set({
+    name: "Authorization",
+    value: token,
+    sameSite: "none",
+    secure: true,
+  });
   return response;
 }

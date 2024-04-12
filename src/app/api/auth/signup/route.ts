@@ -10,6 +10,7 @@ import { cookies } from "next/headers";
  * @returns response
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+    const cookieStore = cookies();
   const body = await req.json();
   if (!isISignUpBody(body)) {
     throw new Error(
@@ -38,7 +39,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   });
   // Sign token and set it as a cookie
   const token = signAppToken(user, "email");
-  cookies().set("Authorization", token);
+  cookieStore.set({
+    name: "Authorization",
+    value: token,
+    sameSite: "none",
+    secure: true,
+  });
   return response;
 }
 

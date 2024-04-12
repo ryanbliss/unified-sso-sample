@@ -5,11 +5,12 @@ import { cookies } from "next/headers";
 
 /**
  * Rudimentary login implementation for illustrative purposes. Do not use in production.
- * 
+ *
  * @param req request
  * @returns response
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const cookieStore = cookies();
   const body = await req.json();
   if (!isILoginBody(body)) {
     throw new Error(
@@ -19,9 +20,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const user = await findUser(body.email);
   if (!user || user.password !== body.password) {
     if (!user) {
-        console.error("/api/auth/login invalid login attempt, user does not exist");
+      console.error(
+        "/api/auth/login invalid login attempt, user does not exist"
+      );
     } else {
-        console.error("/api/auth/login invalid login attempt, invalid username & password");
+      console.error(
+        "/api/auth/login invalid login attempt, invalid username & password"
+      );
     }
     return NextResponse.json(
       {
@@ -33,10 +38,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const response = NextResponse.json({
-    success: true
+    success: true,
   });
   const token = signAppToken(user, "email");
-  cookies().set("Authorization", token);
+  cookieStore.set({
+    name: "Authorization",
+    value: token,
+    sameSite: "none",
+    secure: true,
+  });
   return response;
 }
 

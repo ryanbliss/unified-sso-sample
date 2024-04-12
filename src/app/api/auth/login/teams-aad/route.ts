@@ -16,6 +16,7 @@ import { cookies } from "next/headers";
  * @returns response
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const cookieStore = cookies();
   const teamsToken = req.headers.get("Authorization");
   if (!teamsToken) {
     console.error("/api/auth/login/teams-aad/route.ts: no 'Authorization' header");
@@ -66,7 +67,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const token = signAppToken(user, "aad");
-  cookies().set("Authorization", token);
+  cookieStore.set({
+    name: "Authorization",
+    value: token,
+    sameSite: "none",
+    secure: true,
+  });
   return NextResponse.json({
     success: true
   });
