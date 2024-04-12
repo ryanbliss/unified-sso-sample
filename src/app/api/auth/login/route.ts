@@ -1,7 +1,6 @@
 import { findUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken } from "@/utils/app-auth-utils";
-import { cookies } from "next/headers";
 
 /**
  * Rudimentary login implementation for illustrative purposes. Do not use in production.
@@ -10,7 +9,6 @@ import { cookies } from "next/headers";
  * @returns response
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const cookieStore = cookies();
   const body = await req.json();
   if (!isILoginBody(body)) {
     throw new Error(
@@ -38,20 +36,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const token = signAppToken(user, "email");
-  cookieStore.set({
+  const connections: string[] = [];
+  if (user.connections?.aad) {
+    connections.push("aad");
+  }
+  const response = NextResponse.json({
+    success: true,
+    connections,
+  });
+  response.cookies.set({
     name: "Authorization",
     value: token,
     sameSite: "none",
     secure: true,
   });
-  const connections: string[] = [];
-  if (user.connections?.aad) {
-    connections.push("aad");
-  }
-  return NextResponse.json({
-    success: true,
-    connections,
-  });
+  
+  return response;
 }
 
 interface ILoginBody {

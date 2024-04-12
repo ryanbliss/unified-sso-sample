@@ -1,7 +1,6 @@
 import { findUser, upsertUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken, validateAppToken } from "@/utils/app-auth-utils";
-import { cookies } from "next/headers";
 
 /**
  * Rudimentary account linking implementation that removes account link for the app user.
@@ -13,8 +12,7 @@ import { cookies } from "next/headers";
  * @returns response
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const cookieStore = cookies();
-  const appToken = cookieStore.get("Authorization");
+  const appToken = req.cookies.get("Authorization");
   if (!appToken) {
     console.error(
       "/api/auth/link/teams-aad/route.ts: no 'Authorization' cookie, should contain app token"
@@ -70,13 +68,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   });
   // Mint new token with updated user info
   const token = signAppToken(user, "aad");
-  cookieStore.set({
+  
+  const response = NextResponse.json({
+    success: true,
+  });
+  response.cookies.set({
     name: "Authorization",
     value: token,
     sameSite: "none",
     secure: true,
   });
-  return NextResponse.json({
-    success: true,
-  });
+  return response;
 }
