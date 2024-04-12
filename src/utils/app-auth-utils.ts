@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 export function signAppToken(user: IUser, connection: "email" | "aad"): string {
   // sign with RSA SHA256
   const privateKey = process.env.APP_AUTH_PRIVATE_KEY;
+  console.log("signAppToken public key", process.env.APP_AUTH_PUBLIC_KEY);
   if (!privateKey) {
     throw new Error(
       "app-auth-utils signAppToken: .env does not contain APP_AUTH_PRIVATE_KEY"
