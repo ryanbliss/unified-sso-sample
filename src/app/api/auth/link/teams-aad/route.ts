@@ -142,21 +142,32 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       upn,
     },
   };
-  const updatedUser = await upsertUser({
-    email: appUser.email,
-    password: appUser.password,
-    connections,
-  });
-  const response = NextResponse.json({
-    success: true,
-  });
-  // Mint new token with updated user info
-  const token = signAppToken(updatedUser, "aad");
-  response.cookies.set({
-    name: "Authorization",
-    value: token,
-    sameSite: "none",
-    secure: true,
-  });
-  return response;
+  try {
+    const updatedUser = await upsertUser({
+      email: appUser.email,
+      password: appUser.password,
+      connections,
+    });
+    const response = NextResponse.json({
+      success: true,
+    });
+    // Mint new token with updated user info
+    const token = signAppToken(updatedUser, "aad");
+    response.cookies.set({
+      name: "Authorization",
+      value: token,
+      sameSite: "none",
+      secure: true,
+    });
+    return response;
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error: "Internal Error [10305[: unable to link account",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }

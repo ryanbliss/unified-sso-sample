@@ -77,8 +77,11 @@ export async function upsertUser(user: IUserBase): Promise<IUser> {
   const update = { $set: user };
   const options = { upsert: true };
   const result = await collection.updateOne(query, update, options);
-  if (!result.acknowledged || !result.upsertedId) {
+  if (!result.acknowledged) {
     throw new Error("user upsertUser: user was not acknowledged");
+  }
+  if (!result.upsertedId) {
+    throw new Error("user upsertUser: no upsertedId");
   }
   return {
     _id: result.upsertedId,
