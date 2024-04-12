@@ -1,6 +1,5 @@
 import { sendMessage } from "@/bot/bot-app";
-import { exchangeTeamsTokenForMSAToken } from "@/utils/msal-token-utils";
-import validateTeamsToken from "@/utils/teams-token-utils";
+import { exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -8,8 +7,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!token) {
     throw new Error("/api/messages/route.ts: no 'Authorization' header");
   }
-  const jwtPayload = await validateTeamsToken(token);
-  await exchangeTeamsTokenForMSAToken(token);
+  const msalResult = await exchangeTeamsTokenForMSALToken(token);
   const json = await req.json();
   console.log("/api/messages/route.ts body:", json);
   if (!isISendMessageInputBase(json)) {
@@ -17,7 +15,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       "/api/messages/route.ts: invalid body, must be of type ISendMessageInputBase"
     );
   }
-  const threadReferenceId = json.threadId ?? jwtPayload["oid"];
+  const threadReferenceId = json.threadId ?? msalResult.account.localAccountId;
   if (typeof threadReferenceId !== "string") {
     throw new Error("/api/messages/route.ts: invalid thread reference id");
   }

@@ -1,7 +1,7 @@
 import { findAADUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken } from "@/utils/app-auth-utils";
-import validateTeamsToken from "@/utils/teams-token-utils";
+import { exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
 
 /**
  * Rudimentary login implementation that exchanges Teams AAD token for app token.
@@ -29,36 +29,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const jwtPayload = await validateTeamsToken(teamsToken);
-  const oid = jwtPayload["oid"];
-  if (!oid) {
-    console.error(
-      "/api/auth/login/teams-aad/route.ts: Teams AAD token does not include oid"
-    );
-    return NextResponse.json(
-      {
-        error: "Unauthorized",
-      },
-      {
-        status: 401,
-      }
-    );
-  }
-  const tid = jwtPayload["tid"];
-  if (!tid) {
-    console.error(
-      "/api/auth/login/teams-aad/route.ts: Teams AAD token does not include tid"
-    );
-    return NextResponse.json(
-      {
-        error: "Unauthorized",
-      },
-      {
-        status: 401,
-      }
-    );
-  }
-  const user = await findAADUser(oid, tid);
+  const msalResult = await exchangeTeamsTokenForMSALToken(teamsToken);
+  const user = await findAADUser(
+    msalResult.account.localAccountId,
+    msalResult.account.tenantId
+  );
   if (!user) {
     console.error(
       "/api/auth/login/teams-aad/route.ts invalid login attempt, user does not exist"

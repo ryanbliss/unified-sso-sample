@@ -13,11 +13,13 @@ export const msalClient = new ConfidentialClientApplication({
   },
 });
 
-export async function exchangeTeamsTokenForMSAToken(
+export async function exchangeTeamsTokenForMSALToken(
   teamsIdentityToken: string
 ): Promise<IValidatedAuthenticationResult> {
   const jwt = await validateTeamsToken(teamsIdentityToken);
-  console.log("msal-token-utils exchangeTeamsTokenForMSAToken: exchanging token for msal");
+  console.log(
+    "msal-token-utils exchangeTeamsTokenForMSALToken: exchanging token for msal"
+  );
   const scopes = ["https://graph.microsoft.com/User.Read"];
   const result = await msalClient.acquireTokenOnBehalfOf({
     authority: `https://login.microsoftonline.com/${jwt.tid}`,
@@ -27,15 +29,18 @@ export async function exchangeTeamsTokenForMSAToken(
   });
   if (!result) {
     throw new Error(
-      "msal-token-utils exchangeTeamsTokenForMSAToken: result is null"
+      "msal-token-utils exchangeTeamsTokenForMSALToken: result is null"
     );
   }
   if (!isIValidatedAuthenticationResult(result)) {
     throw new Error(
-      "msal-token-utils exchangeTeamsTokenForMSAToken: account is null"
+      "msal-token-utils exchangeTeamsTokenForMSALToken: account is null"
     );
   }
-  console.log("msal-token-utils exchangeTeamsTokenForMSAToken: ", JSON.stringify(result, null, 4));
+  console.log(
+    "msal-token-utils exchangeTeamsTokenForMSALToken: ",
+    JSON.stringify(result, null, 4)
+  );
   return result;
 }
 
@@ -43,6 +48,8 @@ export interface IValidatedAuthenticationResult extends AuthenticationResult {
   account: AccountInfo;
 }
 
-function isIValidatedAuthenticationResult(value: AuthenticationResult): value is IValidatedAuthenticationResult {
-    return value.account !== null;
+function isIValidatedAuthenticationResult(
+  value: AuthenticationResult
+): value is IValidatedAuthenticationResult {
+  return value.account !== null;
 }

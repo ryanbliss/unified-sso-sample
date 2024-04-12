@@ -1,7 +1,7 @@
 import { findAADUser, findUser, upsertUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken, validateAppToken } from "@/utils/app-auth-utils";
-import validateTeamsToken from "@/utils/teams-token-utils";
+import { exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
 
 /**
  * Rudimentary account linking implementation that links app account with AAD account.
@@ -60,51 +60,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   // Validate Teams token
-  const teamsJwtPayload = await validateTeamsToken(teamsToken);
-  const oid = teamsJwtPayload["oid"];
-  if (!oid) {
-    console.error(
-      "/api/auth/link/teams-aad/route.ts: Teams AAD token does not include oid"
-    );
-    return NextResponse.json(
-      {
-        error: "Unauthorized",
-      },
-      {
-        status: 401,
-      }
-    );
-  }
-  const tid = teamsJwtPayload["tid"];
-  if (!tid) {
-    console.error(
-      "/api/auth/link/teams-aad/route.ts: Teams AAD token does not include tid"
-    );
-    return NextResponse.json(
-      {
-        error: "Unauthorized",
-      },
-      {
-        status: 401,
-      }
-    );
-  }
-  const upn = teamsJwtPayload["preferred_username"];
-  if (!upn) {
-    console.error(
-      "/api/auth/link/teams-aad/route.ts: Teams AAD token does not include preferred_username"
-    );
-    return NextResponse.json(
-      {
-        error: "Unauthorized",
-      },
-      {
-        status: 401,
-      }
-    );
-  }
+  const msalResult = await exchangeTeamsTokenForMSALToken(teamsToken);
   // Check if this AAD identity has already been linked to another account
-  const user = await findAADUser(oid, tid);
+  const user = await findAADUser(
+    msalResult.account.localAccountId,
+    msalResult.account.tenantId
+  );
   if (user) {
     console.error(
       "/api/auth/link/teams-aad/route.ts AAD identity is already linked to an account"
@@ -137,9 +98,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const connections = {
     ...appUser.connections,
     aad: {
-      oid,
-      tid,
-      upn,
+      oid: msalResult.account.localAccountId,
+      tid: msalResult.account.tenantId,
+      upn: msalResult.account.username,
     },
   };
   try {
