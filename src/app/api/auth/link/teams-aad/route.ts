@@ -161,6 +161,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
     return response;
   } catch (err) {
+    console.error(err);
     return NextResponse.json(
       {
         error: "Internal Error [10305[: unable to link account",
