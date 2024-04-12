@@ -99,7 +99,7 @@ export async function getUserNotes(userId: string): Promise<Note[]> {
   const collection = await getCollection();
   console.log("notes getUserNotes: got collection");
   // Query for key
-  const query = { _id: new ObjectId(userId) };
+  const query = { createdById: new ObjectId(userId) };
   const options = {};
   // Execute query
   const cursor = collection.find(query, options);
