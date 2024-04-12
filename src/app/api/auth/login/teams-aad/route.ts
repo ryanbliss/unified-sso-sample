@@ -77,15 +77,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (user.connections?.aad) {
     connections.push("aad");
   }
-  const request = NextResponse.json({
+  const response = NextResponse.json({
     success: true,
     connections,
   });
-  request.cookies.set({
+  response.cookies.set({
     name: "Authorization",
     value: token,
     sameSite: "none",
     secure: true,
   });
-  return request;
+  return response;
 }
