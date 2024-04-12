@@ -20,7 +20,14 @@ export default function LoginPage() {
     if (attemptedLoginWithAADToken) return;
     async function attemptLoginWithAADToken() {
       try {
-        const res = await fetch("/api/auth/login/teams-aad");
+        const res = await fetch("/api/auth/login/teams-aad", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token!,
+          },
+          body: JSON.stringify({}),
+        });
         const body = await res.json();
         if (res.status !== 200) {
           throw new Error(body.error);
