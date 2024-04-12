@@ -7,5 +7,5 @@ import { cookies } from "next/headers";
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
   cookies().delete("Authorization");
-  return NextResponse.redirect("/auth/login");
+  return NextResponse.redirect(new URL("/auth/login", req.url));
 }
