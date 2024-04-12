@@ -207,13 +207,16 @@ botApp.message(
     }
     try {
       // Get user notes
-      const response = await fetch("/api/notes/list/my", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: userAppToken,
-        },
-      });
+      const response = await fetch(
+        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/list/my`),
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: userAppToken,
+          },
+        }
+      );
       const body = await response.json();
       if (response.status !== 200) {
         throw new Error(body.error);
@@ -244,18 +247,21 @@ botApp.message(
     }
     try {
       // Get user notes
-      const response = await fetch("/api/notes/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: userAppToken,
-        },
-        body: JSON.stringify({
-          text: "Note text",
-          color: "yellow",
-          threadId: context.activity.conversation.id,
-        }),
-      });
+      const response = await fetch(
+        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/create`),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: userAppToken,
+          },
+          body: JSON.stringify({
+            text: "Note text",
+            color: "yellow",
+            threadId: context.activity.conversation.id,
+          }),
+        }
+      );
       const body = await response.json();
       if (response.status !== 200) {
         throw new Error(body.error);
