@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   console.log("middleware.ts: processing middleware");
-  if (!request.cookies.get("Authorization")) {
+  if (!request.cookies.get("Authorization")?.value) {
     console.log("middleware.ts: no auth cookie");
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
