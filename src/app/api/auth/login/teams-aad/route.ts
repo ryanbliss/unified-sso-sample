@@ -30,7 +30,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const jwtPayload = await validateTeamsToken(teamsToken);
-  const oid = jwtPayload.jwtPayload["oid"];
+  const oid = jwtPayload["oid"];
   if (!oid) {
     console.error(
       "/api/auth/login/teams-aad/route.ts: Teams AAD token does not include oid"
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const tid = jwtPayload.jwtPayload["tid"];
+  const tid = jwtPayload["tid"];
   if (!tid) {
     console.error(
       "/api/auth/login/teams-aad/route.ts: Teams AAD token does not include tid"
