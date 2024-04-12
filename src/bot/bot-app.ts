@@ -21,6 +21,8 @@ import {
 } from "@/database/conversation-references";
 import { MongoDBStorage } from "./MongoDBStorage";
 import { findAADUser } from "@/database/user";
+import { decodeMSALToken } from "@/utils/msal-token-utils";
+import { getAppAuthToken } from "./bot-auth-utils";
 
 interface ConversationState {
   count: number;
@@ -160,13 +162,18 @@ botApp.message(
     );
     if (!context.activity.from.aadObjectId) {
       await context.sendActivity("This user does not have a valid aadObjectId");
+      return;
     }
     if (!context.activity.conversation.tenantId) {
       await context.sendActivity(
         "This conversation does not have a valid tenantId"
       );
+      return;
     }
-    console.log("bot-app.message /user:", JSON.stringify(state.temp.authTokens["graph"], null, 2));
+    console.log(
+      "bot-app.message /user:",
+      JSON.stringify(decodeMSALToken(state.temp.authTokens["graph"]), null, 2)
+    );
     const user = await findAADUser(
       context.activity.from.aadObjectId!,
       context.activity.conversation.tenantId!
@@ -179,6 +186,87 @@ botApp.message(
     await context.sendActivity(
       `${user.email} is logged in to app & linked to AAD user ${context.activity.from.aadObjectId}`
     );
+  }
+);
+
+// Get app user's notes
+botApp.message(
+  "/notes",
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    // Store conversation reference
+    addConversationReference(context.activity).catch((err) =>
+      console.error(err)
+    );
+    let userAppToken: string;
+    try {
+      userAppToken = await getAppAuthToken(context);
+    } catch (err) {
+      // TODO: init app linking flow if not already linked
+      console.error(`bot-app.message /notes: error ${err}`);
+      return;
+    }
+    try {
+      // Get user notes
+      const response = await fetch("/api/notes/list/my", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: userAppToken,
+        },
+      });
+      const body = await response.json();
+      if (response.status !== 200) {
+        throw new Error(body.error);
+      }
+      await context.sendActivity(JSON.stringify(body.notes));
+    } catch (err) {
+      console.error(`bot-app.message /notes: error ${err}`);
+      await context.sendActivity("Error getting notes");
+    }
+  }
+);
+
+// Get app user's notes
+botApp.message(
+  "/add note",
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    // Store conversation reference
+    addConversationReference(context.activity).catch((err) =>
+      console.error(err)
+    );
+    let userAppToken: string;
+    try {
+      userAppToken = await getAppAuthToken(context);
+    } catch (err) {
+      // TODO: init app linking flow if not already linked
+      console.error(`bot-app.message /notes: error ${err}`);
+      return;
+    }
+    try {
+      // Get user notes
+      const response = await fetch("/api/notes/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: userAppToken,
+        },
+        body: JSON.stringify({
+          text: "Note text",
+          color: "yellow",
+          threadId: context.activity.conversation.id,
+        }),
+      });
+      const body = await response.json();
+      if (response.status !== 200) {
+        throw new Error(body.error);
+      }
+      await context.sendActivity(
+        `Created new note: ${JSON.stringify(body.note, null, 4)}`
+      );
+    } catch (err) {
+      console.error(`bot-app.message /notes: error ${err}`);
+      await context.sendActivity("Error getting notes");
+    }
   }
 );
 

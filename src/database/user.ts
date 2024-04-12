@@ -23,7 +23,9 @@ export interface IUserBase {
  * User type interface, which includes the ID inserted by MongoDB
  */
 export type IUser = WithId<IUserBase>;
-export type IUserPasswordless = Omit<IUser, "password">;
+export type IUserPasswordless = Omit<IUser, "password" | "_id"> & {
+  _id: string;
+};
 
 /**
  * Microsoft AAD connection for when user connected account to AAD for SSO
