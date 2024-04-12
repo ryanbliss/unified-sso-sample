@@ -60,7 +60,7 @@ export function validateAppToken(token: string): IAppJwtToken | null {
 
 export interface IAppJwtToken extends jwt.JwtPayload {
   user: IUserPasswordless;
-  connection: "email" | "auth";
+  connection: "email" | "aad";
 }
 function isIAppJwtToken(value: jwt.JwtPayload): value is IAppJwtToken {
   return (
@@ -68,6 +68,6 @@ function isIAppJwtToken(value: jwt.JwtPayload): value is IAppJwtToken {
     typeof value.user._id === "string" &&
     typeof value.user.email === "string" &&
     (!value.user.connections || typeof value.user.connections === "object") &&
-    ["email", "auth"].includes(value.connection)
+    ["email", "aad"].includes(value.connection)
   );
 }
