@@ -129,12 +129,8 @@ export async function findAADUser(
   const collection = await getCollection();
   // Query for a movie that has the title 'The Room'
   const query = {
-    connections: {
-      aad: {
-        oid,
-        tid,
-      },
-    },
+    "connections.aad.oid": oid,
+    "connections.aad.tid": tid,
   };
   const options = {};
   // Execute query
