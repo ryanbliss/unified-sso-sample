@@ -1,7 +1,7 @@
 "use client";
 
 import { FlexRow } from "@/components/flex";
-import { Button, Input, Title1 } from "@fluentui/react-components";
+import { Button, Input } from "@fluentui/react-components";
 import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -13,7 +13,6 @@ export const LoginForm: FC<{}> = (props) => {
 
   return (
     <>
-      <Title1>{"Log in to Unify SSO"}</Title1>
       <Input
         type="email"
         value={email}
