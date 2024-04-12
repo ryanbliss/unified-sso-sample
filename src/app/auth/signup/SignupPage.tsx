@@ -23,7 +23,7 @@ export default function SignupPage() {
           <FlexRow>
             <Button
               onClick={() => {
-                router.push("/auth/login/login");
+                router.push("/auth/login");
               }}
             >
               {"Log in"}
