@@ -7,16 +7,19 @@ import {
   Attachment,
   Activity,
 } from "botbuilder";
+import * as path from "path";
 import {
   ApplicationBuilder,
   TurnState,
   TeamsAdapter,
   AuthError,
+  OpenAIModel,
+  PromptManager,
+  ActionPlanner,
 } from "@microsoft/teams-ai";
 import {
   createUserProfileCard,
   createSignInCard,
-  testCard,
   notesCard,
   noteCard,
 } from "./cards";
@@ -47,6 +50,18 @@ export const botAdapter = new TeamsAdapter(
   })
 );
 
+botAdapter.use(async (context, next) => {
+  console.log("botAdapter adding generic conversation reference");
+  if (context.activity.from.aadObjectId) {
+    // Store conversation reference
+    addConversationReference(context.activity).catch((err) =>
+      console.error(err)
+    );
+  }
+
+  await next();
+});
+
 // Catch-all for errors.
 const onTurnErrorHandler = async (context: TurnContext, error: any) => {
   // This check writes out errors to console log .vs. app insights.
@@ -72,10 +87,33 @@ const onTurnErrorHandler = async (context: TurnContext, error: any) => {
 // Set the onTurnError for the singleton CloudAdapter.
 botAdapter.onTurnError = onTurnErrorHandler;
 
+// Create AI components
+const model = new OpenAIModel({
+  // OpenAI Support
+  apiKey: process.env.OPENAI_KEY!,
+  defaultModel: "gpt-4-turbo",
+
+  // Request logging
+  logRequests: true,
+});
+
+const prompts = new PromptManager({
+  promptsFolder: path.join(__dirname, "../src/bot/prompts"),
+});
+
+const planner = new ActionPlanner({
+  model,
+  prompts,
+  defaultPrompt: "sequence",
+});
+
 // Define storage and application
 const storage = new MongoDBStorage();
 export const botApp = new ApplicationBuilder<ApplicationTurnState>()
   .withStorage(storage)
+  .withAIOptions({
+    planner,
+  })
   .withAuthentication(botAdapter, {
     autoSignIn: (context: TurnContext) => {
       // Disable auto sign in for message activities
@@ -116,12 +154,6 @@ export const botApp = new ApplicationBuilder<ApplicationTurnState>()
 botApp.message(
   "/reset",
   async (context: TurnContext, state: ApplicationTurnState) => {
-    console.log("bot-app.message /reset:", JSON.stringify(state));
-    // Store conversation reference
-    addConversationReference(context.activity).catch((err) =>
-      console.error(err)
-    );
-
     state.deleteConversationState();
     await context.sendActivity(
       `Ok I've deleted the current conversation state.`
@@ -133,11 +165,6 @@ botApp.message(
   "/signout",
   async (context: TurnContext, state: ApplicationTurnState) => {
     console.log("bot-app.message /signout:", JSON.stringify(state));
-    // Store conversation reference
-    addConversationReference(context.activity).catch((err) =>
-      console.error(err)
-    );
-
     await botApp.authentication.signOutUser(context, state);
 
     // Echo back users request
@@ -149,10 +176,6 @@ botApp.message(
 botApp.message(
   "/activity",
   async (context: TurnContext, state: ApplicationTurnState) => {
-    // Store conversation reference
-    addConversationReference(context.activity).catch((err) =>
-      console.error(err)
-    );
     // Send message
     await context.sendActivity(JSON.stringify(context.activity, null, 4));
   }
@@ -162,10 +185,6 @@ botApp.message(
 botApp.message(
   "/user",
   async (context: TurnContext, state: ApplicationTurnState) => {
-    // Store conversation reference
-    addConversationReference(context.activity).catch((err) =>
-      console.error(err)
-    );
     if (!context.activity.from.aadObjectId) {
       await context.sendActivity("This user does not have a valid aadObjectId");
       return;
@@ -197,19 +216,55 @@ botApp.message(
 
 // Get app user's notes
 botApp.message(
-  "/notes",
+  "/login",
   async (context: TurnContext, state: ApplicationTurnState) => {
-    // Store conversation reference
-    addConversationReference(context.activity).catch((err) =>
-      console.error(err)
-    );
+    // Handle message
+    if (USE_CARD_AUTH) {
+      console.log(
+        "app.activity .Message: start with turn state",
+        JSON.stringify(state)
+      );
+      let card: Attachment;
+      const token = state.temp.authTokens?.["graph"];
+      if (token) {
+        console.log("app.activity .Message: already logged in, graph start");
+        const user = await getUserDetailsFromGraph(token);
+        console.log("app.activity .Message: graph end");
+        card = createUserProfileCard(user.displayName, user.profilePhoto);
+      } else {
+        console.log(
+          "app.activity .Message: no token in _state, sending sign in card"
+        );
+        card = createSignInCard();
+      }
+
+      console.log("app.activity .Message: context.sendActivity with card");
+      await context.sendActivity({ attachments: [card] });
+      console.log("app.activity .Message: context.sendActivity sent");
+    } else {
+      console.log("sending message activity");
+      await context.sendActivity("hello world");
+    }
+  }
+);
+
+// AI handlers
+
+// Get app user's notes
+botApp.ai.action(
+  "GetNotes",
+  async (
+    context: TurnContext,
+    state: ApplicationTurnState,
+    paramaters: undefined
+  ) => {
     let userAppToken: string;
     try {
       userAppToken = await getAppAuthToken(context);
     } catch (err) {
       // TODO: init app linking flow if not already linked
       console.error(`bot-app.message /notes: error ${err}`);
-      return;
+      return "You are not authenticated, please sign in to continue";
     }
     try {
       // Get user notes
@@ -234,24 +289,28 @@ botApp.message(
       console.error(`bot-app.message /notes: error ${err}`);
       await context.sendActivity("Error getting notes");
     }
+
+    return "I've retrieved your notes for you. What else can I help you wiht?";
   }
 );
 
 // Get app user's notes
-botApp.message(
-  "/add note",
-  async (context: TurnContext, state: ApplicationTurnState) => {
-    // Store conversation reference
-    addConversationReference(context.activity).catch((err) =>
-      console.error(err)
-    );
+botApp.ai.action(
+  "CreateNote",
+  async (
+    context: TurnContext,
+    state: ApplicationTurnState,
+    paramaters: {
+      text: string;
+    }
+  ) => {
     let userAppToken: string;
     try {
       userAppToken = await getAppAuthToken(context);
     } catch (err) {
       // TODO: init app linking flow if not already linked
       console.error(`bot-app.message /notes: error ${err}`);
-      return;
+      return "You are not authenticated, please sign in to continue";
     }
     try {
       // Get user notes
@@ -264,7 +323,7 @@ botApp.message(
             Authorization: userAppToken,
           },
           body: JSON.stringify({
-            text: "Note text",
+            text: paramaters.text,
             color: "yellow",
             threadId: context.activity.conversation.id,
           }),
@@ -281,62 +340,7 @@ botApp.message(
       console.error(`bot-app.message /notes: error ${err}`);
       await context.sendActivity("Error getting notes");
     }
-  }
-);
-
-// Test
-botApp.message(
-  "/test",
-  async (context: TurnContext, state: ApplicationTurnState) => {
-    console.log("app.message /test: start with state", JSON.stringify(state));
-    // Store conversation reference
-    addConversationReference(context.activity).catch((err) =>
-      console.error(err)
-    );
-    // Send message
-    await botApp.authentication.signUserIn(context, state);
-    console.log("app.message /test: sign in state", JSON.stringify(state));
-    const card = testCard("Let's go a 'buggin");
-    await context.sendActivity({ attachments: [card] });
-  }
-);
-
-// Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
-botApp.activity(
-  ActivityTypes.Message,
-  async (context: TurnContext, _state: ApplicationTurnState) => {
-    // Store conversation reference
-    addConversationReference(context.activity).catch((err) =>
-      console.error(err)
-    );
-
-    // Handle message
-    if (USE_CARD_AUTH) {
-      console.log(
-        "app.activity .Message: start with turn state",
-        JSON.stringify(_state)
-      );
-      let card: Attachment;
-      const token = _state.temp.authTokens?.["graph"];
-      if (token) {
-        console.log("app.activity .Message: already logged in, graph start");
-        const user = await getUserDetailsFromGraph(token);
-        console.log("app.activity .Message: graph end");
-        card = createUserProfileCard(user.displayName, user.profilePhoto);
-      } else {
-        console.log(
-          "app.activity .Message: no token in _state, sending sign in card"
-        );
-        card = createSignInCard();
-      }
-
-      console.log("app.activity .Message: context.sendActivity with card");
-      await context.sendActivity({ attachments: [card] });
-      console.log("app.activity .Message: context.sendActivity sent");
-    } else {
-      console.log("sending message activity");
-      await context.sendActivity("hello world");
-    }
+    return "Here you go! What else can I help you with?";
   }
 );
 
@@ -384,20 +388,6 @@ botApp.adaptiveCards.actionExecute(
     );
 
     const initialCard = createSignInCard();
-
-    return initialCard.content;
-  }
-);
-
-// Test
-botApp.adaptiveCards.actionExecute(
-  "test",
-  async (context: TurnContext, state: ApplicationTurnState) => {
-    console.log(
-      "app.adaptiveCards.actionExecute test: start with state",
-      JSON.stringify(state)
-    );
-    const initialCard = testCard("A 'buggin we did");
 
     return initialCard.content;
   }

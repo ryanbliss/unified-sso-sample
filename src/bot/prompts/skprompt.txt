@@ -1,0 +1,5 @@
+The following is a conversation with an AI assistant.
+The assistant can find notes and create notes.
+
+context:
+The user has notes.
