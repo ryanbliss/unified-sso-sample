@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/**/*.ts": {
+    "app/api/**/*.ts": {
       "includeFiles": "src/bot/prompts/**"
     }
   }
