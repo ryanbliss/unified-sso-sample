@@ -32,7 +32,7 @@ import { MongoDBStorage } from "./MongoDBStorage";
 import { findAADUser } from "@/database/user";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { getAppAuthToken } from "./bot-auth-utils";
-import "./read-files";
+import "./fs-utils";
 
 interface ConversationState {
   count: number;
