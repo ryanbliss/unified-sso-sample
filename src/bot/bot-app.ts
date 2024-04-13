@@ -32,6 +32,8 @@ import { MongoDBStorage } from "./MongoDBStorage";
 import { findAADUser } from "@/database/user";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { getAppAuthToken } from "./bot-auth-utils";
+import "./config.json";
+import "./actions.json";
 
 interface ConversationState {
   count: number;
@@ -98,7 +100,7 @@ const model = new OpenAIModel({
 });
 
 const prompts = new PromptManager({
-  promptsFolder: path.join(__dirname, "../prompts"),
+  promptsFolder: path.join(__dirname, "../src/bot/prompts"),
 });
 
 const planner = new ActionPlanner({
