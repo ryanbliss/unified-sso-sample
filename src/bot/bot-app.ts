@@ -33,6 +33,7 @@ import { findAADUser } from "@/database/user";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { getAppAuthToken } from "./bot-auth-utils";
 import "./fs-utils";
+import { prepareBotPromptFiles } from "./fs-utils";
 
 interface ConversationState {
   count: number;
@@ -98,6 +99,7 @@ const model = new OpenAIModel({
   logRequests: true,
 });
 
+prepareBotPromptFiles();
 const prompts = new PromptManager({
   promptsFolder: path.join(__dirname, "../src/bot/prompts"),
 });
