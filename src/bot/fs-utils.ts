@@ -29,6 +29,7 @@ export function prepareBotPromptFiles() {
     JSON.stringify(config, null, 4),
     function (err) {
       if (err) {
+        console.log("---config.json error", err);
         return console.log(err);
       }
       console.log("---");
@@ -42,7 +43,8 @@ export function prepareBotPromptFiles() {
     JSON.stringify(actions, null, 4),
     function (err) {
       if (err) {
-        return console.log(err);
+        console.log("---actions.json error", err);
+        return;
       }
       console.log("---");
       const allFiles = getAllFiles(__dirname, undefined);
@@ -55,7 +57,8 @@ export function prepareBotPromptFiles() {
     skprompt,
     function (err) {
       if (err) {
-        return console.log(err);
+        console.log("---skprompt.json error", err);
+        return;
       }
       console.log("---");
       const allFiles = getAllFiles(__dirname, undefined);
