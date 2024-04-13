@@ -3,11 +3,6 @@ import CopyPlugin from "copy-webpack-plugin";
 
 const nextConfig = {
   webpack: (config, { dev }) => {
-    // This configures webpack to handle txt and json files in a specific server-side folder
-    config.node = {
-      __dirname: false,
-    };
-
     // Configure the CopyPlugin
     config.plugins.push(
       new CopyPlugin({
