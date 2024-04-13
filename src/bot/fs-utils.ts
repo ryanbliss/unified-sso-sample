@@ -20,10 +20,10 @@ const getAllFiles = function (dirPath: string, arrayOfFiles: any) {
   return arrayOfFiles;
 };
 
-function writeFile(filePath: string, contents: string) {
+function writeFile(filePath: string, fileName: string, contents: string) {
   const fPath = path.join(__dirname, filePath);
   fs.mkdirSync(fPath, { recursive: true });
-  fs.writeFileSync(fPath, contents);
+  fs.writeFileSync(`${fPath}/${fileName}`, contents);
 }
 
 // Next.js is a bit of a pain to get working with these static files.
@@ -31,8 +31,11 @@ function writeFile(filePath: string, contents: string) {
 // teams-ai requires these files be static at a set path, so this should be a fine workaround for now.
 export function prepareBotPromptFiles() {
   try {
-    const filePath = path.join(__dirname, "/prompts/sequence/config.json");
-    writeFile(filePath, JSON.stringify(config, null, 4));
+    writeFile(
+      "/prompts/sequence",
+      "config.json",
+      JSON.stringify(config, null, 4)
+    );
   } catch (err) {
     if (err) {
       console.log("---config.json error", err);
@@ -44,8 +47,11 @@ export function prepareBotPromptFiles() {
     console.log("---");
   }
   try {
-    const filePath = path.join(__dirname, "/prompts/sequence/actions.json");
-    writeFile(filePath, JSON.stringify(actions, null, 4));
+    writeFile(
+      "/prompts/sequence",
+      "actions.json",
+      JSON.stringify(actions, null, 4)
+    );
   } catch (err) {
     if (err) {
       console.log("---actions.json error", err);
@@ -57,8 +63,7 @@ export function prepareBotPromptFiles() {
     console.log("---");
   }
   try {
-    const filePath = path.join(__dirname, "/prompts/sequence/skprompt.txt");
-    writeFile(filePath, skprompt);
+    writeFile("/prompts/sequence", "skprompt.txt", skprompt);
   } catch (err) {
     if (err) {
       console.log("---skprompt.json error", err);
