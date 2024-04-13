@@ -1,7 +1,6 @@
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 import {
-  ActivityTypes,
   ConfigurationServiceClientCredentialFactory,
   TurnContext,
   Attachment,
@@ -33,7 +32,6 @@ import { findAADUser } from "@/database/user";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { getAppAuthToken } from "./bot-auth-utils";
 import "./fs-utils";
-import { prepareBotPromptFiles } from "./fs-utils";
 
 interface ConversationState {
   count: number;
@@ -100,7 +98,7 @@ const model = new OpenAIModel({
 });
 
 const prompts = new PromptManager({
-  promptsFolder: path.join((process as any).cwd(), "./src/bot/prompts"),
+  promptsFolder: path.join(process.cwd(), "./src/bot/prompts"),
 });
 
 const planner = new ActionPlanner({

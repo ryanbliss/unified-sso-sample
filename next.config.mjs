@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
+import withBundleAnalyzer from "@next/bundle-analyzer";
 
 const nextConfig = {
-  output: "standalone",
   webpack: (config, { dev }) => {
     // The condition is to have the plugin on build time, not to perturb live refresh
     if (!dev) {
@@ -21,7 +21,20 @@ const nextConfig = {
     // node-fetch will throw some exceptions for bot SDK if this is enabled
     // see https://github.com/vercel/next.js/issues/55682 for more info
     serverMinification: false,
+    outputFileTracingExcludes: {
+      "*": [
+        "node_modules/webpack",
+        "node_modules/fs-extra",
+        "node_modules/fs-realpath",
+        "node_modules/fs-minipath",
+      ],
+    },
   },
 };
 
-export default nextConfig;
+const bundleAnalyzerConfigWrapper = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+  openAnalyzer: true,
+});
+
+export default bundleAnalyzerConfigWrapper(nextConfig);

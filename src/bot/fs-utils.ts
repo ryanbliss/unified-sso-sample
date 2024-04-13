@@ -1,16 +1,16 @@
-import fs from "fs";
-import path from "path";
+import { mkdirSync, writeFileSync, readdirSync, statSync } from "fs";
+import { join as joinPath } from "path";
 import actions from "./prompts/sequence/actions.json";
 import config from "./prompts/sequence/config.json";
 import skprompt from "./prompts/sequence/skprompt.txt";
 
 const getAllFiles = function (dirPath: string, arrayOfFiles: any) {
-  const files = fs.readdirSync(dirPath);
+  const files = readdirSync(dirPath);
   arrayOfFiles = arrayOfFiles || [];
 
   files.forEach(function (file) {
-    const filePath = path.join(dirPath, file);
-    if (fs.statSync(filePath).isDirectory()) {
+    const filePath = joinPath(dirPath, file);
+    if (statSync(filePath).isDirectory()) {
       arrayOfFiles = getAllFiles(filePath, arrayOfFiles);
     } else {
       arrayOfFiles.push(filePath);
@@ -21,9 +21,9 @@ const getAllFiles = function (dirPath: string, arrayOfFiles: any) {
 };
 
 function writeFile(filePath: string, fileName: string, contents: string) {
-  const fPath = path.join((process as any).cwd(), filePath);
-  fs.mkdirSync(fPath, { recursive: true });
-  fs.writeFileSync(`${fPath}/${fileName}`, contents);
+  const fPath = joinPath(process.cwd(), filePath);
+  mkdirSync(fPath, { recursive: true });
+  writeFileSync(`${fPath}/${fileName}`, contents);
 }
 
 // Next.js is a bit of a pain to get working with these static files.
