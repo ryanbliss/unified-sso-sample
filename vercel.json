@@ -1,0 +1,10 @@
+{
+    "functions": {
+      "api/messages/route.ts": {
+        "includeFiles": "src/bot/prompts/**"
+      },
+      "api/messages/send/route.ts": {
+        "includeFiles": "src/bot/prompts/**"
+      }
+    }
+  }
