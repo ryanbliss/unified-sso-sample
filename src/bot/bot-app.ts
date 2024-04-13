@@ -100,7 +100,7 @@ const model = new OpenAIModel({
 });
 
 const prompts = new PromptManager({
-  promptsFolder: path.join(process.cwd(), "./src/bot/prompts"),
+  promptsFolder: path.join(__dirname, "./src/bot/prompts"),
 });
 
 const planner = new ActionPlanner({
