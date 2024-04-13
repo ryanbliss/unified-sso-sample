@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FlexColumn } from "../flex";
-import { Card, Spinner, Title1 } from "@fluentui/react-components";
+import { Card, Spinner, Title1, tokens } from "@fluentui/react-components";
 import { INoteResponse } from "@/app/models/note-base-models";
 
 export const ViewNotes: FC = () => {
@@ -27,14 +27,24 @@ export const ViewNotes: FC = () => {
     }
     load();
     return () => {
-        mounted = false;
-    }
+      mounted = false;
+    };
   }, []);
   return (
     <FlexColumn marginSpacer="small">
       <Title1>{"Your notes"}</Title1>
       {!notes && <Spinner />}
-      {notes && notes.map((note) => <Card key={note._id}>{note.text}</Card>)}
+      {notes &&
+        notes.map((note) => (
+          <Card
+            key={note._id}
+            style={{
+              backgroundColor: tokens.colorStatusWarningBackground1,
+            }}
+          >
+            {note.text}
+          </Card>
+        ))}
     </FlexColumn>
   );
 };
