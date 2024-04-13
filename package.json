@@ -10,6 +10,8 @@
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
+    "@azure/web-pubsub": "^1.1.1",
+    "@azure/web-pubsub-client": "^1.0.0",
     "@fluentui/react-components": "^9.47.5",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@microsoft/teams-ai": "^1.1.3",

@@ -1,11 +1,14 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FlexColumn } from "../flex";
 import { Card, Spinner, Title1, tokens } from "@fluentui/react-components";
-import { INoteResponse } from "@/app/models/note-base-models";
+import { INoteResponse } from "@/models/note-base-models";
+import { usePubSubClient } from "@/hooks/usePubSubClient";
+import { OnConnectedArgs, OnDisconnectedArgs, OnGroupDataMessageArgs, OnServerDataMessageArgs } from "@azure/web-pubsub-client";
 
 export const ViewNotes: FC = () => {
   const [notes, setNotes] = useState<INoteResponse[]>();
   const hasStarted = useRef(false);
+  const { client } = usePubSubClient();
   useEffect(() => {
     if (hasStarted.current) return;
     let mounted = true;
@@ -30,6 +33,43 @@ export const ViewNotes: FC = () => {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!client) return;
+    // Emitted on websocket connected
+    const connectedListener = (e: OnConnectedArgs) => {
+      console.log(e);
+    }
+    client.on("connected", connectedListener);
+
+    // Emitted on websocket disconnected
+    const disconnectedListener = (e: OnDisconnectedArgs) => {
+      console.log(e);
+    }
+    client.on("disconnected", disconnectedListener);
+    
+    // Emitted on group message
+    const groupMessageListener = (e: OnGroupDataMessageArgs) => {
+      console.log(e);
+    }
+    client.on("group-message", groupMessageListener);
+
+    // Emitted on server message
+    const serverMessageListener = (e: OnServerDataMessageArgs) => {
+      console.log(e);
+    }
+    client.on("server-message", serverMessageListener);
+
+    client.start()
+      .catch((err) => console.error(err));
+    return () => {
+      client.off("connected", connectedListener);
+      client.off("disconnected", disconnectedListener);
+      client.off("group-message", groupMessageListener);
+      client.off("server-message", serverMessageListener);
+    }
+  }, [client]);
+
   return (
     <FlexColumn marginSpacer="small">
       <Title1>{"Notes"}</Title1>

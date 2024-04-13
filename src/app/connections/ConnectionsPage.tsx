@@ -11,7 +11,7 @@ import {
   Title3,
   tokens,
 } from "@fluentui/react-components";
-import { useTeamsClientSSO } from "../hooks/useTeamsClientSSO";
+import { useTeamsClientSSO } from "../../hooks/useTeamsClientSSO";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 

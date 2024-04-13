@@ -1,4 +1,4 @@
-import { useTeamsClientSSO } from "@/app/hooks/useTeamsClientSSO";
+import { useTeamsClientSSO } from "@/hooks/useTeamsClientSSO";
 import { useTeamsClientContext } from "@/context-providers";
 import { Button, Text, Title3 } from "@fluentui/react-components";
 import { FC } from "react";

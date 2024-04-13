@@ -1,4 +1,4 @@
-import { INoteBase } from "@/app/models/note-base-models";
+import { INoteBase } from "@/models/note-base-models";
 import clientPromise from "./mongodb-client";
 import { Collection, ObjectId, WithId } from "mongodb";
 

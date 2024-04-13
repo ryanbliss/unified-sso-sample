@@ -5,7 +5,7 @@ import { ScrollWrapper } from "@/components/scroll-wrapper";
 import { LoginForm } from "./LoginForm";
 import { Button, Subtitle2, Title1 } from "@fluentui/react-components";
 import { useRouter } from "next/navigation";
-import { useTeamsClientSSO } from "@/app/hooks/useTeamsClientSSO";
+import { useTeamsClientSSO } from "@/hooks/useTeamsClientSSO";
 import { LoadWrapper } from "@/components/view-wrappers";
 import { useEffect, useState } from "react";
 
