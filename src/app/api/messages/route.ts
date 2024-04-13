@@ -3,6 +3,7 @@
 import { Response as BotResponse } from "botbuilder";
 import { NextRequest, NextResponse } from "next/server";
 import { botAdapter, botApp } from "@/bot/bot-app";
+import { prepareBotPromptFiles } from "@/bot/fs-utils";
 
 interface ResponseHolder {
   status: number;
@@ -12,6 +13,10 @@ interface ResponseHolder {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  // Next.js is a bit of a pain to get working with these static files.
+  // It chunks everything it needs as it needs it.
+  // teams-ai requires these files be static at a set path, so this should be a fine workaround for now.
+  prepareBotPromptFiles();
   console.log(
     "POST /api/messages for w/ env variables",
     process.env.BOT_ID,

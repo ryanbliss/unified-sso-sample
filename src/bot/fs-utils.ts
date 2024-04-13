@@ -30,12 +30,13 @@ function writeFile(filePath: string, fileName: string, contents: string) {
 // It chunks everything it needs as it needs it.
 // teams-ai requires these files be static at a set path, so this should be a fine workaround for now.
 export function prepareBotPromptFiles() {
+  // In dev this isn't necessary
+  if (process.env.NODE_ENV === "development") {
+    return;
+  }
+  const basePath = "/src/bot/prompts/sequence";
   try {
-    writeFile(
-      "/prompts/sequence",
-      "config.json",
-      JSON.stringify(config, null, 4)
-    );
+    writeFile(basePath, "config.json", JSON.stringify(config, null, 4));
   } catch (err) {
     if (err) {
       console.log("---config.json error", err);
@@ -47,11 +48,7 @@ export function prepareBotPromptFiles() {
     console.log("---");
   }
   try {
-    writeFile(
-      "/prompts/sequence",
-      "actions.json",
-      JSON.stringify(actions, null, 4)
-    );
+    writeFile(basePath, "actions.json", JSON.stringify(actions, null, 4));
   } catch (err) {
     if (err) {
       console.log("---actions.json error", err);
@@ -63,7 +60,7 @@ export function prepareBotPromptFiles() {
     console.log("---");
   }
   try {
-    writeFile("/prompts/sequence", "skprompt.txt", skprompt);
+    writeFile(basePath, "skprompt.txt", skprompt);
   } catch (err) {
     if (err) {
       console.log("---skprompt.json error", err);
