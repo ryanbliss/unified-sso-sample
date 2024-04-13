@@ -1,13 +1,9 @@
+import { INoteBase } from "@/app/models/note-base-models";
 import clientPromise from "./mongodb-client";
 import { Collection, ObjectId, WithId } from "mongodb";
 
-interface NoteDocument {
-  text: string;
-  color: string;
-  createdAt: Date;
-  editedAt: Date;
+interface NoteDocument extends INoteBase {
   createdById: ObjectId;
-  threadId?: string;
 }
 
 export type NoteEditable = Omit<
