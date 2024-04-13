@@ -28,7 +28,7 @@ export const usePubSubClient = () => {
         const client = new WebPubSubClient(url);
         setClient(client);
       } catch (err) {
-        console.error(err);
+        console.error("usePubSubClient", err);
         if (err instanceof Error) {
             setError(err);
         } else {
