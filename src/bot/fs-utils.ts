@@ -20,9 +20,10 @@ const getAllFiles = function (dirPath: string, arrayOfFiles: any) {
   return arrayOfFiles;
 };
 
-function writeFile(path: fs.PathOrFileDescriptor, contents: string) {
-  fs.mkdirSync((path as any).dirname(path), { recursive: true });
-  fs.writeFileSync(path, contents);
+function writeFile(filePath: string, contents: string) {
+  const fPath = path.join(__dirname, filePath);
+  fs.mkdirSync(fPath, { recursive: true });
+  fs.writeFileSync(fPath, contents);
 }
 
 // Next.js is a bit of a pain to get working with these static files.
@@ -35,7 +36,7 @@ export function prepareBotPromptFiles() {
   } catch (err) {
     if (err) {
       console.log("---config.json error", err);
-      return console.log(err);
+      return;
     }
     console.log("---");
     const allFiles = getAllFiles(__dirname, undefined);
