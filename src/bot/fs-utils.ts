@@ -21,7 +21,7 @@ const getAllFiles = function (dirPath: string, arrayOfFiles: any) {
 };
 
 function writeFile(filePath: string, fileName: string, contents: string) {
-  const fPath = path.join(__dirname, filePath);
+  const fPath = path.join(process.cwd(), filePath);
   fs.mkdirSync(fPath, { recursive: true });
   fs.writeFileSync(`${fPath}/${fileName}`, contents);
 }
