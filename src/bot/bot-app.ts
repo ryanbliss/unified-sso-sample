@@ -104,7 +104,7 @@ const model = new OpenAIModel({
 // teams-ai requires these files be static at a set path, so this should be a fine workaround for now.
 prepareBotPromptFiles();
 const prompts = new PromptManager({
-  promptsFolder: path.join(__dirname, "../prompts"),
+  promptsFolder: path.join(__dirname, "./prompts"),
 });
 
 const planner = new ActionPlanner({

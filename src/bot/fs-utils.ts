@@ -25,31 +25,42 @@ const getAllFiles = function (dirPath: string, arrayOfFiles: any) {
 // teams-ai requires these files be static at a set path, so this should be a fine workaround for now.
 export function prepareBotPromptFiles() {
   fs.writeFile(
-    "/prompts/sequence/config.json",
+    path.join(__dirname, "/prompts/sequence/config.json"),
     JSON.stringify(config, null, 4),
     function (err) {
       if (err) {
         return console.log(err);
       }
-      console.log("The file was saved!");
+      console.log("---");
+      const allFiles = getAllFiles(__dirname, undefined);
+      console.log(allFiles);
+      console.log("---");
     }
   );
   fs.writeFile(
-    "/prompts/sequence/actions.json",
+    path.join(__dirname, "/prompts/sequence/actions.json"),
     JSON.stringify(actions, null, 4),
     function (err) {
       if (err) {
         return console.log(err);
       }
-      console.log("The file was saved!");
+      console.log("---");
+      const allFiles = getAllFiles(__dirname, undefined);
+      console.log(allFiles);
+      console.log("---");
     }
   );
-  fs.writeFile("/prompts/sequence/skprompt.json", skprompt, function (err) {
-    if (err) {
-      return console.log(err);
+  fs.writeFile(
+    path.join(__dirname, "/prompts/sequence/skprompt.json"),
+    skprompt,
+    function (err) {
+      if (err) {
+        return console.log(err);
+      }
+      console.log("---");
+      const allFiles = getAllFiles(__dirname, undefined);
+      console.log(allFiles);
+      console.log("---");
     }
-    console.log("The file was saved!");
-  });
-  const allFiles = getAllFiles(__dirname, undefined);
-  console.log(allFiles);
+  );
 }
