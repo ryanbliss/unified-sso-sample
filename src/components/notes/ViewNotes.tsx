@@ -32,7 +32,7 @@ export const ViewNotes: FC = () => {
   }, []);
   return (
     <FlexColumn marginSpacer="small">
-      <Title1>{"Your notes"}</Title1>
+      <Title1>{"Notes"}</Title1>
       {!notes && <Spinner />}
       {notes &&
         notes.map((note) => (
