@@ -36,16 +36,30 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const pubsubToken = pubsubServiceClient.getClientAccessToken({
-    userId: tokenPayload.user._id,
-    expirationTimeInMinutes: 60,
-    roles: [
-      `webpubsub.joinLeaveGroup.${tokenPayload.user._id}`,
-      `webpubsub.sendToGroup.${tokenPayload.user._id}`,
-    ],
-    groups: [tokenPayload.user._id],
-  });
-  return NextResponse.json({
-    connectionUrl: `wss://unify-sso-generic-pubsub.webpubsub.azure.com/client/hubs/copilot?access_token=${pubsubToken}`,
-  });
+  try {
+    const pubsubToken = await pubsubServiceClient.getClientAccessToken({
+      userId: tokenPayload.user._id,
+      expirationTimeInMinutes: 60,
+      roles: [
+        `webpubsub.joinLeaveGroup.${tokenPayload.user._id}`,
+        `webpubsub.sendToGroup.${tokenPayload.user._id}`,
+      ],
+      groups: [tokenPayload.user._id],
+    });
+    return NextResponse.json({
+      connectionUrl: `wss://unify-sso-generic-pubsub.webpubsub.azure.com/client/hubs/copilot?access_token=${pubsubToken}`,
+    });
+  } catch (err) {
+    console.error(
+      `/api/pubsub/authorize/private/route.ts: getClientAccessTokenError ${err}`
+    );
+    return NextResponse.json(
+      {
+        error: "An internal error occurred. Unable to get client access token for pubsub service.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
