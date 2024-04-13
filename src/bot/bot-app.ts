@@ -32,8 +32,8 @@ import { MongoDBStorage } from "./MongoDBStorage";
 import { findAADUser } from "@/database/user";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { getAppAuthToken } from "./bot-auth-utils";
-import "./config.json";
-import "./actions.json";
+import "./prompts/config.json";
+import "./prompts/actions.json";
 
 interface ConversationState {
   count: number;
