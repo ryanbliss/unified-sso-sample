@@ -13,7 +13,13 @@ import {
   TeamsAdapter,
   AuthError,
 } from "@microsoft/teams-ai";
-import { createUserProfileCard, createSignInCard, testCard } from "./cards";
+import {
+  createUserProfileCard,
+  createSignInCard,
+  testCard,
+  notesCard,
+  noteCard,
+} from "./cards";
 import { getUserDetailsFromGraph } from "./graph";
 import {
   findReference,
@@ -221,7 +227,9 @@ botApp.message(
       if (response.status !== 200) {
         throw new Error(body.error);
       }
-      await context.sendActivity(JSON.stringify(body.notes));
+      await context.sendActivity({
+        attachments: [notesCard(body.notes)],
+      });
     } catch (err) {
       console.error(`bot-app.message /notes: error ${err}`);
       await context.sendActivity("Error getting notes");
@@ -266,9 +274,9 @@ botApp.message(
       if (response.status !== 200) {
         throw new Error(body.error);
       }
-      await context.sendActivity(
-        `Created new note: ${JSON.stringify(body.note, null, 4)}`
-      );
+      await context.sendActivity({
+        attachments: [noteCard(body.note)],
+      });
     } catch (err) {
       console.error(`bot-app.message /notes: error ${err}`);
       await context.sendActivity("Error getting notes");

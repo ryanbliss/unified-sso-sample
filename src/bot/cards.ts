@@ -1,3 +1,4 @@
+import { Note } from "@/database/notes";
 import { Attachment, CardFactory } from "botbuilder";
 
 /**
@@ -111,4 +112,63 @@ export function testCard(text: string): Attachment {
       },
     ],
   });
+}
+
+export function notesCard(notes: Note[]): Attachment {
+  return CardFactory.adaptiveCard({
+    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+    version: "1.5",
+    type: "AdaptiveCard",
+    body: [
+      {
+        type: "TextBlock",
+        size: "Large",
+        weight: "Bolder",
+        text: "Your notes:",
+      },
+      notes.map((note) => noteBlock(note)),
+    ],
+  });
+}
+
+export function noteCard(note: Note): Attachment {
+  return CardFactory.adaptiveCard({
+    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+    version: "1.5",
+    type: "AdaptiveCard",
+    body: [noteBlock(note)],
+  });
+}
+
+function noteBlock(note: Note) {
+  return {
+    type: "Container",
+    spacing: "Large",
+    items: [
+      {
+        type: "Container",
+        items: [
+          {
+            type: "TextBlock",
+            text: note.text,
+            wrap: true,
+            isSubtle: false,
+            color: "Attention",
+            weight: "Bolder",
+            size: "Default",
+          },
+          {
+            type: "TextBlock",
+            text: `Created ${note.createdAt}`,
+            wrap: true,
+            size: "Small",
+            isSubtle: true,
+          },
+        ],
+        separator: true,
+        spacing: "Small",
+        style: "warning",
+      },
+    ],
+  };
 }
