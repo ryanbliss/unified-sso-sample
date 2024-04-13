@@ -99,9 +99,12 @@ const model = new OpenAIModel({
   logRequests: true,
 });
 
+// Next.js is a bit of a pain to get working with these static files.
+// It chunks everything it needs as it needs it.
+// teams-ai requires these files be static at a set path, so this should be a fine workaround for now.
 prepareBotPromptFiles();
 const prompts = new PromptManager({
-  promptsFolder: path.join(__dirname, "../src/bot/prompts"),
+  promptsFolder: path.join(__dirname, "../prompts"),
 });
 
 const planner = new ActionPlanner({
