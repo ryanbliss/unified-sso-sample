@@ -20,50 +20,52 @@ const getAllFiles = function (dirPath: string, arrayOfFiles: any) {
   return arrayOfFiles;
 };
 
+function writeFile(path: fs.PathOrFileDescriptor, contents: string) {
+  fs.mkdirSync((path as any).dirname(path), { recursive: true });
+  fs.writeFileSync(path, contents);
+}
+
 // Next.js is a bit of a pain to get working with these static files.
 // It chunks everything it needs as it needs it.
 // teams-ai requires these files be static at a set path, so this should be a fine workaround for now.
 export function prepareBotPromptFiles() {
-  fs.writeFile(
-    path.join(__dirname, "/prompts/sequence/config.json"),
-    JSON.stringify(config, null, 4),
-    function (err) {
-      if (err) {
-        console.log("---config.json error", err);
-        return console.log(err);
-      }
-      console.log("---");
-      const allFiles = getAllFiles(__dirname, undefined);
-      console.log(allFiles);
-      console.log("---");
+  try {
+    const filePath = path.join(__dirname, "/prompts/sequence/config.json");
+    writeFile(filePath, JSON.stringify(config, null, 4));
+  } catch (err) {
+    if (err) {
+      console.log("---config.json error", err);
+      return console.log(err);
     }
-  );
-  fs.writeFile(
-    path.join(__dirname, "/prompts/sequence/actions.json"),
-    JSON.stringify(actions, null, 4),
-    function (err) {
-      if (err) {
-        console.log("---actions.json error", err);
-        return;
-      }
-      console.log("---");
-      const allFiles = getAllFiles(__dirname, undefined);
-      console.log(allFiles);
-      console.log("---");
+    console.log("---");
+    const allFiles = getAllFiles(__dirname, undefined);
+    console.log(allFiles);
+    console.log("---");
+  }
+  try {
+    const filePath = path.join(__dirname, "/prompts/sequence/actions.json");
+    writeFile(filePath, JSON.stringify(actions, null, 4));
+  } catch (err) {
+    if (err) {
+      console.log("---actions.json error", err);
+      return;
     }
-  );
-  fs.writeFile(
-    path.join(__dirname, "/prompts/sequence/skprompt.json"),
-    skprompt,
-    function (err) {
-      if (err) {
-        console.log("---skprompt.json error", err);
-        return;
-      }
-      console.log("---");
-      const allFiles = getAllFiles(__dirname, undefined);
-      console.log(allFiles);
-      console.log("---");
+    console.log("---");
+    const allFiles = getAllFiles(__dirname, undefined);
+    console.log(allFiles);
+    console.log("---");
+  }
+  try {
+    const filePath = path.join(__dirname, "/prompts/sequence/skprompt.txt");
+    writeFile(filePath, skprompt);
+  } catch (err) {
+    if (err) {
+      console.log("---skprompt.json error", err);
+      return;
     }
-  );
+    console.log("---");
+    const allFiles = getAllFiles(__dirname, undefined);
+    console.log(allFiles);
+    console.log("---");
+  }
 }
