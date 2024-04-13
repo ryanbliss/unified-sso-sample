@@ -126,7 +126,7 @@ export function notesCard(notes: Note[]): Attachment {
         weight: "Bolder",
         text: "Your notes:",
       },
-      notes.map((note) => noteBlock(note)),
+      ...notes.map((note) => noteBlock(note)),
     ],
   });
 }
