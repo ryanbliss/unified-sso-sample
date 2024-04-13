@@ -36,6 +36,7 @@ export const usePubSubClient = () => {
         }
       }
     }
+    buildClient();
   }, []);
 
   return {
