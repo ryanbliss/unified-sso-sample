@@ -46,9 +46,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       ],
       groups: [tokenPayload.user._id],
     });
-    return NextResponse.json({
-      connectionUrl: `wss://unify-sso-generic-pubsub.webpubsub.azure.com/client/hubs/copilot?access_token=${pubsubToken}`,
-    });
+    return NextResponse.json(pubsubToken);
   } catch (err) {
     console.error(
       `/api/pubsub/authorize/private/route.ts: getClientAccessTokenError ${err}`

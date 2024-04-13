@@ -21,11 +21,11 @@ export const usePubSubClient = () => {
         if (response.status !== 200) {
             throw new Error(body.error);
         }
-        const connectionUrl = body?.connectionUrl;
-        if (typeof connectionUrl !== "string") {
+        const url = body?.url;
+        if (typeof url !== "string") {
             throw new Error("Invalid response from pubsub authorize endpoint");
         }
-        const client = new WebPubSubClient(connectionUrl);
+        const client = new WebPubSubClient(url);
         setClient(client);
       } catch (err) {
         console.error(err);
