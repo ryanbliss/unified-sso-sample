@@ -8,6 +8,8 @@ export const ViewNotes: FC = () => {
   const hasStarted = useRef(false);
   useEffect(() => {
     if (hasStarted.current) return;
+    let mounted = true;
+    hasStarted.current = true;
     async function load() {
       const response = await fetch("/api/notes/list/my", {
         method: "GET",
@@ -20,9 +22,13 @@ export const ViewNotes: FC = () => {
         console.error(body.error);
         return;
       }
+      if (!mounted) return;
       setNotes(body.notes);
     }
     load();
+    return () => {
+        mounted = false;
+    }
   }, []);
   return (
     <FlexColumn marginSpacer="small">

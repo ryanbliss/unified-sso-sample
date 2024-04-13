@@ -1,10 +1,10 @@
 import { useTeamsClientSSO } from "@/app/hooks/useTeamsClientSSO";
 import { useTeamsClientContext } from "@/context-providers";
 import { Button, Text, Title3 } from "@fluentui/react-components";
-import { useRouter } from "next/router";
 import { FC } from "react";
 import CodeBlock from "../code-block/CodeBlock";
 import { FlexRow } from "../flex";
+import { useRouter } from "next/navigation";
 
 export const DebugInfo: FC = ({}) => {
   const { teamsContext } = useTeamsClientContext();
