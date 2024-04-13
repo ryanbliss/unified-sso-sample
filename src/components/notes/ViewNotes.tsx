@@ -39,7 +39,7 @@ export const ViewNotes: FC = () => {
           <Card
             key={note._id}
             style={{
-              backgroundColor: tokens.colorStatusWarningBackground1,
+              backgroundColor: tokens.colorPaletteYellowBackground3,
             }}
           >
             {note.text}
