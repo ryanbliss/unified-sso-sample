@@ -1,20 +1,7 @@
 /** @type {import('next').NextConfig} */
-import CopyPlugin from "copy-webpack-plugin";
 
 const nextConfig = {
   webpack: (config, { dev }) => {
-    // Configure the CopyPlugin
-    config.plugins.push(
-      new CopyPlugin({
-        patterns: [
-          {
-            from: "src/bot/prompts",
-            to: "src/bot/prompts",
-          },
-        ],
-      })
-    );
-
     // The condition is to have the plugin on build time, not to perturb live refresh
     if (!dev) {
       config.resolve.alias = {
