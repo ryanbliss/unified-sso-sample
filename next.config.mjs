@@ -9,7 +9,7 @@ const nextConfig = {
         patterns: [
           {
             from: "src/bot/prompts",
-            to: "server/src/bot/prompts",
+            to: "src/bot/prompts",
           },
         ],
       })
