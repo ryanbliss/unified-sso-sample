@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  output: "standalone",
   webpack: (config, { dev }) => {
     // The condition is to have the plugin on build time, not to perturb live refresh
     if (!dev) {
@@ -19,7 +20,7 @@ const nextConfig = {
   experimental: {
     // node-fetch will throw some exceptions for bot SDK if this is enabled
     // see https://github.com/vercel/next.js/issues/55682 for more info
-    serverMinification: false
+    serverMinification: false,
   },
 };
 
