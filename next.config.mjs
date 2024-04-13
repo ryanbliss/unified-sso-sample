@@ -19,10 +19,7 @@ const nextConfig = {
   experimental: {
     // node-fetch will throw some exceptions for bot SDK if this is enabled
     // see https://github.com/vercel/next.js/issues/55682 for more info
-    serverMinification: false,
-    outputFileTracingIncludes: {
-      "/src/bot": ["./prompts/**/*"],
-    },
+    serverMinification: false
   },
 };
 
