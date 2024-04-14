@@ -39,7 +39,12 @@ export const ViewNotes: FC = () => {
         return;
       }
       if (!mounted) return;
-      setNotes(body.notes);
+      const resNotes = body.notes;
+      if (!Array.isArray(resNotes)) return;
+      for (let i = 0; i <resNotes.length; i++) {
+        if (!isINoteResponse(resNotes[i])) return;
+      }
+      setNotes(resNotes);
     }
     load();
     return () => {
