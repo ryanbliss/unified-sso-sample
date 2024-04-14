@@ -1,4 +1,4 @@
-import { sendMessage } from "@/bot/bot-app";
+import { sendProactiveMessage } from "@/bot/bot-app";
 import { prepareBotPromptFiles } from "@/bot/fs-utils";
 import { exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
 import { NextRequest, NextResponse } from "next/server";
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (typeof threadReferenceId !== "string") {
     throw new Error("/api/messages/route.ts: invalid thread reference id");
   }
-  await sendMessage(
+  await sendProactiveMessage(
     threadReferenceId,
     `Sending with data: ${JSON.stringify(json.data)}`
   );

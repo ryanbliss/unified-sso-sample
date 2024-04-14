@@ -3,7 +3,6 @@
 import {
   ConfigurationServiceClientCredentialFactory,
   TurnContext,
-  Attachment,
   Activity,
 } from "botbuilder";
 import * as path from "path";
@@ -15,30 +14,21 @@ import {
   OpenAIModel,
   PromptManager,
   ActionPlanner,
-  Memory,
 } from "@microsoft/teams-ai";
-import {
-  createUserProfileCard,
-  createSignInCard,
-  notesCard,
-  noteCard,
-} from "./cards";
-import { getUserDetailsFromGraph } from "./graph";
+import { notesCard, noteCard } from "./cards";
 import {
   findReference,
   upsertReference,
 } from "@/database/conversation-references";
 import { MongoDBStorage } from "./MongoDBStorage";
-import { findAADUser } from "@/database/user";
-import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { getAppAuthToken } from "./bot-auth-utils";
 import "./fs-utils";
+import { setupBotDebugMessageHandlers } from "./bot-debug-handlers";
 
 interface ConversationState {
   count: number;
 }
-type ApplicationTurnState = TurnState<ConversationState>;
-const USE_CARD_AUTH = process.env.AUTH_TYPE === "card";
+export type ApplicationTurnState = TurnState<ConversationState>;
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about how bots work.
@@ -123,33 +113,22 @@ export const botApp = new ApplicationBuilder<ApplicationTurnState>()
       // }
       return Promise.resolve(true);
     },
-    settings: USE_CARD_AUTH
-      ? {
-          graph: {
-            connectionName: process.env.OAUTH_CONNECTION_NAME ?? "",
-            title: "Sign in",
-            text: "Please sign in to use the bot.",
-            endOnInvalidMessage: true,
-            tokenExchangeUri: process.env.TOKEN_EXCHANGE_URI ?? "", // this is required for SSO
-            enableSso: true,
-          },
-        }
-      : {
-          graph: {
-            scopes: ["User.Read"],
-            msalConfig: {
-              auth: {
-                clientId: process.env.BOT_ID!,
-                clientSecret: process.env.BOT_PASSWORD!,
-                authority: `${process.env.AAD_APP_OAUTH_AUTHORITY_HOST}/${process.env.AAD_APP_TENANT_ID}`,
-              },
-            },
-            signInLink: `https://${process.env.BOT_DOMAIN}/auth/start`,
-            endOnInvalidMessage: true,
-          },
-        },
+    settings: {
+      graph: {
+        connectionName: process.env.OAUTH_CONNECTION_NAME ?? "",
+        title: "Sign in",
+        text: "Please sign in to use the bot.",
+        endOnInvalidMessage: true,
+        tokenExchangeUri: process.env.TOKEN_EXCHANGE_URI ?? "", // this is required for SSO
+        enableSso: true,
+      },
+    },
   })
   .build();
+
+/**
+ * Message handlers
+ */
 
 // Listen for user to say '/reset' and then delete conversation state
 botApp.message(
@@ -162,94 +141,12 @@ botApp.message(
   }
 );
 
-botApp.message(
-  "/signout",
-  async (context: TurnContext, state: ApplicationTurnState) => {
-    console.log("bot-app.message /signout:", JSON.stringify(state));
-    await botApp.authentication.signOutUser(context, state);
+// Some additional bot message handlers for commands that can be helpful during debugging
+setupBotDebugMessageHandlers();
 
-    // Echo back users request
-    await context.sendActivity(`You have signed out`);
-  }
-);
-
-// Get the activity object, which is useful for debugging
-botApp.message(
-  "/activity",
-  async (context: TurnContext, state: ApplicationTurnState) => {
-    // Send message
-    await context.sendActivity(JSON.stringify(context.activity, null, 4));
-  }
-);
-
-// Get app user info
-botApp.message(
-  "/user",
-  async (context: TurnContext, state: ApplicationTurnState) => {
-    if (!context.activity.from.aadObjectId) {
-      await context.sendActivity("This user does not have a valid aadObjectId");
-      return;
-    }
-    if (!context.activity.conversation.tenantId) {
-      await context.sendActivity(
-        "This conversation does not have a valid tenantId"
-      );
-      return;
-    }
-    console.log(
-      "bot-app.message /user:",
-      JSON.stringify(decodeMSALToken(state.temp.authTokens["graph"]), null, 2)
-    );
-    const user = await findAADUser(
-      context.activity.from.aadObjectId!,
-      context.activity.conversation.tenantId!
-    );
-    if (!user) {
-      await context.sendActivity("No account linked to this AAD user");
-      return;
-    }
-    // Send message
-    await context.sendActivity(
-      `${user.email} is logged in to app & linked to AAD user ${context.activity.from.aadObjectId}`
-    );
-  }
-);
-
-// Get app user's notes
-botApp.message(
-  "/login",
-  async (context: TurnContext, state: ApplicationTurnState) => {
-    // Handle message
-    if (USE_CARD_AUTH) {
-      console.log(
-        "app.activity .Message: start with turn state",
-        JSON.stringify(state)
-      );
-      let card: Attachment;
-      const token = state.temp.authTokens?.["graph"];
-      if (token) {
-        console.log("app.activity .Message: already logged in, graph start");
-        const user = await getUserDetailsFromGraph(token);
-        console.log("app.activity .Message: graph end");
-        card = createUserProfileCard(user.displayName, user.profilePhoto);
-      } else {
-        console.log(
-          "app.activity .Message: no token in _state, sending sign in card"
-        );
-        card = createSignInCard();
-      }
-
-      console.log("app.activity .Message: context.sendActivity with card");
-      await context.sendActivity({ attachments: [card] });
-      console.log("app.activity .Message: context.sendActivity sent");
-    } else {
-      console.log("sending message activity");
-      await context.sendActivity("hello world");
-    }
-  }
-);
-
-// AI handlers
+/**
+ * AI handlers
+ */
 
 // Get app user's notes
 botApp.ai.action(
@@ -306,7 +203,7 @@ botApp.ai.action(
       text: string;
     }
   ) => {
-    console.log("ot-app.ai.CreateNote: action start");
+    console.log("bot-app.ai.CreateNote: action start");
     let userAppToken: string;
     try {
       userAppToken = await getAppAuthToken(context);
@@ -347,56 +244,9 @@ botApp.ai.action(
   }
 );
 
-// Handle sign in adaptive card button click
-botApp.adaptiveCards.actionExecute(
-  "signin",
-  async (_context: TurnContext, state: ApplicationTurnState) => {
-    console.log(
-      "app.adaptiveCards.actionExecute signin: start with state",
-      JSON.stringify(state)
-    );
-    const token = state.temp.authTokens["graph"];
-    if (!token) {
-      console.error(
-        "app.adaptiveCards.actionExecute signin: No auth token found in state. Authentication failed."
-      );
-      throw new Error("No auth token found in state. Authentication failed.");
-    }
-    console.log("app.adaptiveCards.actionExecute signin: graph start");
-
-    const user = await getUserDetailsFromGraph(token);
-    console.log("app.adaptiveCards.actionExecute signin: graph end");
-    const profileCard = createUserProfileCard(
-      user.displayName,
-      user.profilePhoto
-    );
-    console.log("app.adaptiveCards.actionExecute signin: created card");
-
-    return profileCard.content;
-  }
-);
-
-// Handle sign out adaptive card button click
-botApp.adaptiveCards.actionExecute(
-  "signout",
-  async (context: TurnContext, state: ApplicationTurnState) => {
-    console.log(
-      "app.adaptiveCards.actionExecute signout: start with state",
-      JSON.stringify(state)
-    );
-    await botApp.authentication.signOutUser(context, state);
-    console.log(
-      "app.adaptiveCards.actionExecute signout: success",
-      JSON.stringify(state)
-    );
-
-    const initialCard = createSignInCard();
-
-    return initialCard.content;
-  }
-);
-
-// Auth handlers
+/**
+ * Auth handlers
+ */
 
 botApp.authentication
   .get("graph")
@@ -428,13 +278,17 @@ botApp.authentication
   );
 
 /**
+ * Proactive message handlers
+ */
+
+/**
  * Sends a message for a given thread reference identifier.
  *
  * @param threadReferenceId use userAadId for personal scope, and conversation id for other scopes
  * @param activityOrText activity to send
  * @returns void promise
  */
-export async function sendMessage(
+export async function sendProactiveMessage(
   threadReferenceId: string,
   activityOrText: string | Partial<Activity>
 ) {
