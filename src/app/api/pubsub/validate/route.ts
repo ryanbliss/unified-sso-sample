@@ -5,16 +5,24 @@ import { NextRequest, NextResponse } from "next/server";
  * @param req request
  */
 export async function OPTIONS(req: NextRequest): Promise<NextResponse> {
-  console.log(
-    "/api/pubsub/validate hub",
-    req.headers.get("WebHook-Request-Origin")
-  );
+  const allowedOrigin = "unify-sso-generic-pubsub.webpubsub.azure.com";
+  const requestOrigin = req.headers.get("WebHook-Request-Origin");
+  console.log("/api/pubsub/validate hub", requestOrigin);
+  if (requestOrigin !== allowedOrigin) {
+    return NextResponse.json(
+      {
+        error: "Invalid origin.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
   return NextResponse.json(
     {},
     {
       headers: {
-        "WebHook-Allowed-Origin":
-          "https://unify-sso-generic-pubsub.webpubsub.azure.com",
+        "WebHook-Allowed-Origin": allowedOrigin,
       },
     }
   );
