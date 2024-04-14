@@ -258,12 +258,13 @@ botApp.ai.action(
     state: ApplicationTurnState,
     paramaters: undefined
   ) => {
+    console.log("ot-app.ai.GetNotes: action start");
     let userAppToken: string;
     try {
       userAppToken = await getAppAuthToken(context);
     } catch (err) {
       // TODO: init app linking flow if not already linked
-      console.error(`bot-app.message /notes: error ${err}`);
+      console.error(`bot-app.ai.GetNotes: error ${err}`);
       return "You are not authenticated, please sign in to continue";
     }
     try {
@@ -287,7 +288,7 @@ botApp.ai.action(
       });
     } catch (err) {
       console.error(`bot-app.message /notes: error ${err}`);
-      await context.sendActivity("Error getting notes");
+      return "Error getting notes";
     }
 
     return "I've retrieved your notes for you. What else can I help you wiht?";
@@ -304,6 +305,7 @@ botApp.ai.action(
       text: string;
     }
   ) => {
+    console.log("ot-app.ai.CreateNote: action start");
     let userAppToken: string;
     try {
       userAppToken = await getAppAuthToken(context);
@@ -338,7 +340,7 @@ botApp.ai.action(
       });
     } catch (err) {
       console.error(`bot-app.message /notes: error ${err}`);
-      await context.sendActivity("Error getting notes");
+      return "Error getting notes";
     }
     return "Here you go! What else can I help you with?";
   }
