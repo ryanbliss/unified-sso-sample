@@ -70,7 +70,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const threadReferenceId = body.threadId ?? jwtPayload.user.connections.aad;
+  const threadReferenceId = body.threadId ?? jwtPayload.user.connections.aad.oid;
   if (typeof threadReferenceId !== "string") {
     throw new Error(
       "/api/messages/request-suggestions.ts: invalid thread reference id"
