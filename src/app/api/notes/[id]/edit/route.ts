@@ -52,12 +52,18 @@ export async function POST(
     );
   }
   const note = await editNote(params.id, body);
+  const noteSendable = {
+    ...note,
+    _id: note._id.toString(),
+    createdAt: note.createdAt.toString(),
+    editedAt: note.editedAt.toString(),
+  };
   // Notify any active websocket connections for this user of the change
   pubsubServiceClient
     .group(jwtPayload.user._id)
     .sendToAll({
       type: PubSubEventTypes.NOTE_CHANGE,
-      data: note,
+      data: noteSendable,
     })
     .then(() => {
       console.log(`/api/notes/edit/route.ts: sent PubSub message`);
@@ -69,9 +75,6 @@ export async function POST(
     });
 
   return NextResponse.json({
-    note: {
-      ...note,
-      _id: note._id.toString(),
-    },
+    note: noteSendable,
   });
 }

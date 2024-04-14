@@ -48,18 +48,17 @@ export const ViewNotes: FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!client) return;
     // Emitted on websocket connected
     const connectedListener = (e: OnConnectedArgs) => {
       console.log("connectedListener", e);
     };
-    client.on("connected", connectedListener);
+    client?.on("connected", connectedListener);
 
     // Emitted on websocket disconnected
     const disconnectedListener = (e: OnDisconnectedArgs) => {
       console.log("disconnectedListener", e);
     };
-    client.on("disconnected", disconnectedListener);
+    client?.on("disconnected", disconnectedListener);
 
     // Emitted on group message
     const groupMessageListener = (e: OnGroupDataMessageArgs) => {
@@ -89,25 +88,25 @@ export const ViewNotes: FC = () => {
       }
       console.log("groupMessageListener: invalid type", messageData);
     };
-    client.on("group-message", groupMessageListener);
+    client?.on("group-message", groupMessageListener);
 
     // Emitted on server message
     const serverMessageListener = (e: OnServerDataMessageArgs) => {
       console.log("serverMessageListener", e);
     };
-    client.on("server-message", serverMessageListener);
+    client?.on("server-message", serverMessageListener);
 
     if (!hasStartedPubSub.current) {
       hasStartedPubSub.current = true;
-      client.start().catch((err) => {
+      client?.start().catch((err) => {
         console.error(`ViewNotes client.start() error: ${err}`);
       });
     }
     return () => {
-      client.off("connected", connectedListener);
-      client.off("disconnected", disconnectedListener);
-      client.off("group-message", groupMessageListener);
-      client.off("server-message", serverMessageListener);
+      client?.off("connected", connectedListener);
+      client?.off("disconnected", disconnectedListener);
+      client?.off("group-message", groupMessageListener);
+      client?.off("server-message", serverMessageListener);
     };
   }, [client, notes]);
 
