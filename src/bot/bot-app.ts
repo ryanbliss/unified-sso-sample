@@ -251,45 +251,6 @@ botApp.message(
 
 // AI handlers
 
-// Define a prompt function for getting the current status of the lights
-planner.prompts.addFunction(
-  "getNotes",
-  async (context: TurnContext, memory: Memory) => {
-    let userAppToken: string;
-    try {
-      userAppToken = await getAppAuthToken(context);
-    } catch (err) {
-      // TODO: init app linking flow if not already linked
-      console.error(`bot-app.ai.GetNotes: error ${err}`);
-      return "You are not authenticated, please sign in to continue";
-    }
-    try {
-      // Get user notes
-      const response = await fetch(
-        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/list/my`),
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: userAppToken,
-          },
-        }
-      );
-      const body = await response.json();
-      if (response.status !== 200) {
-        throw new Error(body.error);
-      }
-      return `${body.notes.map(
-        (note: any) =>
-          `NOTE:\n  Note text: ${note.text}\n  Created at: ${note.createdAt}\n  Edited at: ${note.editedAt}\n`
-      )}`;
-    } catch (err) {
-      console.error(`bot-app.message /notes: error ${err}`);
-      return "Error getting notes";
-    }
-  }
-);
-
 // Get app user's notes
 botApp.ai.action(
   "GetNotes",
@@ -383,52 +344,6 @@ botApp.ai.action(
       return "Error getting notes";
     }
     return "Here you go! What else can I help you with?";
-  }
-);
-
-botApp.ai.action(
-  "SummarizeNotes",
-  async (
-    context: TurnContext,
-    state: ApplicationTurnState,
-    paramaters: {
-      text: string | undefined;
-    }
-  ) => {
-    console.log("ot-app.ai.GetNotes: action start");
-    let userAppToken: string;
-    try {
-      userAppToken = await getAppAuthToken(context);
-    } catch (err) {
-      // TODO: init app linking flow if not already linked
-      console.error(`bot-app.ai.GetNotes: error ${err}`);
-      return "You are not authenticated, please sign in to continue";
-    }
-    try {
-      // Get user notes
-      const response = await fetch(
-        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/list/my`),
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: userAppToken,
-          },
-        }
-      );
-      const body = await response.json();
-      if (response.status !== 200) {
-        throw new Error(body.error);
-      }
-      return `INSTRUCTIONS: Summarize the NOTES ${
-        paramaters.text
-          ? `with the following search text: ${paramaters.text}`
-          : ""
-      }.`;
-    } catch (err) {
-      console.error(`bot-app.message /notes: error ${err}`);
-      return "Error getting notes";
-    }
   }
 );
 

@@ -16,18 +16,5 @@
   {
     "name": "GetNotes",
     "description": "Retrieve a list of the users notes"
-  },
-  {
-    "name": "SummarizeNotes",
-    "description": "Summarize notes and/or answer questions about them",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "searchText": {
-          "type": "string",
-          "description": "The text to search for in the notes"
-        }
-      }
-    }
   }
 ]
