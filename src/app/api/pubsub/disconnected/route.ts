@@ -5,6 +5,10 @@ import { NextRequest, NextResponse } from "next/server";
  * @param req request
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  console.log(
+    "/api/pubsub/disconnected hub",
+    req.headers.get("WebHook-Request-Origin")
+  );
   const url = new URL(req.url);
   const hub = url.searchParams.get("event");
   console.log("/api/pubsub/disconnected hub", hub);

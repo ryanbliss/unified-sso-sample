@@ -6,16 +6,16 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   console.log(
-    "/api/pubsub/custom hub",
+    "/api/pubsub/validate hub",
     req.headers.get("WebHook-Request-Origin")
   );
   const url = new URL(req.url);
   const hub = url.searchParams.get("event");
-  console.log("/api/pubsub/custom hub", hub);
+  console.log("/api/pubsub/validate hub", hub);
   const secret = url.searchParams.get("secret");
-  console.log("/api/pubsub/custom secret", secret);
+  console.log("/api/pubsub/validate secret", secret);
   const body = await req.json();
-  console.log("/api/pubsub/custom body", JSON.stringify(body, null, 4));
+  console.log("/api/pubsub/validate body", JSON.stringify(body, null, 4));
   return NextResponse.json(
     {},
     {
