@@ -65,7 +65,7 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
   return (
     <Card
       style={{
-        backgroundColor: tokens.colorPaletteYellowBackground2,
+        backgroundColor: tokens.colorPaletteYellowBackground1,
       }}
     >
       <FlexColumn marginSpacer="small">
