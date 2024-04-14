@@ -65,13 +65,13 @@ export const ViewNotes: FC = () => {
       }
       const changedNote = messageData.data;
       if (!notes) {
-        setNotes([changedNote]);
+        setNotes([changedNote])
         return;
       }
       setNotes([
         ...notes.filter((note) => note._id !== changedNote._id),
-        changedNote,
-      ]);
+        changedNote
+      ])
       console.log("groupMessageListener", e);
     };
     client.on("group-message", groupMessageListener);
