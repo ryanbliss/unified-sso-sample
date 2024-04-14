@@ -1,5 +1,10 @@
 import { INoteResponse } from "@/models/note-base-models";
-import { Button, Card, Subtitle2, tokens } from "@fluentui/react-components";
+import {
+  Button,
+  Caption1,
+  Card,
+  tokens,
+} from "@fluentui/react-components";
 import { NoteEdit20Regular, Delete20Regular } from "@fluentui/react-icons";
 import { FC, useState } from "react";
 import { FlexColumn, FlexRow } from "../flex";
@@ -39,7 +44,7 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
       <FlexColumn marginSpacer="small">
         <FlexRow>{note.text}</FlexRow>
         <FlexRow spaceBetween>
-          <Subtitle2>{note.createdAt.toString()}</Subtitle2>
+          <Caption1>{`Created ${note.createdAt.toString()}`}</Caption1>
           <FlexRow>
             <Button
               icon={<NoteEdit20Regular />}
