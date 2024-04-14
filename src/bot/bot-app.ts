@@ -189,7 +189,7 @@ botApp.ai.action(
       return "Error getting notes";
     }
 
-    return "I've retrieved your notes for you. What else can I help you wiht?";
+    return "I've retrieved your notes for you. What else can I help you with?";
   }
 );
 

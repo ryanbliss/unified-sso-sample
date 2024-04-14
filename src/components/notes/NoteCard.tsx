@@ -3,6 +3,7 @@ import {
   Button,
   Caption1,
   Card,
+  Text,
   Textarea,
   tokens,
 } from "@fluentui/react-components";
@@ -65,13 +66,15 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
   return (
     <Card
       style={{
-        backgroundColor: tokens.colorPaletteYellowBackground1,
+        backgroundColor: tokens.colorPaletteYellowBackground2,
       }}
     >
       <FlexColumn marginSpacer="small">
         {!editing && (
           <>
-            <FlexRow>{note.text}</FlexRow>
+            <FlexRow>
+              <Text weight="medium">{note.text}</Text>
+            </FlexRow>
             <FlexRow spaceBetween vAlign="center">
               <Caption1>{`Last edited at ${note.editedAt.toISOString()}`}</Caption1>
               <FlexRow vAlign="center">
