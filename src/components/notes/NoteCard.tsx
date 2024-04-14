@@ -106,7 +106,11 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
               <Button disabled={disabled} onClick={onToggleEdit}>
                 {"Cancel"}
               </Button>
-              <Button disabled={disabled} onClick={onSaveEdit}>
+              <Button
+                appearance="primary"
+                disabled={disabled}
+                onClick={onSaveEdit}
+              >
                 {"Save"}
               </Button>
             </FlexRow>
