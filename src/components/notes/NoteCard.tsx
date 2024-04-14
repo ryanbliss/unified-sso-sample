@@ -15,19 +15,17 @@ import {
 import { FC, useState } from "react";
 import { FlexColumn, FlexRow } from "../flex";
 import { WebPubSubClient } from "@azure/web-pubsub-client";
-import { UserClientState } from "@/models/user-client-state";
+import { IUserClientState } from "@/models/user-client-state";
 import { useTeamsClientContext } from "@/context-providers";
 
 interface INoteCardProps {
   note: INoteResponse;
   editingId: string | undefined;
   setEditingId: (text?: string) => void;
-  client?: WebPubSubClient;
 }
 
 export const NoteCard: FC<INoteCardProps> = ({
   note,
-  client,
   editingId,
   setEditingId,
 }) => {
@@ -39,39 +37,43 @@ export const NoteCard: FC<INoteCardProps> = ({
 
   const onEdit = async () => {
     setEditingId(note._id);
-    if (!client) return;
-    sendClientStateToServer(client, false, note, editText, threadId).catch(
-      (err) => console.error(err)
+    sendClientStateToServer(false, note, editText, threadId).catch((err) =>
+      console.error(err)
     );
   };
 
   const onCancelEdit = async () => {
     setEditingId(undefined);
-    if (!client) return;
-    sendClientStateToServer(client, false, note, editText, threadId).catch(
-      (err) => console.error(err)
+    sendClientStateToServer(false, note, editText, threadId).catch((err) =>
+      console.error(err)
     );
   };
 
   const onEditText = async (newText: string) => {
     setEditText(newText);
-    if (!client) return;
-    sendClientStateToServer(client, false, note, newText, threadId).catch(
-      (err) => console.error(err)
+    sendClientStateToServer(false, note, newText, threadId).catch((err) =>
+      console.error(err)
     );
   };
 
   const requestSuggestions = async () => {
-    client?.sendEvent(
-      "request-suggestions",
-      {
-        threadId,
-      },
-      "json",
-      {
-        fireAndForget: true,
+    try {
+      const response = await fetch("/api/messages/request-suggestions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          threadId,
+        }),
+      });
+      const body = await response.json();
+      if (response.status !== 200) {
+        throw new Error(body.error);
       }
-    );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const onDelete = async () => {
@@ -187,13 +189,12 @@ export const NoteCard: FC<INoteCardProps> = ({
 
 // Send user's local state to server so the bot can help give assistance when needed
 async function sendClientStateToServer(
-  client: WebPubSubClient,
   editing: boolean,
   savedNote?: INoteResponse,
   editText?: string,
   threadId?: string
 ) {
-  const clientState: UserClientState = {
+  const clientState: IUserClientState = {
     editingNote: editing
       ? {
           _id: savedNote!._id,
@@ -202,7 +203,19 @@ async function sendClientStateToServer(
       : undefined,
     threadId,
   };
-  await client.sendEvent("update-client-state", clientState, "json", {
-    fireAndForget: true,
-  });
+  try {
+    const response = await fetch("/api/messages/update-client-state", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(clientState),
+    });
+    const body = await response.json();
+    if (response.status !== 200) {
+      throw new Error(body.error);
+    }
+  } catch (err) {
+    console.error(err);
+  }
 }
