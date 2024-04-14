@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FlexColumn } from "../flex";
 import { Card, Spinner, Title1, tokens } from "@fluentui/react-components";
-import { INoteResponse } from "@/models/note-base-models";
+import { INoteResponse, isINoteResponse } from "@/models/note-base-models";
 import { usePubSubClient } from "@/hooks/usePubSubClient";
 import {
   OnConnectedArgs,
@@ -9,15 +9,17 @@ import {
   OnGroupDataMessageArgs,
   OnServerDataMessageArgs,
 } from "@azure/web-pubsub-client";
+import { isPubSubEvent } from "@/models/pubsub-event-types";
 
 export const ViewNotes: FC = () => {
   const [notes, setNotes] = useState<INoteResponse[]>();
-  const hasStarted = useRef(false);
+  const hasRequestedInitialNotesRef = useRef(false);
+  const hasStartedPubSub = useRef(false);
   const { client } = usePubSubClient();
   useEffect(() => {
-    if (hasStarted.current) return;
+    if (hasRequestedInitialNotesRef.current) return;
     let mounted = true;
-    hasStarted.current = true;
+    hasRequestedInitialNotesRef.current = true;
     async function load() {
       const response = await fetch("/api/notes/list/my", {
         method: "GET",
@@ -55,6 +57,21 @@ export const ViewNotes: FC = () => {
 
     // Emitted on group message
     const groupMessageListener = (e: OnGroupDataMessageArgs) => {
+      if (e.message.dataType !== "json") return;
+      const messageData = e.message.data;
+      if (!isPubSubEvent<INoteResponse>(messageData, isINoteResponse)) {
+        console.log("groupMessageListener: invalid type", messageData);
+        return;
+      }
+      const changedNote = messageData.data;
+      if (!notes) {
+        setNotes([changedNote]);
+        return;
+      }
+      setNotes([
+        ...notes.filter((note) => note._id !== changedNote._id),
+        changedNote,
+      ]);
       console.log("groupMessageListener", e);
     };
     client.on("group-message", groupMessageListener);
@@ -65,16 +82,19 @@ export const ViewNotes: FC = () => {
     };
     client.on("server-message", serverMessageListener);
 
-    client.start().catch((err) => {
-      console.error(`ViewNotes client.start() error: ${err}`);
-    });
+    if (!hasStartedPubSub.current) {
+      hasStartedPubSub.current = true;
+      client.start().catch((err) => {
+        console.error(`ViewNotes client.start() error: ${err}`);
+      });
+    }
     return () => {
       client.off("connected", connectedListener);
       client.off("disconnected", disconnectedListener);
       client.off("group-message", groupMessageListener);
       client.off("server-message", serverMessageListener);
     };
-  }, [client]);
+  }, [client, notes]);
 
   return (
     <FlexColumn marginSpacer="small">

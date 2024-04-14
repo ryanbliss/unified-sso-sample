@@ -34,6 +34,7 @@ import { getAppAuthToken } from "./bot-auth-utils";
 import "./fs-utils";
 import { pubsubServiceClient } from "@/pubsub/pubsub-client";
 import { validateAppToken } from "@/utils/app-auth-utils";
+import { PubSubEventTypes } from "@/models/pubsub-event-types";
 
 interface ConversationState {
   count: number;
@@ -339,9 +340,13 @@ botApp.ai.action(
         attachments: [noteCard(body.note)],
       });
       const claims = validateAppToken(userAppToken);
+      // Notify any active websocket connections for this user of the change
       await pubsubServiceClient
         .group(claims!.user._id)
-        .sendToAll(JSON.stringify(body.note));
+        .sendToAll({
+          type: PubSubEventTypes.NOTE_CHANGE,
+          data: body.note,
+        });
     } catch (err) {
       console.error(`bot-app.message /notes: error ${err}`);
       await context.sendActivity("Error getting notes");
