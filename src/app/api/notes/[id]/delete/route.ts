@@ -53,6 +53,9 @@ export async function POST(
       type: PubSubEventTypes.DELETE_NOTE,
       data: responseData,
     })
+    .then(() => {
+      console.log(`/api/notes/delete/route.ts: sent PubSub message`);
+    })
     .catch((err) => {
       console.error(
         `/api/notes/edit/route.ts: error sending PubSub message ${err}`

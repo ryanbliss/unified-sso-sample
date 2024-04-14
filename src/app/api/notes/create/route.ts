@@ -57,6 +57,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       type: PubSubEventTypes.NOTE_CHANGE,
       data: note,
     })
+    .then(() => {
+      console.log(`/api/notes/create/route.ts: sent PubSub message`);
+    })
     .catch((err) => {
       console.error(
         `/api/notes/create/route.ts: error sending PubSub message ${err}`
