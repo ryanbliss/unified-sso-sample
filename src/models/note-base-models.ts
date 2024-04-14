@@ -13,10 +13,10 @@ export interface INoteResponse extends INoteBase {
 
 export function isINoteResponse(obj: any): obj is INoteResponse {
   if (!obj) return false;
-  if (!(obj.createdAt instanceof Date) && typeof obj.createdAt === "string") {
-    obj.createdAt = new Date(obj.createAt);
+  if (typeof obj.createdAt === "string") {
+    obj.createdAt = new Date(obj.createdAt);
   }
-  if (!(obj.editedAt instanceof Date) && typeof obj.editedAt === "string") {
+  if (typeof obj.editedAt === "string") {
     obj.editedAt = new Date(obj.editedAt);
   }
   return (
