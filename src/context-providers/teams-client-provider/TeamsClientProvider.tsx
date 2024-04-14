@@ -17,6 +17,7 @@ import { useTeamsAppContext } from "./internals";
 
 export interface ITeamsClientContext {
   teamsContext: app.Context | undefined;
+  threadId: string | undefined;
 }
 
 // Teams Context
@@ -62,6 +63,7 @@ export const TeamsClientProvider: FC<{
     <TeamsClientContext.Provider
       value={{
         teamsContext,
+        threadId: teamsContext?.chat?.id ?? teamsContext?.channel?.id,
       }}
     >
       <LoadErrorWrapper loading={isLoading} error={error}>

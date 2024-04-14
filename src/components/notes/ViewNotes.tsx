@@ -22,6 +22,10 @@ export const ViewNotes: FC = () => {
   const hasRequestedInitialNotesRef = useRef(false);
   const hasStartedPubSub = useRef(false);
   const { client } = usePubSubClient();
+
+  // Card being edited (can only be one at a time)
+  const [editingId, setEditingId] = useState<string>();
+
   useEffect(() => {
     if (hasRequestedInitialNotesRef.current) return;
     let mounted = true;
@@ -125,7 +129,15 @@ export const ViewNotes: FC = () => {
     <FlexColumn marginSpacer="small">
       <Title1>{"Notes"}</Title1>
       {!notes && <Spinner />}
-      {notes && notes.map((note) => <NoteCard key={note._id} note={note} />)}
+      {notes &&
+        notes.map((note) => (
+          <NoteCard
+            key={note._id}
+            note={note}
+            editingId={editingId}
+            setEditingId={setEditingId}
+          />
+        ))}
     </FlexColumn>
   );
 };

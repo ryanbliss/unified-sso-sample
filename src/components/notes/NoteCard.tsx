@@ -7,22 +7,73 @@ import {
   Textarea,
   tokens,
 } from "@fluentui/react-components";
-import { NoteEdit20Regular, Delete20Regular } from "@fluentui/react-icons";
+import {
+  NoteEdit20Regular,
+  Delete20Regular,
+  Wand20Regular,
+} from "@fluentui/react-icons";
 import { FC, useState } from "react";
 import { FlexColumn, FlexRow } from "../flex";
+import { WebPubSubClient } from "@azure/web-pubsub-client";
+import { UserClientState } from "@/models/user-client-state";
+import { useTeamsClientContext } from "@/context-providers";
 
 interface INoteCardProps {
   note: INoteResponse;
+  editingId: string | undefined;
+  setEditingId: (text?: string) => void;
+  client?: WebPubSubClient;
 }
 
-export const NoteCard: FC<INoteCardProps> = ({ note }) => {
+export const NoteCard: FC<INoteCardProps> = ({
+  note,
+  client,
+  editingId,
+  setEditingId,
+}) => {
   const [disabled, setDisabled] = useState(false);
-  const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(note.text);
+  const { threadId } = useTeamsClientContext();
 
-  const onToggleEdit = () => {
-    setEditing(!editing);
+  const editing = note._id === editingId;
+
+  const onEdit = async () => {
+    setEditingId(note._id);
+    if (!client) return;
+    sendClientStateToServer(client, false, note, editText, threadId).catch(
+      (err) => console.error(err)
+    );
   };
+
+  const onCancelEdit = async () => {
+    setEditingId(undefined);
+    if (!client) return;
+    sendClientStateToServer(client, false, note, editText, threadId).catch(
+      (err) => console.error(err)
+    );
+  };
+
+  const onEditText = async (newText: string) => {
+    setEditText(newText);
+    if (!client) return;
+    sendClientStateToServer(client, false, note, newText, threadId).catch(
+      (err) => console.error(err)
+    );
+  };
+
+  const requestSuggestions = async () => {
+    client?.sendEvent(
+      "request-suggestions",
+      {
+        threadId,
+      },
+      "json",
+      {
+        fireAndForget: true,
+      }
+    );
+  };
+
   const onDelete = async () => {
     if (disabled) return;
     setDisabled(true);
@@ -60,9 +111,10 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
       console.error(body.error);
       return;
     }
-    setEditing(false);
+    onCancelEdit();
     // On 200, this card should get updated by the PubSub websocket listener in ViewNotes.tsx
   };
+
   return (
     <Card
       style={{
@@ -82,7 +134,7 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
                   icon={<NoteEdit20Regular />}
                   appearance="subtle"
                   title="Edit note"
-                  onClick={onToggleEdit}
+                  onClick={onEdit}
                   disabled={disabled}
                 />
                 <Button
@@ -102,20 +154,29 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
               value={editText}
               placeholder={"Enter note text..."}
               onChange={(ev, data) => {
-                setEditText(data.value);
+                onEditText(data.value);
               }}
             />
-            <FlexRow spaceBetween>
-              <Button disabled={disabled} onClick={onToggleEdit}>
+            <FlexRow spaceBetween vAlign="center">
+              <Button disabled={disabled} onClick={onCancelEdit}>
                 {"Cancel"}
               </Button>
-              <Button
-                appearance="primary"
-                disabled={disabled}
-                onClick={onSaveEdit}
-              >
-                {"Save"}
-              </Button>
+              <FlexRow vAlign="center">
+                <Button
+                  icon={<Wand20Regular />}
+                  appearance="subtle"
+                  title="Suggest improvements"
+                  onClick={requestSuggestions}
+                  disabled={disabled}
+                />
+                <Button
+                  appearance="primary"
+                  disabled={disabled}
+                  onClick={onSaveEdit}
+                >
+                  {"Save"}
+                </Button>
+              </FlexRow>
             </FlexRow>
           </>
         )}
@@ -123,3 +184,25 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
     </Card>
   );
 };
+
+// Send user's local state to server so the bot can help give assistance when needed
+async function sendClientStateToServer(
+  client: WebPubSubClient,
+  editing: boolean,
+  savedNote?: INoteResponse,
+  editText?: string,
+  threadId?: string
+) {
+  const clientState: UserClientState = {
+    editingNote: editing
+      ? {
+          _id: savedNote!._id,
+          text: editText!,
+        }
+      : undefined,
+    threadId,
+  };
+  await client.sendEvent("update-client-state", clientState, "json", {
+    fireAndForget: true,
+  });
+}
