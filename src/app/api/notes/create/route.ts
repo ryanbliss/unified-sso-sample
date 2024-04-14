@@ -52,8 +52,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const noteSendable = {
     ...note,
     _id: note._id.toString(),
-    createdAt: note.createdAt.toString(),
-    editedAt: note.editedAt.toString(),
+    createdAt: note.createdAt.toISOString(),
+    editedAt: note.editedAt.toISOString(),
   };
 
   try {

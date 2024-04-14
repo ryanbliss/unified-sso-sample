@@ -39,7 +39,7 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
       <FlexColumn marginSpacer="small">
         <FlexRow>{note.text}</FlexRow>
         <FlexRow spaceBetween vAlign="center">
-          <Caption1>{`Created ${note.createdAt.toString()}`}</Caption1>
+          <Caption1>{`Created ${note.createdAt.toISOString()}`}</Caption1>
           <FlexRow vAlign="center">
             <Button
               icon={<NoteEdit20Regular />}

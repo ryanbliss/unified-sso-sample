@@ -55,8 +55,8 @@ export async function POST(
   const noteSendable = {
     ...note,
     _id: note._id.toString(),
-    createdAt: note.createdAt.toString(),
-    editedAt: note.editedAt.toString(),
+    createdAt: note.createdAt.toISOString(),
+    editedAt: note.editedAt.toISOString(),
   };
 
   try {
