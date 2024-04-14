@@ -46,21 +46,19 @@ export async function POST(
     deletedId: params.id,
   };
 
-  // Notify any active websocket connections for this user of the change
-  pubsubServiceClient
-    .group(jwtPayload.user._id)
-    .sendToAll({
+  try {
+    console.log(`/api/notes/[id]/delete/route.ts: sending PubSub message`);
+    // Notify any active websocket connections for this user of the change
+    await pubsubServiceClient.group(jwtPayload.user._id).sendToAll({
       type: PubSubEventTypes.DELETE_NOTE,
       data: responseData,
-    })
-    .then(() => {
-      console.log(`/api/notes/delete/route.ts: sent PubSub message`);
-    })
-    .catch((err) => {
-      console.error(
-        `/api/notes/edit/route.ts: error sending PubSub message ${err}`
-      );
     });
+    console.log(`/api/notes/[id]/delete/route.ts: sent PubSub message`);
+  } catch (err) {
+    console.error(
+      `/api/notes/[id]/delete/route.ts: error sending PubSub message ${err}`
+    );
+  }
 
   return NextResponse.json(responseData);
 }

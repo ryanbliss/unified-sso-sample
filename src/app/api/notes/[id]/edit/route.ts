@@ -58,21 +58,20 @@ export async function POST(
     createdAt: note.createdAt.toString(),
     editedAt: note.editedAt.toString(),
   };
-  // Notify any active websocket connections for this user of the change
-  pubsubServiceClient
-    .group(jwtPayload.user._id)
-    .sendToAll({
+
+  try {
+    console.log(`/api/notes/[id]/edit/route.ts: sending PubSub message`);
+    // Notify any active websocket connections for this user of the change
+    await pubsubServiceClient.group(jwtPayload.user._id).sendToAll({
       type: PubSubEventTypes.NOTE_CHANGE,
       data: noteSendable,
-    })
-    .then(() => {
-      console.log(`/api/notes/edit/route.ts: sent PubSub message`);
-    })
-    .catch((err) => {
-      console.error(
-        `/api/notes/edit/route.ts: error sending PubSub message ${err}`
-      );
     });
+    console.log(`/api/notes/[id]/edit/route.ts: sent PubSub message`);
+  } catch (err) {
+    console.error(
+      `/api/notes/[id]/edit/route.ts: error sending PubSub message ${err}`
+    );
+  }
 
   return NextResponse.json({
     note: noteSendable,
