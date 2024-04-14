@@ -15,6 +15,7 @@ import {
   OpenAIModel,
   PromptManager,
   ActionPlanner,
+  Memory,
 } from "@microsoft/teams-ai";
 import {
   createUserProfileCard,
@@ -250,6 +251,45 @@ botApp.message(
 
 // AI handlers
 
+// Define a prompt function for getting the current status of the lights
+planner.prompts.addFunction(
+  "getNotes",
+  async (context: TurnContext, memory: Memory) => {
+    let userAppToken: string;
+    try {
+      userAppToken = await getAppAuthToken(context);
+    } catch (err) {
+      // TODO: init app linking flow if not already linked
+      console.error(`bot-app.ai.GetNotes: error ${err}`);
+      return "You are not authenticated, please sign in to continue";
+    }
+    try {
+      // Get user notes
+      const response = await fetch(
+        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/list/my`),
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: userAppToken,
+          },
+        }
+      );
+      const body = await response.json();
+      if (response.status !== 200) {
+        throw new Error(body.error);
+      }
+      return `${body.notes.map(
+        (note: any) =>
+          `NOTE:\n  Note text: ${note.text}\n  Created at: ${note.createdAt}\n  Edited at: ${note.editedAt}\n`
+      )}`;
+    } catch (err) {
+      console.error(`bot-app.message /notes: error ${err}`);
+      return "Error getting notes";
+    }
+  }
+);
+
 // Get app user's notes
 botApp.ai.action(
   "GetNotes",
@@ -380,14 +420,11 @@ botApp.ai.action(
       if (response.status !== 200) {
         throw new Error(body.error);
       }
-      return `INSTRUCTIONS: Summarize the following notes. ${
+      return `INSTRUCTIONS: Summarize the NOTES ${
         paramaters.text
-          ? `Consider the following search text: ${paramaters.text}`
+          ? `with the following search text: ${paramaters.text}`
           : ""
-      } ${paramaters.text}\n\n${body.notes.map(
-        (note: any) =>
-          `NOTE:\nNote text: ${note.text}\nCreated at: ${note.createdAt}\nEdited at: ${note.editedAt}\n\n`
-      )}`;
+      }.`;
     } catch (err) {
       console.error(`bot-app.message /notes: error ${err}`);
       return "Error getting notes";
