@@ -341,11 +341,14 @@ botApp.ai.action(
       });
       const claims = validateAppToken(userAppToken);
       // Notify any active websocket connections for this user of the change
-      await pubsubServiceClient
+      pubsubServiceClient
         .group(claims!.user._id)
         .sendToAll({
           type: PubSubEventTypes.NOTE_CHANGE,
           data: body.note,
+        })
+        .catch((err) => {
+          console.error(`bot-app.message /notes: error sending PubSub message ${err}`);
         });
     } catch (err) {
       console.error(`bot-app.message /notes: error ${err}`);
