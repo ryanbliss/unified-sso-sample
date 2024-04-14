@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FlexColumn } from "../flex";
 import { Card, Spinner, Title1, tokens } from "@fluentui/react-components";
-import { INoteResponse, isINoteResponse } from "@/models/note-base-models";
+import { IDeleteNoteResponse, INoteResponse, isIDeleteNoteResponse, isINoteResponse } from "@/models/note-base-models";
 import { usePubSubClient } from "@/hooks/usePubSubClient";
 import {
   OnConnectedArgs,
@@ -59,20 +59,27 @@ export const ViewNotes: FC = () => {
     const groupMessageListener = (e: OnGroupDataMessageArgs) => {
       if (e.message.dataType !== "json") return;
       const messageData = e.message.data;
-      if (!isPubSubEvent<INoteResponse>(messageData, isINoteResponse)) {
-        console.log("groupMessageListener: invalid type", messageData);
+      if (isPubSubEvent<INoteResponse>(messageData, isINoteResponse)) {
+        const changedNote = messageData.data;
+        // Add or edit note in local list
+        if (!notes) {
+          setNotes([changedNote]);
+          return;
+        }
+        setNotes([
+          ...notes.filter((note) => note._id !== changedNote._id),
+          changedNote,
+        ]);
+        return;
+      } else if (isPubSubEvent<IDeleteNoteResponse>(messageData, isIDeleteNoteResponse)) {
+        if (!notes) return;
+        // Delete note from local list
+        setNotes([
+          ...notes.filter((note) => note._id !== messageData.data.deletedId),
+        ]);
         return;
       }
-      const changedNote = messageData.data;
-      if (!notes) {
-        setNotes([changedNote])
-        return;
-      }
-      setNotes([
-        ...notes.filter((note) => note._id !== changedNote._id),
-        changedNote
-      ])
-      console.log("groupMessageListener", e);
+      console.log("groupMessageListener: invalid type", messageData);
     };
     client.on("group-message", groupMessageListener);
 

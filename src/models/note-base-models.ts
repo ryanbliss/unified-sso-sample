@@ -30,3 +30,11 @@ export function isINoteResponse(obj: any): obj is INoteResponse {
     typeof obj.createdById === "string"
   );
 }
+
+export interface IDeleteNoteResponse {
+  deletedId: string;
+}
+
+export function isIDeleteNoteResponse(value: any): value is IDeleteNoteResponse {
+  return value && typeof value.deletedId === "string";
+}

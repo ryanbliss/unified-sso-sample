@@ -1,4 +1,5 @@
-import { createNote, isNoteEditable } from "@/database/notes";
+import { deleteNote, editNote, isNoteEditable } from "@/database/notes";
+import { IDeleteNoteResponse } from "@/models/note-base-models";
 import { PubSubEventTypes } from "@/models/pubsub-event-types";
 import { pubsubServiceClient } from "@/pubsub/pubsub-client";
 import { validateAppToken } from "@/utils/app-auth-utils";
@@ -8,12 +9,15 @@ import { NextRequest, NextResponse } from "next/server";
  * Rudimentary signout endpoint. In production, you should revoke the old token as well.
  * @param req request
  */
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+): Promise<NextResponse> {
   const token =
     req.cookies.get("Authorization")?.value ?? req.headers.get("Authorization");
   if (!token) {
     console.error(
-      "/api/notes/create/route.ts: no 'Authorization' cookie, should contain app token"
+      "/api/notes/[id]/delete/route.ts: no 'Authorization' cookie, should contain app token"
     );
     return NextResponse.json(
       {
@@ -26,7 +30,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
   const jwtPayload = validateAppToken(token);
   if (!jwtPayload) {
-    console.error("/api/notes/create/route.ts: invalid app token");
+    console.error("/api/notes/[id]/delete/route.ts: invalid app token");
     return NextResponse.json(
       {
         error: "Unauthorized",
@@ -36,37 +40,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const body = await req.json();
-  if (!isNoteEditable(body)) {
-    console.error("/api/notes/create/route.ts: invalid app token");
-    return NextResponse.json(
-      {
-        error: "Bad request. Request body is not type NoteEditable.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-  const note = await createNote(body, jwtPayload.user._id);
+  await deleteNote(params.id);
+
+  const responseData: IDeleteNoteResponse = {
+    deletedId: params.id,
+  };
 
   // Notify any active websocket connections for this user of the change
   pubsubServiceClient
     .group(jwtPayload.user._id)
     .sendToAll({
-      type: PubSubEventTypes.NOTE_CHANGE,
-      data: note,
+      type: PubSubEventTypes.DELETE_NOTE,
+      data: responseData,
     })
     .catch((err) => {
       console.error(
-        `/api/notes/create/route.ts: error sending PubSub message ${err}`
+        `/api/notes/edit/route.ts: error sending PubSub message ${err}`
       );
     });
 
-  return NextResponse.json({
-    note: {
-      ...note,
-      _id: note._id.toString(),
-    },
-  });
+  return NextResponse.json(responseData);
 }

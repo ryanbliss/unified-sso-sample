@@ -1,4 +1,6 @@
 import { editNote, isNoteEditable } from "@/database/notes";
+import { PubSubEventTypes } from "@/models/pubsub-event-types";
+import { pubsubServiceClient } from "@/pubsub/pubsub-client";
 import { validateAppToken } from "@/utils/app-auth-utils";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -50,6 +52,18 @@ export async function POST(
     );
   }
   const note = await editNote(params.id, body);
+  // Notify any active websocket connections for this user of the change
+  pubsubServiceClient
+    .group(jwtPayload.user._id)
+    .sendToAll({
+      type: PubSubEventTypes.NOTE_CHANGE,
+      data: note,
+    })
+    .catch((err) => {
+      console.error(
+        `/api/notes/edit/route.ts: error sending PubSub message ${err}`
+      );
+    });
 
   return NextResponse.json({
     note: {

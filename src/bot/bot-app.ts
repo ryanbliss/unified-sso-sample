@@ -32,9 +32,6 @@ import { findAADUser } from "@/database/user";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { getAppAuthToken } from "./bot-auth-utils";
 import "./fs-utils";
-import { pubsubServiceClient } from "@/pubsub/pubsub-client";
-import { validateAppToken } from "@/utils/app-auth-utils";
-import { PubSubEventTypes } from "@/models/pubsub-event-types";
 
 interface ConversationState {
   count: number;
@@ -316,7 +313,7 @@ botApp.ai.action(
       return "You are not authenticated, please sign in to continue";
     }
     try {
-      // Get user notes
+      // Create the note, which will also trigger an update through the PubSub the user is listening to
       const response = await fetch(
         new URL(`https://${process.env.BOT_DOMAIN}/api/notes/create`),
         {
@@ -339,17 +336,6 @@ botApp.ai.action(
       await context.sendActivity({
         attachments: [noteCard(body.note)],
       });
-      const claims = validateAppToken(userAppToken);
-      // Notify any active websocket connections for this user of the change
-      pubsubServiceClient
-        .group(claims!.user._id)
-        .sendToAll({
-          type: PubSubEventTypes.NOTE_CHANGE,
-          data: body.note,
-        })
-        .catch((err) => {
-          console.error(`bot-app.message /notes: error sending PubSub message ${err}`);
-        });
     } catch (err) {
       console.error(`bot-app.message /notes: error ${err}`);
       await context.sendActivity("Error getting notes");

@@ -1,5 +1,6 @@
 export enum PubSubEventTypes {
   NOTE_CHANGE = "NOTE_CHANGE",
+  DELETE_NOTE = "DELETE_NOTE",
   OTHER = "OTHER",
 }
 
