@@ -46,14 +46,14 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
               appearance="subtle"
               title="Edit note"
               onClick={onEdit}
-              disabled={!deleting}
+              disabled={deleting}
             />
             <Button
               icon={<Delete20Regular />}
               appearance="subtle"
               title="Delete note"
               onClick={onDelete}
-              disabled={!deleting}
+              disabled={deleting}
             />
           </FlexRow>
         </FlexRow>
