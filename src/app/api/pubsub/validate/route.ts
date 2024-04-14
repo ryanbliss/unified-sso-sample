@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
  * Pubsub webhook endpoint
  * @param req request
  */
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function OPTIONS(req: NextRequest): Promise<NextResponse> {
   console.log(
     "/api/pubsub/validate hub",
     req.headers.get("WebHook-Request-Origin")
