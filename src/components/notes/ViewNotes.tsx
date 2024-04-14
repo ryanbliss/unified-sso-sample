@@ -1,7 +1,12 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FlexColumn } from "../flex";
 import { Card, Spinner, Title1, tokens } from "@fluentui/react-components";
-import { IDeleteNoteResponse, INoteResponse, isIDeleteNoteResponse, isINoteResponse } from "@/models/note-base-models";
+import {
+  IDeleteNoteResponse,
+  INoteResponse,
+  isIDeleteNoteResponse,
+  isINoteResponse,
+} from "@/models/note-base-models";
 import { usePubSubClient } from "@/hooks/usePubSubClient";
 import {
   OnConnectedArgs,
@@ -10,6 +15,7 @@ import {
   OnServerDataMessageArgs,
 } from "@azure/web-pubsub-client";
 import { isPubSubEvent } from "@/models/pubsub-event-types";
+import { NoteCard } from "./NoteCard";
 
 export const ViewNotes: FC = () => {
   const [notes, setNotes] = useState<INoteResponse[]>();
@@ -71,7 +77,9 @@ export const ViewNotes: FC = () => {
           changedNote,
         ]);
         return;
-      } else if (isPubSubEvent<IDeleteNoteResponse>(messageData, isIDeleteNoteResponse)) {
+      } else if (
+        isPubSubEvent<IDeleteNoteResponse>(messageData, isIDeleteNoteResponse)
+      ) {
         if (!notes) return;
         // Delete note from local list
         setNotes([
@@ -107,17 +115,7 @@ export const ViewNotes: FC = () => {
     <FlexColumn marginSpacer="small">
       <Title1>{"Notes"}</Title1>
       {!notes && <Spinner />}
-      {notes &&
-        notes.map((note) => (
-          <Card
-            key={note._id}
-            style={{
-              backgroundColor: tokens.colorPaletteYellowBackground2,
-            }}
-          >
-            {note.text}
-          </Card>
-        ))}
+      {notes && notes.map((note) => <NoteCard key={note._id} note={note} />)}
     </FlexColumn>
   );
 };
