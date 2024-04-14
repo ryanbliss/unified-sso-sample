@@ -380,9 +380,11 @@ botApp.ai.action(
       if (response.status !== 200) {
         throw new Error(body.error);
       }
-      return `INSTRUCTIONS: Summarize the following notes. If defined, summarize the input: ${
+      return `INSTRUCTIONS: Summarize the following notes. ${
         paramaters.text
-      }\n\n${body.notes.map(
+          ? `Consider the following search text: ${paramaters.text}`
+          : ""
+      } ${paramaters.text}\n\n${body.notes.map(
         (note: any) =>
           `NOTE:\nNote text: ${note.text}\nCreated at: ${note.createdAt}\nEdited at: ${note.editedAt}\n\n`
       )}`;
