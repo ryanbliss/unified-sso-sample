@@ -6,16 +6,19 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   console.log(
-    "/api/pubsub/connect hub",
+    "/api/pubsub/connect origin",
     req.headers.get("WebHook-Request-Origin")
   );
   const url = new URL(req.url);
-  const hub = url.searchParams.get("event");
+  const hub = url.searchParams.get("hub");
   console.log("/api/pubsub/connect hub", hub);
+  // If you set a secret in your PubSub webhook, validate it here...
+  // For this sample, there is no secret configured so we just log it.
   const secret = url.searchParams.get("secret");
   console.log("/api/pubsub/connect secret", secret);
   const body = await req.json();
   console.log("/api/pubsub/connect body", JSON.stringify(body, null, 4));
+  // In production, you may want to validate the token (body.query[0]) and its claims (body.claims).
   return NextResponse.json(
     {},
     {

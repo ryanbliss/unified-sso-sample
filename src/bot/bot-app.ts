@@ -32,6 +32,8 @@ import { findAADUser } from "@/database/user";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { getAppAuthToken } from "./bot-auth-utils";
 import "./fs-utils";
+import { pubsubServiceClient } from "@/pubsub/pubsub-client";
+import { validateAppToken } from "@/utils/app-auth-utils";
 
 interface ConversationState {
   count: number;
@@ -336,6 +338,10 @@ botApp.ai.action(
       await context.sendActivity({
         attachments: [noteCard(body.note)],
       });
+      const claims = validateAppToken(userAppToken);
+      await pubsubServiceClient
+        .group(claims!.user._id)
+        .sendToAll(JSON.stringify(body.note));
     } catch (err) {
       console.error(`bot-app.message /notes: error ${err}`);
       await context.sendActivity("Error getting notes");
