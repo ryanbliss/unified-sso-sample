@@ -91,7 +91,7 @@ botAdapter.onTurnError = onTurnErrorHandler;
 const model = new OpenAIModel({
   // OpenAI Support
   apiKey: process.env.OPENAI_KEY!,
-  defaultModel: "gpt-4-turbo",
+  defaultModel: "gpt-3.5-turbo",
 
   // Request logging
   logRequests: true,

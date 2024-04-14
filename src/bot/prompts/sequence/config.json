@@ -3,7 +3,7 @@
     "description": "A bot that can create, view, and summarize notes",
     "type": "completion",
     "completion": {
-        "model": "gpt-4-turbo",
+        "model": "gpt-3.5-turbo",
         "completion_type": "chat",
         "include_history": true,
         "include_input": true,
