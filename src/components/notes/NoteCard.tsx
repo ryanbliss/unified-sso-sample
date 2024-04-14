@@ -14,7 +14,6 @@ import {
 } from "@fluentui/react-icons";
 import { FC, useState } from "react";
 import { FlexColumn, FlexRow } from "../flex";
-import { WebPubSubClient } from "@azure/web-pubsub-client";
 import { IUserClientState } from "@/models/user-client-state";
 import { useTeamsClientContext } from "@/context-providers";
 
@@ -50,8 +49,9 @@ export const NoteCard: FC<INoteCardProps> = ({
   };
 
   const onEditText = async (newText: string) => {
+    if (!editing) return;
     setEditText(newText);
-    sendClientStateToServer(false, note, newText, threadId).catch((err) =>
+    sendClientStateToServer(editing, note, newText, threadId).catch((err) =>
       console.error(err)
     );
   };
@@ -163,7 +163,7 @@ export const NoteCard: FC<INoteCardProps> = ({
               <Button disabled={disabled} onClick={onCancelEdit}>
                 {"Cancel"}
               </Button>
-              <FlexRow vAlign="center">
+              <FlexRow vAlign="center" marginSpacer="small">
                 <Button
                   icon={<Wand20Regular />}
                   appearance="subtle"

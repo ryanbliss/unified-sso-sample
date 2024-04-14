@@ -1,4 +1,5 @@
 import { isIUserClientState } from "@/models/user-client-state";
+import { validateAppToken } from "@/utils/app-auth-utils";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -7,6 +8,22 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   console.log("/api/messages/update-client-state");
+  const token =
+    req.cookies.get("Authorization")?.value ?? req.headers.get("Authorization");
+  if (!token) {
+    console.error(
+      "/api/notes/list/route.ts: no 'Authorization' cookie, should contain app token"
+    );
+    return NextResponse.json(
+      {
+        error: "Must include an 'Authorization' cookie with a valid app token",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+  const jwtPayload = validateAppToken(token);
   const body = await req.json();
   console.log(
     "/api/messages/update-client-state body",
