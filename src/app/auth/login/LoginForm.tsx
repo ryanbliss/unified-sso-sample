@@ -58,12 +58,14 @@ export const LoginForm: FC<{}> = (props) => {
       <Input
         type="email"
         value={email}
+        placeholder={"Email"}
         onChange={(ev, data) => {
           setEmail(data.value);
         }}
       />
       <Input
         type="password"
+        placeholder="Password"
         value={password}
         onChange={(ev, data) => {
           setPassword(data.value);

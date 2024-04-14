@@ -1,5 +1,11 @@
 import { INoteResponse } from "@/models/note-base-models";
-import { Button, Caption1, Card, tokens } from "@fluentui/react-components";
+import {
+  Button,
+  Caption1,
+  Card,
+  Textarea,
+  tokens,
+} from "@fluentui/react-components";
 import { NoteEdit20Regular, Delete20Regular } from "@fluentui/react-icons";
 import { FC, useState } from "react";
 import { FlexColumn, FlexRow } from "../flex";
@@ -9,13 +15,16 @@ interface INoteCardProps {
 }
 
 export const NoteCard: FC<INoteCardProps> = ({ note }) => {
-  const [deleting, setDeleting] = useState(false);
-  const onEdit = () => {
-    //
+  const [disabled, setDisabled] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(note.text);
+
+  const onToggleEdit = () => {
+    setEditing(!editing);
   };
   const onDelete = async () => {
-    if (deleting) return;
-    setDeleting(true);
+    if (disabled) return;
+    setDisabled(true);
     const response = await fetch(`/api/notes/${note._id}/delete`, {
       method: "POST",
       headers: {
@@ -25,10 +34,33 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
     const body = await response.json();
     if (response.status !== 200) {
       console.error(body.error);
-      setDeleting(false);
+      setDisabled(false);
       return;
     }
     // On 200, this card should get removed by the PubSub websocket listener in ViewNotes.tsx
+  };
+  const onSaveEdit = async () => {
+    if (disabled) return;
+    setDisabled(true);
+    const response = await fetch(`/api/notes/${note._id}/edit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: editText,
+        color: note.color,
+        threadId: note.threadId,
+      }),
+    });
+    const body = await response.json();
+    setDisabled(false);
+    if (response.status !== 200) {
+      console.error(body.error);
+      return;
+    }
+    setEditing(false);
+    // On 200, this card should get updated by the PubSub websocket listener in ViewNotes.tsx
   };
   return (
     <Card
@@ -37,26 +69,49 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
       }}
     >
       <FlexColumn marginSpacer="small">
-        <FlexRow>{note.text}</FlexRow>
-        <FlexRow spaceBetween vAlign="center">
-          <Caption1>{`Created ${note.createdAt.toISOString()}`}</Caption1>
-          <FlexRow vAlign="center">
-            <Button
-              icon={<NoteEdit20Regular />}
-              appearance="subtle"
-              title="Edit note"
-              onClick={onEdit}
-              disabled={deleting}
+        {!editing && (
+          <>
+            <FlexRow>{note.text}</FlexRow>
+            <FlexRow spaceBetween vAlign="center">
+              <Caption1>{`Created ${note.createdAt.toISOString()}`}</Caption1>
+              <FlexRow vAlign="center">
+                <Button
+                  icon={<NoteEdit20Regular />}
+                  appearance="subtle"
+                  title="Edit note"
+                  onClick={onToggleEdit}
+                  disabled={disabled}
+                />
+                <Button
+                  icon={<Delete20Regular />}
+                  appearance="subtle"
+                  title="Delete note"
+                  onClick={onDelete}
+                  disabled={disabled}
+                />
+              </FlexRow>
+            </FlexRow>
+          </>
+        )}
+        {editing && (
+          <>
+            <Textarea
+              value={editText}
+              placeholder={"Enter note text..."}
+              onChange={(ev, data) => {
+                setEditText(data.value);
+              }}
             />
-            <Button
-              icon={<Delete20Regular />}
-              appearance="subtle"
-              title="Delete note"
-              onClick={onDelete}
-              disabled={deleting}
-            />
-          </FlexRow>
-        </FlexRow>
+            <FlexRow spaceBetween>
+              <Button disabled={disabled} onClick={onToggleEdit}>
+                {"Cancel"}
+              </Button>
+              <Button disabled={disabled} onClick={onSaveEdit}>
+                {"Save"}
+              </Button>
+            </FlexRow>
+          </>
+        )}
       </FlexColumn>
     </Card>
   );

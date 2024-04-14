@@ -55,6 +55,7 @@ export const SignupForm: FC<{}> = (props) => {
       <Input
         type="email"
         value={email}
+        placeholder={"Email"}
         onChange={(ev, data) => {
           setEmail(data.value);
         }}
@@ -62,6 +63,7 @@ export const SignupForm: FC<{}> = (props) => {
       <Input
         type="password"
         value={password}
+        placeholder={"Password"}
         onChange={(ev, data) => {
           setPassword(data.value);
         }}
