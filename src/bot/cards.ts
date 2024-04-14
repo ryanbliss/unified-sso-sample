@@ -98,6 +98,26 @@ export function notesCard(notes: Note[]): Attachment {
       },
       ...notes.map((note) => noteBlock(note)),
     ],
+    actions: [
+      {
+        type: "Action.Submit",
+        title: "View",
+        data: {
+          msteams: {
+            type: "invoke",
+            value: {
+              type: "tab/tabInfoAction",
+              tabInfo: {
+                contentUrl: `https://${process.env.BOT_DOMAIN}`,
+                websiteUrl: `https://${process.env.BOT_DOMAIN}`,
+                name: "Notes",
+                entityId: "UNIFY_NOTES",
+              },
+            },
+          },
+        },
+      },
+    ],
   });
 }
 
