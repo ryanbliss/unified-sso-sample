@@ -295,7 +295,7 @@ botApp.ai.action(
   }
 );
 
-// Get app user's notes
+// Create a new note
 botApp.ai.action(
   "CreateNote",
   async (
@@ -343,6 +343,53 @@ botApp.ai.action(
       return "Error getting notes";
     }
     return "Here you go! What else can I help you with?";
+  }
+);
+
+botApp.ai.action(
+  "SummarizeNotes",
+  async (
+    context: TurnContext,
+    state: ApplicationTurnState,
+    paramaters: {
+      text: string | undefined;
+    }
+  ) => {
+    console.log("ot-app.ai.GetNotes: action start");
+    let userAppToken: string;
+    try {
+      userAppToken = await getAppAuthToken(context);
+    } catch (err) {
+      // TODO: init app linking flow if not already linked
+      console.error(`bot-app.ai.GetNotes: error ${err}`);
+      return "You are not authenticated, please sign in to continue";
+    }
+    try {
+      // Get user notes
+      const response = await fetch(
+        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/list/my`),
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: userAppToken,
+          },
+        }
+      );
+      const body = await response.json();
+      if (response.status !== 200) {
+        throw new Error(body.error);
+      }
+      return `INSTRUCTIONS: Summarize the following notes. If defined, summarize the input: ${
+        paramaters.text
+      }\n\n${body.notes.map(
+        (note: any) =>
+          `NOTE:\nNote text: ${note.text}\nCreated at: ${note.createdAt}\nEdited at: ${note.editedAt}\n\n`
+      )}`;
+    } catch (err) {
+      console.error(`bot-app.message /notes: error ${err}`);
+      return "Error getting notes";
+    }
   }
 );
 

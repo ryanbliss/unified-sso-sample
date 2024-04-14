@@ -1,22 +1,33 @@
 [
-    {
-        "name": "CreateNote",
-        "description": "Creates a note",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "text": {
-                    "type": "string",
-                    "description": "The text of the note the user will create"
-                }
-            },
-            "required": [
-                "text"
-            ]
+  {
+    "name": "CreateNote",
+    "description": "Creates a note",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "The text of the note the user will create"
         }
-    },
-    {
-        "name": "GetNotes",
-        "description": "Retrieve a list of the users notes"
+      },
+      "required": ["text"]
     }
+  },
+  {
+    "name": "GetNotes",
+    "description": "Retrieve a list of the users notes"
+  },
+  {
+    "name": "SummarizeNotes",
+    "description": "Summarize notes and/or answer questions about them",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "searchText": {
+          "type": "string",
+          "description": "The text to search for in the notes"
+        }
+      }
+    }
+  }
 ]
