@@ -66,7 +66,7 @@ function noteBlock(note: Note) {
           },
           {
             type: "TextBlock",
-            text: `Created ${note.createdAt}`,
+            text: `Last edited at ${note.editedAt}`,
             wrap: true,
             size: "Small",
             isSubtle: true,

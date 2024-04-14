@@ -41,10 +41,12 @@ export const ViewNotes: FC = () => {
       if (!mounted) return;
       const resNotes = body.notes;
       if (!Array.isArray(resNotes)) return;
-      for (let i = 0; i <resNotes.length; i++) {
+      for (let i = 0; i < resNotes.length; i++) {
         if (!isINoteResponse(resNotes[i])) return;
       }
-      setNotes(resNotes);
+      setNotes(
+        resNotes.sort((a, b) => b.editedAt.getTime() - a.editedAt.getTime())
+      );
     }
     load();
     return () => {
@@ -76,19 +78,23 @@ export const ViewNotes: FC = () => {
           setNotes([changedNote]);
           return;
         }
-        setNotes([
-          ...notes.filter((note) => note._id !== changedNote._id),
-          changedNote,
-        ]);
+        setNotes(
+          [
+            ...notes.filter((note) => note._id !== changedNote._id),
+            changedNote,
+          ].sort((a, b) => b.editedAt.getTime() - a.editedAt.getTime())
+        );
         return;
       } else if (
         isPubSubEvent<IDeleteNoteResponse>(messageData, isIDeleteNoteResponse)
       ) {
         if (!notes) return;
         // Delete note from local list
-        setNotes([
-          ...notes.filter((note) => note._id !== messageData.data.deletedId),
-        ]);
+        setNotes(
+          [
+            ...notes.filter((note) => note._id !== messageData.data.deletedId),
+          ].sort((a, b) => b.editedAt.getTime() - a.editedAt.getTime())
+        );
         return;
       }
       console.log("groupMessageListener: invalid type", messageData);

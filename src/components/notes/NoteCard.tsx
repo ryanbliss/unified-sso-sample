@@ -73,7 +73,7 @@ export const NoteCard: FC<INoteCardProps> = ({ note }) => {
           <>
             <FlexRow>{note.text}</FlexRow>
             <FlexRow spaceBetween vAlign="center">
-              <Caption1>{`Created ${note.createdAt.toISOString()}`}</Caption1>
+              <Caption1>{`Last edited at ${note.editedAt.toISOString()}`}</Caption1>
               <FlexRow vAlign="center">
                 <Button
                   icon={<NoteEdit20Regular />}
