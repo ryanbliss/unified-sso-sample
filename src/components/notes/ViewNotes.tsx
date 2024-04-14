@@ -96,9 +96,9 @@ export const ViewNotes: FC = () => {
     };
     client?.on("server-message", serverMessageListener);
 
-    if (!hasStartedPubSub.current) {
+    if (!hasStartedPubSub.current && client) {
       hasStartedPubSub.current = true;
-      client?.start().catch((err) => {
+      client.start().catch((err) => {
         console.error(`ViewNotes client.start() error: ${err}`);
       });
     }
