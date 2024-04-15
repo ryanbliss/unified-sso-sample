@@ -35,12 +35,12 @@ export const NoteCard: FC<INoteCardProps> = ({
   const editText = clientState?.editingNote?.text;
 
   const onEdit = async () => {
-    const newState = sendClientStateToServer(true, note, editText, threadId);
+    const newState = sendClientStateToServer(true, note, note.text, threadId);
     setClientState(newState);
   };
 
   const onCancelEdit = async () => {
-    const newState = sendClientStateToServer(false, note, editText, threadId);
+    const newState = sendClientStateToServer(false, note, undefined, threadId);
     setClientState(newState);
   };
 
