@@ -170,7 +170,6 @@ botApp.ai.action(
     try {
       userAppToken = await getAppAuthToken(context);
     } catch (err) {
-      // TODO: init app linking flow if not already linked
       console.error(`bot-app.ai.GetNotes: error ${err}`);
       // TODO: probably shouldn't show this in a group context
       await sendAppSignInCard(context);
@@ -219,7 +218,6 @@ botApp.ai.action(
     try {
       userAppToken = await getAppAuthToken(context);
     } catch (err) {
-      // TODO: init app linking flow if not already linked
       console.error(`bot-app.message /notes: error ${err}`);
       // TODO: probably shouldn't show this in a group context
       await sendAppSignInCard(context);
@@ -270,7 +268,6 @@ botApp.ai.action(
       }
       jwtPayload = payload;
     } catch (err) {
-      // TODO: init app linking flow if not already linked
       console.error(`bot-app.ai.SuggestEdits: error ${err}`);
       // TODO: probably shouldn't show this in a group context
       await sendAppSignInCard(context);
@@ -313,8 +310,9 @@ botApp.adaptiveCards.actionExecute(
     try {
       appToken = await getAppAuthToken(context);
     } catch (err) {
-      // TODO: init app linking flow if not already linked
-      console.error(`bot-app adaptiveCards.actionExecute approve-suggestion: error ${err}`);
+      console.error(
+        `bot-app adaptiveCards.actionExecute approve-suggestion: error ${err}`
+      );
       // TODO: probably shouldn't show this in a group context
       await sendAppSignInCard(context);
       return "You are not authenticated, please sign in to continue";
@@ -374,14 +372,24 @@ botApp.authentication
   .get("graph")
   .onUserSignInSuccess(
     async (context: TurnContext, state: ApplicationTurnState) => {
-      // Successfully logged in
-      await context.sendActivity("Successfully logged in");
-      await context.sendActivity(
-        `Token string length: ${state.temp.authTokens["graph"]!.length}`
-      );
-      await context.sendActivity(
+      console.log(
+        "bot-app graph auth success.",
         `This is what you said before the AuthFlow started: ${context.activity.text}`
       );
+      // Check if AAD user has a connected Unify app acount
+      try {
+        await getAppAuthToken(context);
+        // Successfully logged in
+        await context.sendActivity(
+          `Welcome, ${context.activity.from.name}! You are all set. How can I help you today?`
+        );
+      } catch (err) {
+        console.error(
+          `bot-app adaptiveCards.actionExecute approve-suggestion: error ${err}`
+        );
+        // TODO: probably shouldn't show this in a group context
+        await sendAppSignInCard(context);
+      }
     }
   );
 
