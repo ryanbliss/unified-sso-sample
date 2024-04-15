@@ -1,4 +1,3 @@
-import { threadId } from "worker_threads";
 import { INoteResponse } from "./note-base-models";
 
 export type EditNoteClientState = Pick<INoteResponse, "_id" | "text">;
@@ -19,6 +18,6 @@ export function isIUserClientState(value: any): value is IUserClientState {
     value &&
     typeof value === "object" &&
     (!value.editingNote || typeof value.editingNote === "object") &&
-    (!threadId || typeof threadId === "string")
+    (!value.threadId || typeof value.threadId === "string")
   );
 }
