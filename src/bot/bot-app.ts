@@ -338,10 +338,9 @@ async function addConversationReference(activity: Activity): Promise<void> {
     "bot-app.ts addConversationReference: adding reference for conversation reference",
     JSON.stringify(conversationReference.conversation)
   );
+  // TODO: going to store multiple duplicate references...but it would be better to do this with a join table
   let promises: Promise<void>[] = [];
   if (conversationReference.conversation.conversationType === "personal") {
-    // For personal scope we use the user id as well, because personal tabs don't include `chat` in `app.getContext()`
-    // The bot will never have an aadObjectId
     const userAadId =
       activity.from.aadObjectId ?? activity.recipient.aadObjectId;
     if (!userAadId) {
@@ -350,12 +349,26 @@ async function addConversationReference(activity: Activity): Promise<void> {
       );
       return;
     }
+    // For personal scope we use the user id as well, because personal tabs don't include `chat` in `app.getContext()`
+    // The bot will never have an aadObjectId
     promises.push(upsertReference(userAadId, conversationReference));
+    // For some reason, bots have a different conversationId format that is a: instead of 19:
+    // But in teams-js in chat contexts it will return the standard 19:{userId}_{recipientId}@unq.gbl.spaces
+    // TODO: figure out if other tenant environments (e.g., GCCH) use something different than @unq.gbl.spaces
+    promises.push(
+      upsertReference(
+        `19:${userAadId}_${process.env.BOT_ID}@unq.gbl.spaces`,
+        conversationReference
+      )
+    );
   }
-  promises.push(upsertReference(
-    conversationReference.conversation.id,
-    conversationReference
-  ));
+  // Store standard reference for all other thread types
+  promises.push(
+    upsertReference(
+      conversationReference.conversation.id,
+      conversationReference
+    )
+  );
   await Promise.all(promises);
   console.log(
     "bot-app.ts addConversationReference: upserted conversation reference"
