@@ -63,6 +63,7 @@ export default function ConnectionsPage() {
       // If in a task module, we submit the task, which will close the task module
       teamsJs.dialog.url.submit({
         success: true,
+        // Teams AI library requires the verb be attached to the data field
         verb: "connect-account",
       });
     }
@@ -71,6 +72,7 @@ export default function ConnectionsPage() {
   return (
     <ScrollWrapper>
       <FlexColumn
+        marginSpacer="medium"
         style={{
           padding: "24px",
         }}

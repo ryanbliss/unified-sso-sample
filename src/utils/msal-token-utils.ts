@@ -33,15 +33,15 @@ export async function exchangeTeamsTokenForMSALToken(
       "msal-token-utils exchangeTeamsTokenForMSALToken: result is null"
     );
   }
+  console.log(
+    "msal-token-utils exchangeTeamsTokenForMSALToken: ",
+    JSON.stringify(result, null, 4)
+  );
   if (!isIValidatedAuthenticationResult(result)) {
     throw new Error(
       "msal-token-utils exchangeTeamsTokenForMSALToken: account is null"
     );
   }
-  console.log(
-    "msal-token-utils exchangeTeamsTokenForMSALToken: ",
-    JSON.stringify(result, null, 4)
-  );
   return result;
 }
 
