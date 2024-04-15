@@ -2,6 +2,44 @@ import { Note } from "@/database/notes";
 import { IUserClientState } from "@/models/user-client-state";
 import { Attachment, CardFactory } from "botbuilder";
 
+export function createAppSignInCard(userName: string): Attachment {
+  return CardFactory.adaptiveCard({
+    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+    version: "1.5",
+    type: "AdaptiveCard",
+    body: [
+      {
+        type: "TextBlock",
+        text: `Hi ${userName}! Let's finish your account setup.`,
+        size: "Medium",
+        weight: "Bolder",
+      },
+      {
+        type: "TextBlock",
+        text: `Your Microsoft account is not yet linked to a Unify account. You will only need to do this once.`,
+        size: "Default",
+        isSubtle: true,
+        wrap: true,
+      },
+    ],
+    actions: [
+      [
+        {
+          id: "connect-account",
+          type: "Action.Submit",
+          title: "Connect account",
+          verb: "connect-account",
+          data: {
+            msteams: {
+              type: "task/fetch",
+            },
+          },
+        },
+      ],
+    ],
+  });
+}
+
 export function notesCard(notes: Note[]): Attachment {
   return CardFactory.adaptiveCard({
     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
@@ -153,7 +191,7 @@ export function suggestionCard(
 /**
  * @returns {any} initial adaptive card.
  */
-export function createSignInCard(): Attachment {
+export function createGraphSignInCard(): Attachment {
   return CardFactory.adaptiveCard({
     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
     version: "1.5",

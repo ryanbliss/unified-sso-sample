@@ -3,7 +3,7 @@ import { ApplicationTurnState, botApp } from "./bot-app";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { findAADUser } from "@/database/user";
 import { getUserDetailsFromGraph } from "./graph";
-import { createSignInCard, createUserProfileCard } from "./cards";
+import { createGraphSignInCard, createUserProfileCard } from "./cards";
 
 export function setupBotDebugMessageHandlers() {
   // Get the activity object, which is useful for debugging
@@ -82,7 +82,7 @@ export function setupBotDebugMessageHandlers() {
           "app.activity .Message: no token in _state, sending sign in card"
         );
         // This won't ever happen while autoSignIn is false
-        card = createSignInCard();
+        card = createGraphSignInCard();
       }
 
       console.log("app.activity .Message: context.sendActivity with card");
@@ -137,7 +137,7 @@ export function setupBotDebugMessageHandlers() {
         JSON.stringify(state)
       );
 
-      const initialCard = createSignInCard();
+      const initialCard = createGraphSignInCard();
 
       return initialCard.content;
     }

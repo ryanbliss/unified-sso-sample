@@ -14,11 +14,15 @@ import {
 import { useTeamsClientSSO } from "../../hooks/useTeamsClientSSO";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTeamsClientContext } from "@/context-providers";
+import * as teamsJs from "@microsoft/teams-js";
 
 export default function ConnectionsPage() {
   const [loading, setLoading] = useState(false);
   const { authError, authenticateWithTeamsSSO } = useTeamsClientSSO();
   const [accountLinkError, setAccountLinkError] = useState<Error>();
+
+  const { teamsContext } = useTeamsClientContext();
 
   const router = useRouter();
 
@@ -52,7 +56,15 @@ export default function ConnectionsPage() {
       }
       return;
     }
-    router.push("/");
+    if (teamsContext?.page?.frameContext !== teamsJs.FrameContexts.task) {
+      // Redirect to home page
+      router.push("/");
+    } else {
+      // If in a task module, we submit the task, which will close the task module
+      teamsJs.dialog.url.submit({
+        success: true,
+      });
+    }
   };
 
   return (

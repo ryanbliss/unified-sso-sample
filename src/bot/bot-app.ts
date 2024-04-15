@@ -4,6 +4,7 @@ import {
   ConfigurationServiceClientCredentialFactory,
   TurnContext,
   Activity,
+  TaskModuleTaskInfo,
 } from "botbuilder";
 import * as path from "path";
 import {
@@ -26,6 +27,7 @@ import {
   getIntelligentSuggestionActivity,
   getTeamsThreadId,
   getValidatedAppAuthToken,
+  sendAppSignInCard,
 } from "./bot-utils";
 import "./fs-utils";
 import { setupBotDebugMessageHandlers } from "./bot-debug-handlers";
@@ -170,6 +172,8 @@ botApp.ai.action(
     } catch (err) {
       // TODO: init app linking flow if not already linked
       console.error(`bot-app.ai.GetNotes: error ${err}`);
+      // TODO: probably shouldn't show this in a group context
+      await sendAppSignInCard(context);
       return "You are not authenticated, please sign in to continue";
     }
     try {
@@ -217,6 +221,8 @@ botApp.ai.action(
     } catch (err) {
       // TODO: init app linking flow if not already linked
       console.error(`bot-app.message /notes: error ${err}`);
+      // TODO: probably shouldn't show this in a group context
+      await sendAppSignInCard(context);
       return "You are not authenticated, please sign in to continue";
     }
     try {
@@ -266,6 +272,8 @@ botApp.ai.action(
     } catch (err) {
       // TODO: init app linking flow if not already linked
       console.error(`bot-app.ai.SuggestEdits: error ${err}`);
+      // TODO: probably shouldn't show this in a group context
+      await sendAppSignInCard(context);
       return "You are not authenticated, please sign in to continue";
     }
     const threadId = getTeamsThreadId(context.activity);
@@ -301,7 +309,16 @@ botApp.adaptiveCards.actionExecute(
         "data.clientState must be valid type of IUserClientState"
       );
     }
-    const appToken = await getAppAuthToken(context);
+    let appToken: string;
+    try {
+      appToken = await getAppAuthToken(context);
+    } catch (err) {
+      // TODO: init app linking flow if not already linked
+      console.error(`bot-app adaptiveCards.actionExecute approve-suggestion: error ${err}`);
+      // TODO: probably shouldn't show this in a group context
+      await sendAppSignInCard(context);
+      return "You are not authenticated, please sign in to continue";
+    }
     const response = await fetch(
       `https://${process.env.BOT_DOMAIN}/api/messages/update-client-state?sendPubSub=true`,
       {
@@ -321,6 +338,33 @@ botApp.adaptiveCards.actionExecute(
     return card.content;
   }
 );
+
+/**
+ * Tasks
+ */
+botApp.taskModules.fetch("connect-account", async (context, state, data) => {
+  console.log(
+    `bot-app.ts taskModules.fetch("connect-account"): data`,
+    JSON.stringify(data, null, 4)
+  );
+  const taskInfo: TaskModuleTaskInfo = {
+    title: "Connect your Microsoft 365 account",
+    height: "medium",
+    width: "medium",
+    url: `https://${process.env.BOT_DOMAIN}/connections`,
+    fallbackUrl: `https://${process.env.BOT_DOMAIN}/connections`,
+    completionBotId: process.env.BOT_ID,
+  };
+  return taskInfo;
+});
+botApp.taskModules.submit("connect-account", async (context, state, data) => {
+  console.log(
+    `bot-app.ts taskModules.submit("connect-account"): data`,
+    JSON.stringify(data, null, 4)
+  );
+  await context.sendActivity("You are all set! Now, how can I help you today?");
+  return null;
+});
 
 /**
  * Auth handlers

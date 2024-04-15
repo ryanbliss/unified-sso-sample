@@ -8,7 +8,7 @@ import { Activity, Attachment, TurnContext } from "botbuilder";
 import { botStorage } from "./bot-app";
 import { isIUserClientState } from "@/models/user-client-state";
 import { offerIntelligentSuggestionForText } from "@/utils/openai-utils";
-import { suggestionCard } from "./cards";
+import { createAppSignInCard, suggestionCard } from "./cards";
 
 /**
  * Utility function that converts bot context into an app user token.
@@ -82,17 +82,27 @@ export async function getIntelligentSuggestionActivity(
     );
     return {
       attachments: [
-        suggestionCard({
-          ...currentAppState,
-          editingNote: {
-            _id: editingNote._id,
-            text: suggestionText,
+        suggestionCard(
+          {
+            ...currentAppState,
+            editingNote: {
+              _id: editingNote._id,
+              text: suggestionText,
+            },
           },
-        }, false),
+          false
+        ),
       ],
     };
   } catch (err) {
     console.error("/api/messages/request-suggestions.ts: openai error" + err);
     throw new Error("Internal error. OpenAI completion failed.");
   }
+}
+
+export async function sendAppSignInCard(context: TurnContext): Promise<void> {
+  const appSignInCard = createAppSignInCard(context.activity.from.name);
+  await context.sendActivity({
+    attachments: [appSignInCard],
+  });
 }
