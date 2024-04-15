@@ -41,7 +41,7 @@ export class MongoDBStorage implements Storage {
           this.memory[key] = value;
           data[key] = parsedValue;
         } catch (err) {
-          console.error(err);
+          console.warn(err);
         }
       }
     }
