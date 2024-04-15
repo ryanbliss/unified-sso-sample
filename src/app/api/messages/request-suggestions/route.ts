@@ -104,14 +104,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const editText = currentAppState.editingNote?.text;
-  if (!editText) {
+  const editingNote = currentAppState.editingNote;
+  if (!editingNote) {
     console.error(
-      "/api/messages/request-suggestions.ts: no edit text in user's app state"
+      "/api/messages/request-suggestions.ts: no edit note in user's app state"
     );
     return NextResponse.json(
       {
-        error: "Bad request. User's app state does not include edit text.",
+        error: "Bad request. User's app state does not include edit note.",
       },
       {
         status: 400,
@@ -119,13 +119,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   try {
-    const suggestionText = await offerIntelligentSuggestionForText(editText);
+    const suggestionText = await offerIntelligentSuggestionForText(editingNote.text);
     console.log(
       "/api/messages/request-suggestions.ts: openai suggestion",
       suggestionText
     );
     await sendProactiveMessage(threadReferenceId, {
-      attachments: [suggestionCard(suggestionText, false)],
+      attachments: [suggestionCard(currentAppState.editingNote!._id, suggestionText, false)],
     });
   } catch (err) {
     console.error("/api/messages/request-suggestions.ts: openai error" + err);

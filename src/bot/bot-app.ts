@@ -258,7 +258,7 @@ botApp.adaptiveCards.actionExecute(
       "bot-app adaptiveCards.actionExecute approve-suggestion: data:",
       data
     );
-    const card = suggestionCard("Placeholder", true);
+    const card = suggestionCard(data.noteId, data.suggestionText, true);
 
     return card.content;
   }

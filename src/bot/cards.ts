@@ -47,13 +47,50 @@ export function noteCard(note: Note): Attachment {
   });
 }
 
+function noteBlock(note: Note) {
+  return {
+    type: "Container",
+    spacing: "Large",
+    items: [
+      {
+        type: "Container",
+        items: [
+          {
+            type: "TextBlock",
+            text: note.text,
+            wrap: true,
+            isSubtle: false,
+            color: "Attention",
+            weight: "Bolder",
+            size: "Default",
+          },
+          {
+            type: "TextBlock",
+            text: `Last edited at ${note.editedAt}`,
+            wrap: true,
+            size: "Small",
+            isSubtle: true,
+          },
+        ],
+        separator: true,
+        spacing: "Small",
+        style: "warning",
+      },
+    ],
+  };
+}
+
 /**
  * AI-powered suggestion for improving a note
  * @param suggestionText text AI suggested
  * @param approved whether the user has approved the suggestion or not
  * @returns attachment iwth the card
  */
-export function suggestionCard(suggestionText: string, approved: boolean): Attachment {
+export function suggestionCard(
+  noteId: string,
+  suggestionText: string,
+  approved: boolean
+): Attachment {
   const body: any[] = [
     {
       type: "Container",
@@ -99,6 +136,10 @@ export function suggestionCard(suggestionText: string, approved: boolean): Attac
       type: "Action.Execute",
       title: "Approve",
       verb: "approve-suggestion",
+      data: {
+        noteId,
+        suggestionText,
+      },
     });
   }
   return CardFactory.adaptiveCard({
@@ -108,39 +149,6 @@ export function suggestionCard(suggestionText: string, approved: boolean): Attac
     body,
     actions,
   });
-}
-
-function noteBlock(note: Note) {
-  return {
-    type: "Container",
-    spacing: "Large",
-    items: [
-      {
-        type: "Container",
-        items: [
-          {
-            type: "TextBlock",
-            text: note.text,
-            wrap: true,
-            isSubtle: false,
-            color: "Attention",
-            weight: "Bolder",
-            size: "Default",
-          },
-          {
-            type: "TextBlock",
-            text: `Last edited at ${note.editedAt}`,
-            wrap: true,
-            size: "Small",
-            isSubtle: true,
-          },
-        ],
-        separator: true,
-        spacing: "Small",
-        style: "warning",
-      },
-    ],
-  };
 }
 
 /**

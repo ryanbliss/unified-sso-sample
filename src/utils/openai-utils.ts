@@ -22,7 +22,7 @@ export async function offerIntelligentSuggestionForText(
       },
       {
         role: "assistant",
-        content: "I need to get some dog food. Don't forget",
+        content: "I need to get some dog food. Don't forget to buy dog food that is healthy for a dog of her size, breed, and unique nutritional needs.",
       },
       {
         role: "user",
