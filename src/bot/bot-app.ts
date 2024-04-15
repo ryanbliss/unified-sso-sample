@@ -21,9 +21,15 @@ import {
   upsertReference,
 } from "@/database/conversation-references";
 import { MongoDBStorage } from "./MongoDBStorage";
-import { getAppAuthToken } from "./bot-auth-utils";
+import {
+  getAppAuthToken,
+  getIntelligentSuggestionActivity,
+  getTeamsThreadId,
+  getValidatedAppAuthToken,
+} from "./bot-utils";
 import "./fs-utils";
 import { setupBotDebugMessageHandlers } from "./bot-debug-handlers";
+import { IAppJwtToken, validateAppToken } from "@/utils/app-auth-utils";
 
 interface ConversationState {
   count: number;
@@ -244,6 +250,36 @@ botApp.ai.action(
   }
 );
 
+// Create a new note
+botApp.ai.action(
+  "SuggestEdits",
+  async (context: TurnContext, state: ApplicationTurnState) => {
+    console.log("bot-app.ai.SuggestEdits: action start");
+    let jwtPayload: IAppJwtToken;
+    try {
+      const payload = await getValidatedAppAuthToken(context);
+      if (!payload) {
+        throw new Error("Invalid token");
+      }
+      jwtPayload = payload;
+    } catch (err) {
+      // TODO: init app linking flow if not already linked
+      console.error(`bot-app.ai.SuggestEdits: error ${err}`);
+      return "You are not authenticated, please sign in to continue";
+    }
+    const threadId = getTeamsThreadId(context.activity);
+    const suggestionActivity = await getIntelligentSuggestionActivity(
+      threadId,
+      jwtPayload.user._id
+    );
+    if (!suggestionActivity) {
+      return "You are not currently editing any notes. Please start editing a note to continue.";
+    }
+    await context.sendActivity(suggestionActivity);
+    return "Here you go! What else can I help you with?";
+  }
+);
+
 /**
  * Adaptive Card handlers
  */
@@ -356,10 +392,7 @@ async function addConversationReference(activity: Activity): Promise<void> {
     // But in teams-js in chat contexts it will return the standard 19:{userId}_{recipientId}@unq.gbl.spaces
     // TODO: figure out if other tenant environments (e.g., GCCH) use something different than @unq.gbl.spaces
     promises.push(
-      upsertReference(
-        `19:${userAadId}_${process.env.BOT_ID}@unq.gbl.spaces`,
-        conversationReference
-      )
+      upsertReference(getTeamsThreadId(activity), conversationReference)
     );
   }
   // Store standard reference for all other thread types

@@ -1,4 +1,5 @@
 import { botStorage, sendProactiveMessage } from "@/bot/bot-app";
+import { getIntelligentSuggestionActivity } from "@/bot/bot-utils";
 import { suggestionCard } from "@/bot/cards";
 import { prepareBotPromptFiles } from "@/bot/fs-utils";
 import { isIUserClientState } from "@/models/user-client-state";
@@ -88,50 +89,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const storageKey = `custom/${body.threadId}/${jwtPayload.user._id}`;
-  const storeItems = await botStorage.read([storageKey]);
-  const currentAppState = storeItems[storageKey];
-  if (!isIUserClientState(currentAppState)) {
-    console.error(
-      "/api/messages/request-suggestions.ts: currentAppState is null"
-    );
-    return NextResponse.json(
-      {
-        error: "Bad request. User app state is not known",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
-  const editingNote = currentAppState.editingNote;
-  if (!editingNote) {
-    console.error(
-      "/api/messages/request-suggestions.ts: no edit note in user's app state"
-    );
-    return NextResponse.json(
-      {
-        error: "Bad request. User's app state does not include edit note.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
   try {
-    const suggestionText = await offerIntelligentSuggestionForText(editingNote.text);
-    console.log(
-      "/api/messages/request-suggestions.ts: openai suggestion",
-      suggestionText
+    const suggestionActivity = await getIntelligentSuggestionActivity(
+      threadReferenceId,
+      jwtPayload.user._id
     );
-    await sendProactiveMessage(threadReferenceId, {
-      attachments: [suggestionCard(currentAppState.editingNote!._id, suggestionText, false)],
-    });
+    if (!suggestionActivity) {
+      throw new Error("Internal error. OpenAI completion failed.");
+    }
+    console.log("/api/messages/request-suggestions.ts: suggestion found");
+    await sendProactiveMessage(threadReferenceId, suggestionActivity);
   } catch (err) {
-    console.error("/api/messages/request-suggestions.ts: openai error" + err);
+    console.error("/api/messages/request-suggestions.ts: error" + err);
     return NextResponse.json(
       {
-        error: "Internal error. OpenAI completion failed.",
+        error: "Internal error.",
       },
       {
         status: 500,

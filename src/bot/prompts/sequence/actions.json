@@ -18,5 +18,9 @@
     {
         "name": "GetNotes",
         "description": "Retrieve a list of the users notes"
+    },
+    {
+        "name": "SuggestEdits",
+        "description": "Suggest an improvement for the note the user is currently editing"
     }
 ]
