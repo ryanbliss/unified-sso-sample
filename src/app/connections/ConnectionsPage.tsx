@@ -63,6 +63,7 @@ export default function ConnectionsPage() {
       // If in a task module, we submit the task, which will close the task module
       teamsJs.dialog.url.submit({
         success: true,
+        verb: "connect-account",
       });
     }
   };

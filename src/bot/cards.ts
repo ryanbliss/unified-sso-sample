@@ -35,10 +35,6 @@ export function createAppSignInCard(userName: string): Attachment {
           [DEFAULT_TASK_DATA_FILTER]: "connect-account",
           msteams: {
             type: "task/fetch",
-            data: {
-              // Teams AI library requires the verb be attached to the data field
-              [DEFAULT_TASK_DATA_FILTER]: "connect-account",
-            }
           },
         },
       },
