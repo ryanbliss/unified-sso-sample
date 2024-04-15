@@ -1,8 +1,10 @@
 import { Note } from "@/database/notes";
 import { IUserClientState } from "@/models/user-client-state";
+import { TaskModuleInvokeNames } from "@microsoft/teams-ai";
 import { Attachment, CardFactory } from "botbuilder";
 
 export function createAppSignInCard(userName: string): Attachment {
+  const { DEFAULT_TASK_DATA_FILTER } = TaskModuleInvokeNames;
   return CardFactory.adaptiveCard({
     $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
     version: "1.5",
@@ -29,6 +31,8 @@ export function createAppSignInCard(userName: string): Attachment {
         title: "Connect account",
         verb: "connect-account",
         data: {
+          // Teams AI library requires the verb be attached to the data field
+          [DEFAULT_TASK_DATA_FILTER]: "connect-account",
           msteams: {
             type: "task/fetch",
           },
