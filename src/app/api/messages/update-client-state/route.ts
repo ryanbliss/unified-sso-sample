@@ -1,5 +1,7 @@
+import { botStorage } from "@/bot/bot-app";
 import { isIUserClientState } from "@/models/user-client-state";
 import { validateAppToken } from "@/utils/app-auth-utils";
+import { StoreItems } from "botbuilder";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -24,6 +26,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const jwtPayload = validateAppToken(token);
+  if (!jwtPayload) {
+    console.error("/api/messages/update-client-state.ts: Invavlid token.");
+    return NextResponse.json(
+      {
+        error: "Unauthorized",
+      },
+      {
+        status: 401,
+      }
+    );
+  }
+  
   const body = await req.json();
   console.log(
     "/api/messages/update-client-state body",
@@ -42,6 +56,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
+  const changes: StoreItems = {};
+  // TODO: handle personal app case where threadId isn't known
+  // Store client state in bot storage
+  changes[`custom/${body.threadId}/${jwtPayload.user._id}`] = JSON.stringify(body);
+  await botStorage.write(changes);
   // In production, you may want to validate the token (body.query[0]) and its claims (body.claims).
   return NextResponse.json({});
 }

@@ -47,6 +47,69 @@ export function noteCard(note: Note): Attachment {
   });
 }
 
+/**
+ * AI-powered suggestion for improving a note
+ * @param suggestionText text AI suggested
+ * @param approved whether the user has approved the suggestion or not
+ * @returns attachment iwth the card
+ */
+export function suggestionCard(suggestionText: string, approved: boolean): Attachment {
+  const body: any[] = [
+    {
+      type: "Container",
+      spacing: "Large",
+      items: [
+        {
+          type: "TextBlock",
+          text: "Suggestion:",
+          wrap: true,
+          isSubtle: false,
+          weight: "Bolder",
+          size: "Default",
+        },
+        {
+          type: "Container",
+          items: [
+            {
+              type: "TextBlock",
+              text: suggestionText,
+              wrap: true,
+              isSubtle: false,
+              color: "Attention",
+              weight: "Bolder",
+              size: "Default",
+            },
+          ],
+          separator: true,
+          spacing: "Small",
+          style: "warning",
+        },
+      ],
+    },
+  ];
+  const actions: any[] = [];
+  if (approved) {
+    body.push({
+      type: "TextBlock",
+      text: "Approved",
+      isSubtle: true,
+    });
+  } else {
+    actions.push({
+      type: "Action.Execute",
+      title: "Approve",
+      verb: "approve-suggestion",
+    });
+  }
+  return CardFactory.adaptiveCard({
+    $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+    version: "1.5",
+    type: "AdaptiveCard",
+    body,
+    actions,
+  });
+}
+
 function noteBlock(note: Note) {
   return {
     type: "Container",

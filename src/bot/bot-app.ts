@@ -15,7 +15,7 @@ import {
   PromptManager,
   ActionPlanner,
 } from "@microsoft/teams-ai";
-import { notesCard, noteCard } from "./cards";
+import { notesCard, noteCard, suggestionCard } from "./cards";
 import {
   findReference,
   upsertReference,
@@ -99,9 +99,9 @@ const planner = new ActionPlanner({
 });
 
 // Define storage and application
-const storage = new MongoDBStorage();
+export const botStorage = new MongoDBStorage();
 export const botApp = new ApplicationBuilder<ApplicationTurnState>()
-  .withStorage(storage)
+  .withStorage(botStorage)
   .withAIOptions({
     planner,
   })
@@ -241,6 +241,26 @@ botApp.ai.action(
       return "Error getting notes";
     }
     return "Here you go! What else can I help you with?";
+  }
+);
+
+/**
+ * Adaptive Card handlers
+ */
+botApp.adaptiveCards.actionExecute(
+  "approve-suggestion",
+  async (
+    _context: TurnContext,
+    state: ApplicationTurnState,
+    data: Record<string, any>
+  ) => {
+    console.log(
+      "bot-app adaptiveCards.actionExecute approve-suggestion: data:",
+      data
+    );
+    const card = suggestionCard("Placeholder", true);
+
+    return card.content;
   }
 );
 

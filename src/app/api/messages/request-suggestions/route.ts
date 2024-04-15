@@ -1,6 +1,9 @@
-import { sendProactiveMessage } from "@/bot/bot-app";
+import { botStorage, sendProactiveMessage } from "@/bot/bot-app";
+import { suggestionCard } from "@/bot/cards";
 import { prepareBotPromptFiles } from "@/bot/fs-utils";
+import { isIUserClientState } from "@/models/user-client-state";
 import { validateAppToken } from "@/utils/app-auth-utils";
+import { offerIntelligentSuggestionForText } from "@/utils/openai-utils";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -70,16 +73,71 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const threadReferenceId = body.threadId ?? jwtPayload.user.connections.aad.oid;
+  const threadReferenceId =
+    body.threadId ?? jwtPayload.user.connections.aad.oid;
   if (typeof threadReferenceId !== "string") {
-    throw new Error(
+    console.error(
       "/api/messages/request-suggestions.ts: invalid thread reference id"
     );
+    return NextResponse.json(
+      {
+        error: "Bad request. Invalid threadReferenceId",
+      },
+      {
+        status: 400,
+      }
+    );
   }
-  await sendProactiveMessage(
-    threadReferenceId,
-    `Placeholder message for what will become a suggestion message`
-  );
+  const storageKey = `custom/${body.threadId}/${jwtPayload.user._id}`;
+  const storeItems = await botStorage.read([storageKey]);
+  const currentAppState = storeItems[storageKey];
+  if (!isIUserClientState(currentAppState)) {
+    console.error(
+      "/api/messages/request-suggestions.ts: currentAppState is null"
+    );
+    return NextResponse.json(
+      {
+        error: "Bad request. User app state is not known",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+  const editText = currentAppState.editingNote?.text;
+  if (!editText) {
+    console.error(
+      "/api/messages/request-suggestions.ts: no edit text in user's app state"
+    );
+    return NextResponse.json(
+      {
+        error: "Bad request. User's app state does not include edit text.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+  try {
+    const suggestionText = await offerIntelligentSuggestionForText(editText);
+    console.log(
+      "/api/messages/request-suggestions.ts: openai suggestion",
+      suggestionText
+    );
+    await sendProactiveMessage(threadReferenceId, {
+      attachments: [suggestionCard(suggestionText, false)],
+    });
+  } catch (err) {
+    console.error("/api/messages/request-suggestions.ts: openai error" + err);
+    return NextResponse.json(
+      {
+        error: "Internal error. OpenAI completion failed.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
   return NextResponse.json({
     messageSent: true,
   });
