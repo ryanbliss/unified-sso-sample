@@ -59,7 +59,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const changes: StoreItems = {};
   // TODO: handle personal app case where threadId isn't known
   // Store client state in bot storage
-  changes[`custom/${body.threadId}/${jwtPayload.user._id}`] = JSON.stringify(body);
+  changes[`custom/${body.threadId}/${jwtPayload.user._id}`] = body;
   await botStorage.write(changes);
   // In production, you may want to validate the token (body.query[0]) and its claims (body.claims).
   return NextResponse.json({});
