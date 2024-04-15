@@ -36,7 +36,7 @@ export const NoteCard: FC<INoteCardProps> = ({
 
   const onEdit = async () => {
     setEditingId(note._id);
-    sendClientStateToServer(false, note, editText, threadId).catch((err) =>
+    sendClientStateToServer(true, note, editText, threadId).catch((err) =>
       console.error(err)
     );
   };
