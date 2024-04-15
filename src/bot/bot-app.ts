@@ -303,7 +303,7 @@ botApp.adaptiveCards.actionExecute(
     }
     const appToken = await getAppAuthToken(context);
     const response = await fetch(
-      "/api/messages/update-client-state?sendPubSub=true",
+      `https://${process.env.BOT_DOMAIN}/api/messages/update-client-state?sendPubSub=true`,
       {
         method: "POST",
         headers: {
