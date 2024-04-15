@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FlexColumn } from "../flex";
-import { Spinner, Title1 } from "@fluentui/react-components";
+import { Caption1, Spinner, Title1 } from "@fluentui/react-components";
 import {
   IDeleteNoteResponse,
   INoteResponse,
@@ -16,7 +16,10 @@ import {
 } from "@azure/web-pubsub-client";
 import { isPubSubEvent } from "@/models/pubsub-event-types";
 import { NoteCard } from "./NoteCard";
-import { IUserClientState, isIUserClientState } from "@/models/user-client-state";
+import {
+  IUserClientState,
+  isIUserClientState,
+} from "@/models/user-client-state";
 import { useTeamsClientContext } from "@/context-providers";
 
 export const ViewNotes: FC = () => {
@@ -105,7 +108,9 @@ export const ViewNotes: FC = () => {
           ].sort((a, b) => b.editedAt.getTime() - a.editedAt.getTime())
         );
         return;
-      } else if (isPubSubEvent<IUserClientState>(messageData, isIUserClientState)) {
+      } else if (
+        isPubSubEvent<IUserClientState>(messageData, isIUserClientState)
+      ) {
         // The bot changed the client state, so we set it
         setClientState(messageData.data);
       }
@@ -146,6 +151,11 @@ export const ViewNotes: FC = () => {
             setClientState={setClientState}
           />
         ))}
+      {notes?.length === 0 && (
+        <Caption1>
+          {"You do not have any notes. Ask the bot to create you one!"}
+        </Caption1>
+      )}
     </FlexColumn>
   );
 };
