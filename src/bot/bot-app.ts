@@ -373,7 +373,7 @@ botApp.authentication
   .onUserSignInSuccess(
     async (context: TurnContext, state: ApplicationTurnState) => {
       console.log(
-        "bot-app graph auth success.",
+        "bot-app graph onUserSignInSuccess.",
         `This is what you said before the AuthFlow started: ${context.activity.text}`
       );
       // Check if AAD user has a connected Unify app acount
@@ -384,8 +384,8 @@ botApp.authentication
           `Welcome, ${context.activity.from.name}! You are all set. How can I help you today?`
         );
       } catch (err) {
-        console.error(
-          `bot-app adaptiveCards.actionExecute approve-suggestion: error ${err}`
+        console.warn(
+          `bot-app graph onUserSignInSuccess: no existing account found, ${err}`
         );
         // TODO: probably shouldn't show this in a group context
         await sendAppSignInCard(context);
@@ -401,6 +401,10 @@ botApp.authentication
       _state: ApplicationTurnState,
       error: AuthError
     ) => {
+      console.error(
+        "bot-app graph onSignInFailure.",
+        `${error.message}, ${error.cause}`
+      );
       // Failed to login
       await context.sendActivity("Failed to login");
       await context.sendActivity(`Error message: ${error.message}`);

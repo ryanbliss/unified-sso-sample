@@ -23,19 +23,17 @@ export function createAppSignInCard(userName: string): Attachment {
       },
     ],
     actions: [
-      [
-        {
-          id: "connect-account",
-          type: "Action.Submit",
-          title: "Connect account",
-          verb: "connect-account",
-          data: {
-            msteams: {
-              type: "task/fetch",
-            },
+      {
+        id: "connect-account",
+        type: "Action.Submit",
+        title: "Connect account",
+        verb: "connect-account",
+        data: {
+          msteams: {
+            type: "task/fetch",
           },
         },
-      ],
+      },
     ],
   });
 }
