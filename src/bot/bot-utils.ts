@@ -82,7 +82,13 @@ export async function getIntelligentSuggestionActivity(
     );
     return {
       attachments: [
-        suggestionCard(currentAppState.editingNote!._id, suggestionText, false),
+        suggestionCard({
+          ...currentAppState,
+          editingNote: {
+            _id: editingNote._id,
+            text: suggestionText,
+          },
+        }, false),
       ],
     };
   } catch (err) {

@@ -1,4 +1,5 @@
 import { Note } from "@/database/notes";
+import { IUserClientState } from "@/models/user-client-state";
 import { Attachment, CardFactory } from "botbuilder";
 
 export function notesCard(notes: Note[]): Attachment {
@@ -87,8 +88,7 @@ function noteBlock(note: Note) {
  * @returns attachment iwth the card
  */
 export function suggestionCard(
-  noteId: string,
-  suggestionText: string,
+  clientState: IUserClientState,
   approved: boolean
 ): Attachment {
   const body: any[] = [
@@ -109,7 +109,7 @@ export function suggestionCard(
           items: [
             {
               type: "TextBlock",
-              text: suggestionText,
+              text: clientState.editingNote?.text,
               wrap: true,
               isSubtle: false,
               color: "Attention",
@@ -137,8 +137,7 @@ export function suggestionCard(
       title: "Approve",
       verb: "approve-suggestion",
       data: {
-        noteId,
-        suggestionText,
+        clientState,
       },
     });
   }

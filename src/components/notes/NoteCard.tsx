@@ -19,41 +19,35 @@ import { useTeamsClientContext } from "@/context-providers";
 
 interface INoteCardProps {
   note: INoteResponse;
-  editingId: string | undefined;
-  setEditingId: (text?: string) => void;
+  clientState: IUserClientState;
+  setClientState: (newState: IUserClientState) => void;
 }
 
 export const NoteCard: FC<INoteCardProps> = ({
   note,
-  editingId,
-  setEditingId,
+  clientState,
+  setClientState,
 }) => {
   const [disabled, setDisabled] = useState(false);
-  const [editText, setEditText] = useState(note.text);
   const { threadId } = useTeamsClientContext();
 
-  const editing = note._id === editingId;
+  const editing = clientState?.editingNote?._id === note._id;
+  const editText = clientState?.editingNote?.text;
 
   const onEdit = async () => {
-    setEditingId(note._id);
-    sendClientStateToServer(true, note, editText, threadId).catch((err) =>
-      console.error(err)
-    );
+    const newState = sendClientStateToServer(true, note, editText, threadId);
+    setClientState(newState);
   };
 
   const onCancelEdit = async () => {
-    setEditingId(undefined);
-    sendClientStateToServer(false, note, editText, threadId).catch((err) =>
-      console.error(err)
-    );
+    const newState = sendClientStateToServer(false, note, editText, threadId);
+    setClientState(newState);
   };
 
   const onEditText = async (newText: string) => {
     if (!editing) return;
-    setEditText(newText);
-    sendClientStateToServer(editing, note, newText, threadId).catch((err) =>
-      console.error(err)
-    );
+    const newState = sendClientStateToServer(editing, note, newText, threadId);
+    setClientState(newState);
   };
 
   const requestSuggestions = async () => {
@@ -188,12 +182,12 @@ export const NoteCard: FC<INoteCardProps> = ({
 };
 
 // Send user's local state to server so the bot can help give assistance when needed
-async function sendClientStateToServer(
+function sendClientStateToServer(
   editing: boolean,
   savedNote?: INoteResponse,
   editText?: string,
   threadId?: string
-) {
+): IUserClientState {
   const clientState: IUserClientState = {
     editingNote: editing
       ? {
@@ -203,19 +197,23 @@ async function sendClientStateToServer(
       : undefined,
     threadId,
   };
-  try {
-    const response = await fetch("/api/messages/update-client-state", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(clientState),
-    });
-    const body = await response.json();
-    if (response.status !== 200) {
-      throw new Error(body.error);
+  async function sendAsync() {
+    try {
+      const response = await fetch("/api/messages/update-client-state", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(clientState),
+      });
+      const body = await response.json();
+      if (response.status !== 200) {
+        throw new Error(body.error);
+      }
+    } catch (err) {
+      console.error(err);
     }
-  } catch (err) {
-    console.error(err);
   }
+  sendAsync();
+  return clientState;
 }

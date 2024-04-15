@@ -1,6 +1,6 @@
 import { FC, useEffect, useRef, useState } from "react";
 import { FlexColumn } from "../flex";
-import { Card, Spinner, Title1, tokens } from "@fluentui/react-components";
+import { Spinner, Title1 } from "@fluentui/react-components";
 import {
   IDeleteNoteResponse,
   INoteResponse,
@@ -16,15 +16,20 @@ import {
 } from "@azure/web-pubsub-client";
 import { isPubSubEvent } from "@/models/pubsub-event-types";
 import { NoteCard } from "./NoteCard";
+import { IUserClientState, isIUserClientState } from "@/models/user-client-state";
+import { useTeamsClientContext } from "@/context-providers";
 
 export const ViewNotes: FC = () => {
   const [notes, setNotes] = useState<INoteResponse[]>();
   const hasRequestedInitialNotesRef = useRef(false);
   const hasStartedPubSub = useRef(false);
   const { client } = usePubSubClient();
+  const { threadId } = useTeamsClientContext();
 
   // Card being edited (can only be one at a time)
-  const [editingId, setEditingId] = useState<string>();
+  const [clientState, setClientState] = useState<IUserClientState>({
+    threadId,
+  });
 
   useEffect(() => {
     if (hasRequestedInitialNotesRef.current) return;
@@ -100,6 +105,9 @@ export const ViewNotes: FC = () => {
           ].sort((a, b) => b.editedAt.getTime() - a.editedAt.getTime())
         );
         return;
+      } else if (isPubSubEvent<IUserClientState>(messageData, isIUserClientState)) {
+        // The bot changed the client state, so we set it
+        setClientState(messageData.data);
       }
       console.log("groupMessageListener: invalid type", messageData);
     };
@@ -123,7 +131,7 @@ export const ViewNotes: FC = () => {
       client?.off("group-message", groupMessageListener);
       client?.off("server-message", serverMessageListener);
     };
-  }, [client, notes]);
+  }, [client, notes, clientState]);
 
   return (
     <FlexColumn marginSpacer="small">
@@ -134,8 +142,8 @@ export const ViewNotes: FC = () => {
           <NoteCard
             key={note._id}
             note={note}
-            editingId={editingId}
-            setEditingId={setEditingId}
+            clientState={clientState}
+            setClientState={setClientState}
           />
         ))}
     </FlexColumn>

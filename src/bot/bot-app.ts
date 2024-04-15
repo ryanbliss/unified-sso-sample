@@ -29,7 +29,8 @@ import {
 } from "./bot-utils";
 import "./fs-utils";
 import { setupBotDebugMessageHandlers } from "./bot-debug-handlers";
-import { IAppJwtToken, validateAppToken } from "@/utils/app-auth-utils";
+import { IAppJwtToken } from "@/utils/app-auth-utils";
+import { isIUserClientState } from "@/models/user-client-state";
 
 interface ConversationState {
   count: number;
@@ -286,7 +287,7 @@ botApp.ai.action(
 botApp.adaptiveCards.actionExecute(
   "approve-suggestion",
   async (
-    _context: TurnContext,
+    context: TurnContext,
     state: ApplicationTurnState,
     data: Record<string, any>
   ) => {
@@ -294,8 +295,29 @@ botApp.adaptiveCards.actionExecute(
       "bot-app adaptiveCards.actionExecute approve-suggestion: data:",
       data
     );
-    const card = suggestionCard(data.noteId, data.suggestionText, true);
-
+    const clientState = data.clientState;
+    if (!isIUserClientState(data.clientState)) {
+      throw new Error(
+        "data.clientState must be valid type of IUserClientState"
+      );
+    }
+    const appToken = await getAppAuthToken(context);
+    const response = await fetch(
+      "/api/messages/update-client-state?sendPubSub=true",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: appToken,
+        },
+        body: JSON.stringify(clientState),
+      }
+    );
+    const body = await response.json();
+    if (response.status !== 200) {
+      throw new Error(body.error);
+    }
+    const card = suggestionCard(data.clientState, true);
     return card.content;
   }
 );
