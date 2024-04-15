@@ -338,8 +338,9 @@ async function addConversationReference(activity: Activity): Promise<void> {
     "bot-app.ts addConversationReference: adding reference for conversation reference",
     JSON.stringify(conversationReference.conversation)
   );
+  let promises: Promise<void>[] = [];
   if (conversationReference.conversation.conversationType === "personal") {
-    // For personal scope we use the user id, because personal tabs don't include `chat` in `app.getContext()`
+    // For personal scope we use the user id as well, because personal tabs don't include `chat` in `app.getContext()`
     // The bot will never have an aadObjectId
     const userAadId =
       activity.from.aadObjectId ?? activity.recipient.aadObjectId;
@@ -349,16 +350,13 @@ async function addConversationReference(activity: Activity): Promise<void> {
       );
       return;
     }
-    await upsertReference(userAadId, conversationReference);
-    console.log(
-      "bot-app.ts addConversationReference: upserted conversation reference"
-    );
-    return;
+    promises.push(upsertReference(userAadId, conversationReference));
   }
-  await upsertReference(
+  promises.push(upsertReference(
     conversationReference.conversation.id,
     conversationReference
-  );
+  ));
+  await Promise.all(promises);
   console.log(
     "bot-app.ts addConversationReference: upserted conversation reference"
   );
