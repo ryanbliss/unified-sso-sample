@@ -60,8 +60,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
   const changes: StoreItems = {};
   // TODO: handle personal app case where threadId isn't known
+  const key = `custom/${body.threadId}/${jwtPayload.user._id}`;
+  // Check for existing value to get eTag, if there is one
+  const existingValue = (await botStorage.read([key]))[key];
+  if (existingValue) {
+    (body as any).eTag = existingValue.eTag;
+  }
+  changes[key] = body;
   // Store client state in bot storage
-  changes[`custom/${body.threadId}/${jwtPayload.user._id}`] = body;
   await botStorage.write(changes);
   const url = new URL(req.url);
   if (url.searchParams.get("sendPubSub") === "true") {

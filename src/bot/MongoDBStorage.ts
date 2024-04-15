@@ -88,7 +88,7 @@ export class MongoDBStorage implements Storage {
           await saveItem(key, newItem);
         } else {
           throw new Error(
-            `Storage: error writing "${key}" due to eTag conflict.`
+            `Storage: error writing "${key}" due to eTag conflict. new: ${newItem.eTag}, old: ${oldItem.etag}`
           );
         }
       }
