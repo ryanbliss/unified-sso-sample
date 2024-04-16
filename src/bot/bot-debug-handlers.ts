@@ -1,4 +1,9 @@
-import { Attachment, CardFactory, TaskModuleTaskInfo, TurnContext } from "botbuilder";
+import {
+  Attachment,
+  CardFactory,
+  TaskModuleTaskInfo,
+  TurnContext,
+} from "botbuilder";
 import { ApplicationTurnState, botApp } from "./bot-app";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { findAADUser } from "@/database/user";
@@ -164,7 +169,7 @@ export function setupBotDebugMessageHandlers() {
           verb: "task-module",
           data: {
             // Teams AI library requires the verb be attached to the data field
-            "verb": "task-module",
+            verb: "task-module",
             msteams: {
               type: "task/fetch",
             },
@@ -188,6 +193,9 @@ export function setupBotDebugMessageHandlers() {
     return taskInfo;
   });
   botApp.taskModules.submit("task-module", async (context, state, data) => {
+    await context.sendActivity(
+      `submit invoked ${JSON.stringify(data, null, 4)}`
+    );
     return data.response;
   });
 }

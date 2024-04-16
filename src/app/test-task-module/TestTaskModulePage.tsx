@@ -61,7 +61,7 @@ export function TestTaskModulePage() {
           teamsJs.dialog.url.submit();
         }}
       >
-        {"teamsJs.dialog.url.submit()"}
+        {"submit()"}
       </Button>
       <Button
         onClick={() => {
@@ -79,6 +79,16 @@ export function TestTaskModulePage() {
         }}
       >
         {"Chain"}
+      </Button>
+      <Button onClick={() => {
+        teamsJs.dialog.url.submit({
+          // Teams AI library requires the verb be attached to the data field
+          verb: "task-module",
+          response: null,
+        });
+        teamsJs.dialog.url.submit();
+      }}>
+        {"null + submit()"}
       </Button>
     </>
   );
