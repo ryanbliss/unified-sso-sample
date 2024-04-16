@@ -62,7 +62,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const changes: StoreItems = {};
-  const threadId = body.threadId ?? buildTeamsThreadId(jwtPayload.user._id);
+  const threadId =
+    body.threadId ??
+    buildTeamsThreadId(jwtPayload.user.connections?.aad?.oid ?? "");
   const key = `custom/${threadId}/${jwtPayload.user._id}`;
   // Check for existing value to get eTag, if there is one
   const existingValue = (await botStorage.read([key]))[key];
