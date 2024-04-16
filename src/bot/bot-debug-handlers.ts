@@ -1,4 +1,4 @@
-import { Attachment, TurnContext } from "botbuilder";
+import { Attachment, CardFactory, TaskModuleTaskInfo, TurnContext } from "botbuilder";
 import { ApplicationTurnState, botApp } from "./bot-app";
 import { decodeMSALToken } from "@/utils/msal-token-utils";
 import { findAADUser } from "@/database/user";
@@ -142,4 +142,52 @@ export function setupBotDebugMessageHandlers() {
       return initialCard.content;
     }
   );
+
+  botApp.message("/task-module", async (context, state) => {
+    const card = CardFactory.adaptiveCard({
+      $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+      version: "1.5",
+      type: "AdaptiveCard",
+      body: [
+        {
+          type: "TextBlock",
+          text: `Test task module.`,
+          size: "Medium",
+          weight: "Bolder",
+        },
+      ],
+      actions: [
+        {
+          id: "task-module",
+          type: "Action.Submit",
+          title: "Test",
+          verb: "task-module",
+          data: {
+            // Teams AI library requires the verb be attached to the data field
+            "verb": "task-module",
+            msteams: {
+              type: "task/fetch",
+            },
+          },
+        },
+      ],
+    });
+    await context.sendActivity({
+      attachments: [card],
+    });
+  });
+  botApp.taskModules.fetch("task-module", async (context, state, data) => {
+    const taskInfo: TaskModuleTaskInfo = {
+      title: "Test",
+      height: "medium",
+      width: "medium",
+      url: `https://${process.env.BOT_DOMAIN}/test-task-module`,
+      fallbackUrl: `https://${process.env.BOT_DOMAIN}/test-task-module`,
+      completionBotId: process.env.BOT_ID,
+    };
+    return taskInfo;
+  });
+  botApp.taskModules.submit("task-module", async (context, state, data) => {
+    return data.response;
+  });
 }
