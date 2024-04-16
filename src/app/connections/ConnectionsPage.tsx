@@ -45,7 +45,6 @@ export default function ConnectionsPage(props: { user: IUserPasswordless }) {
           "Content-Type": "application/json",
           Authorization: authToken,
         },
-        cache: 'no-store',
       });
       const body = await res.json();
       if (res.status !== 200) {
@@ -79,7 +78,6 @@ export default function ConnectionsPage(props: { user: IUserPasswordless }) {
     try {
       const res = await fetch("/api/auth/unlink/teams-aad", {
         method: "POST",
-        cache: 'no-store',
       });
       const body = await res.json();
       if (res.status !== 200) {

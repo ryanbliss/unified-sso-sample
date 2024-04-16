@@ -1,7 +1,7 @@
 import { findUser, upsertUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken } from "@/utils/app-auth-utils";
-import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 /**
  * Rudimentary login implementation for illustrative purposes. Do not use in production.
@@ -10,6 +10,7 @@ import { revalidatePath } from "next/cache";
  * @returns response
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const cookieStore = cookies();
   const body = await req.json();
   if (!isISignUpBody(body)) {
     throw new Error(
@@ -39,20 +40,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (user.connections?.aad) {
     connections.push("aad");
   }
-  const response = NextResponse.json({
-    success: true,
-    connections,
-  });
-  response.cookies.set({
+  cookieStore.set({
     name: "Authorization",
     value: token,
     sameSite: "none",
     secure: true,
   });
-  // Reset Next.js cache
-  revalidatePath("/");
-  revalidatePath("/connections");
-  return response;
+  return NextResponse.json({
+    success: true,
+    connections,
+  });
 }
 
 interface ISignUpBody {

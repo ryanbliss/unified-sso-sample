@@ -4,6 +4,7 @@ import { isIUserClientState } from "@/models/user-client-state";
 import { pubsubServiceClient } from "@/pubsub/pubsub-client";
 import { validateAppToken } from "@/utils/app-auth-utils";
 import { StoreItems } from "botbuilder";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -11,9 +12,10 @@ import { NextRequest, NextResponse } from "next/server";
  * @param req request
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const cookieStore = cookies();
   console.log("/api/messages/update-client-state");
   const token =
-    req.cookies.get("Authorization")?.value ?? req.headers.get("Authorization");
+    cookieStore.get("Authorization")?.value ?? req.headers.get("Authorization");
   if (!token) {
     console.error(
       "/api/notes/list/route.ts: no 'Authorization' cookie, should contain app token"
@@ -39,7 +41,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  
+
   const body = await req.json();
   console.log(
     "/api/messages/update-client-state body",

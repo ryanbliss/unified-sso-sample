@@ -1,5 +1,6 @@
 import { pubsubServiceClient } from "@/pubsub/pubsub-client";
 import { validateAppToken } from "@/utils/app-auth-utils";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -7,8 +8,9 @@ import { NextRequest, NextResponse } from "next/server";
  * @param req request
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
+  const cookieStore = cookies();
   const token =
-    req.cookies.get("Authorization")?.value ?? req.headers.get("Authorization");
+    cookieStore.get("Authorization")?.value ?? req.headers.get("Authorization");
   if (!token) {
     console.error(
       `/api/pubsub/authorize/private/route.ts: no 'Authorization' cookie, should contain app token`
@@ -53,7 +55,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     );
     return NextResponse.json(
       {
-        error: "An internal error occurred. Unable to get client access token for pubsub service.",
+        error:
+          "An internal error occurred. Unable to get client access token for pubsub service.",
       },
       {
         status: 500,

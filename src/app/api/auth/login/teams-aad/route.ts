@@ -2,6 +2,7 @@ import { findAADUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken } from "@/utils/app-auth-utils";
 import { exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
+import { cookies } from "next/headers";
 
 /**
  * Rudimentary login implementation that exchanges Teams AAD token for app token.
@@ -15,6 +16,7 @@ import { exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
  * @returns response
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const cookieStore = cookies();
   const teamsToken = req.headers.get("Authorization");
   if (!teamsToken) {
     console.error(
@@ -52,15 +54,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (user.connections?.aad) {
     connections.push("aad");
   }
-  const response = NextResponse.json({
-    success: true,
-    connections,
-  });
-  response.cookies.set({
+  cookieStore.set({
     name: "Authorization",
     value: token,
     sameSite: "none",
     secure: true,
   });
-  return response;
+  return NextResponse.json({
+    success: true,
+    connections,
+  });
 }

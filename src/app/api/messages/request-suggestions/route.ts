@@ -5,6 +5,7 @@ import { prepareBotPromptFiles } from "@/bot/fs-utils";
 import { isIUserClientState } from "@/models/user-client-state";
 import { validateAppToken } from "@/utils/app-auth-utils";
 import { offerIntelligentSuggestionForText } from "@/utils/openai-utils";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -12,13 +13,14 @@ import { NextRequest, NextResponse } from "next/server";
  * @param req request
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const cookieStore = cookies();
   console.log("/api/messages/request-suggestions");
   // Next.js is a bit of a pain to get working with these static files.
   // It chunks everything it needs as it needs it.
   // teams-ai requires these files be static at a set path, so this should be a fine workaround for now.
   prepareBotPromptFiles();
   const token =
-    req.cookies.get("Authorization")?.value ?? req.headers.get("Authorization");
+    cookieStore.get("Authorization")?.value ?? req.headers.get("Authorization");
   if (!token) {
     console.error(
       "/api/notes/list/route.ts: no 'Authorization' cookie, should contain app token"

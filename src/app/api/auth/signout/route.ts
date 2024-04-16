@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -6,15 +6,12 @@ import { NextRequest, NextResponse } from "next/server";
  * @param req request
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  const response = NextResponse.redirect(new URL("/auth/login", req.url));
-  response.cookies.set({
+  const cookieStore = cookies();
+  cookieStore.set({
     name: "Authorization",
     value: "",
     sameSite: "none",
     secure: true,
   });
-  // Reset Next.js cache
-  revalidatePath("/");
-  revalidatePath("/connections");
-  return response;
+  return NextResponse.redirect(new URL("/auth/login", req.url));
 }

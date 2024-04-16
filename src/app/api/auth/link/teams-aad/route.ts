@@ -5,7 +5,7 @@ import {
   IValidatedAuthenticationResult,
   exchangeTeamsTokenForMSALToken,
 } from "@/utils/msal-token-utils";
-import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 /**
  * Rudimentary account linking implementation that links app account with AAD account.
@@ -19,6 +19,7 @@ import { revalidatePath } from "next/cache";
  * @returns response
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const cookieStore = cookies();
   const teamsToken = req.headers.get("Authorization");
   if (!teamsToken) {
     console.error(
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const appToken = req.cookies.get("Authorization");
+  const appToken = cookieStore.get("Authorization");
   if (!appToken) {
     console.error(
       "/api/auth/link/teams-aad/route.ts: no 'Authorization' cookie, should contain app token"
@@ -143,21 +144,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       password: appUser.password,
       connections,
     });
-    const response = NextResponse.json({
-      success: true,
-    });
     // Mint new token with updated user info
     const token = signAppToken(updatedUser, "aad");
-    response.cookies.set({
+    cookieStore.set({
       name: "Authorization",
       value: token,
       sameSite: "none",
       secure: true,
     });
-    // Reset Next.js cache
-    revalidatePath("/");
-    revalidatePath("/connections");
-    return response;
+    return NextResponse.json({
+      success: true,
+    });
   } catch (err) {
     console.error(err);
     return NextResponse.json(

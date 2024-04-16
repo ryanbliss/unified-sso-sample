@@ -1,8 +1,9 @@
-import { deleteNote, editNote, isNoteEditable } from "@/database/notes";
+import { deleteNote } from "@/database/notes";
 import { IDeleteNoteResponse } from "@/models/note-base-models";
 import { PubSubEventTypes } from "@/models/pubsub-event-types";
 import { pubsubServiceClient } from "@/pubsub/pubsub-client";
 import { validateAppToken } from "@/utils/app-auth-utils";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -13,8 +14,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
+  const cookieStore = cookies();
   const token =
-    req.cookies.get("Authorization")?.value ?? req.headers.get("Authorization");
+    cookieStore.get("Authorization")?.value ?? req.headers.get("Authorization");
   if (!token) {
     console.error(
       "/api/notes/[id]/delete/route.ts: no 'Authorization' cookie, should contain app token"

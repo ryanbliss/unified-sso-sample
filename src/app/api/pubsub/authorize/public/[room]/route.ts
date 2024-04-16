@@ -1,4 +1,5 @@
 import { validateAppToken } from "@/utils/app-auth-utils";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -9,8 +10,9 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { room: string } }
 ): Promise<NextResponse> {
+  const cookieStore = cookies();
   const token =
-    req.cookies.get("Authorization")?.value ?? req.headers.get("Authorization");
+    cookieStore.get("Authorization")?.value ?? req.headers.get("Authorization");
   if (!token) {
     console.error(
       `/api/pubsub/authorize/public/${params.room}/route.ts: no 'Authorization' cookie, should contain app token`

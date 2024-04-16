@@ -24,7 +24,6 @@ export const LoginForm: FC<{}> = (props) => {
           email,
           password,
         }),
-        cache: 'no-store',
       });
       const body = await res.json();
       if (res.status !== 200) {
