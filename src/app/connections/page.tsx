@@ -3,7 +3,7 @@ import ConnectionsPage from "./ConnectionsPage";
 import { cookies } from "next/headers";
 import { validateAppToken } from "@/utils/app-auth-utils";
 
-export default function Connections() {
+export default async function Connections() {
   const cookieStore = cookies();
   const tokenCookie = cookieStore.get("Authorization");
   const token = tokenCookie?.value;

@@ -3,7 +3,7 @@ import HomePageContainer from "./HomePageContainer";
 import { redirect } from "next/navigation";
 import { validateAppToken } from "@/utils/app-auth-utils";
 
-export default function Home() {
+export default async function Home() {
   const cookieStore = cookies();
   const tokenCookie = cookieStore.get("Authorization");
   const token = tokenCookie?.value;
