@@ -1,7 +1,11 @@
 import { IUser, findAADUser, findUser, upsertUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken, validateAppToken } from "@/utils/app-auth-utils";
-import { IValidatedAuthenticationResult, exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
+import {
+  IValidatedAuthenticationResult,
+  exchangeTeamsTokenForMSALToken,
+} from "@/utils/msal-token-utils";
+import { revalidatePath } from "next/cache";
 
 /**
  * Rudimentary account linking implementation that links app account with AAD account.
@@ -150,6 +154,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       sameSite: "none",
       secure: true,
     });
+    // Reset Next.js cache
+    revalidatePath("/");
+    revalidatePath("/connections");
     return response;
   } catch (err) {
     console.error(err);

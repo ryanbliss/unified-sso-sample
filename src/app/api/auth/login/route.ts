@@ -1,6 +1,7 @@
 import { findUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken } from "@/utils/app-auth-utils";
+import { revalidatePath } from "next/cache";
 
 /**
  * Rudimentary login implementation for illustrative purposes. Do not use in production.
@@ -11,7 +12,9 @@ import { signAppToken } from "@/utils/app-auth-utils";
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.json();
   if (!isILoginBody(body)) {
-    console.error("/api/auth/login body is invalid type, must be type ILoginBody");
+    console.error(
+      "/api/auth/login body is invalid type, must be type ILoginBody"
+    );
     return NextResponse.json(
       {
         error: "/api/auth/login body is invalid type, must be type ILoginBody",
@@ -56,7 +59,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     sameSite: "none",
     secure: true,
   });
-  
+
+  // Reset Next.js cache
+  revalidatePath("/");
+  revalidatePath("/connections");
+
   return response;
 }
 

@@ -1,6 +1,7 @@
 import { findUser, upsertUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken } from "@/utils/app-auth-utils";
+import { revalidatePath } from "next/cache";
 
 /**
  * Rudimentary login implementation for illustrative purposes. Do not use in production.
@@ -48,6 +49,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     sameSite: "none",
     secure: true,
   });
+  // Reset Next.js cache
+  revalidatePath("/");
+  revalidatePath("/connections");
   return response;
 }
 

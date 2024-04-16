@@ -1,6 +1,7 @@
 import { findUser, upsertUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken, validateAppToken } from "@/utils/app-auth-utils";
+import { revalidatePath } from "next/cache";
 
 /**
  * Rudimentary account linking implementation that removes account link for the app user.
@@ -78,5 +79,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     sameSite: "none",
     secure: true,
   });
+  // Reset Next.js cache
+  revalidatePath("/");
+  revalidatePath("/connections");
   return response;
 }
