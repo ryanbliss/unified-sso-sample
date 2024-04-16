@@ -46,16 +46,20 @@ export async function getValidatedAppAuthToken(
   return jwtPayload;
 }
 
-export function getTeamsThreadId(activity: Activity): string {
+export function getTeamsActivityThreadId(activity: Activity): string {
   if (activity.conversation.conversationType === "personal") {
     const userAadId =
       activity.from.aadObjectId ?? activity.recipient.aadObjectId;
     if (!userAadId) {
       throw new Error("Invalid user ID");
     }
-    return `19:${userAadId}_${process.env.BOT_ID}@unq.gbl.spaces`;
+    return buildTeamsThreadId(userAadId);
   }
   return activity.conversation.id;
+}
+
+export function buildTeamsThreadId(userAadId: string): string {
+  return `19:${userAadId}_${process.env.BOT_ID}@unq.gbl.spaces`;
 }
 
 export async function getIntelligentSuggestionActivity(

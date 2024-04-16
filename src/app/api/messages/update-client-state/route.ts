@@ -1,4 +1,5 @@
 import { botStorage } from "@/bot/bot-app";
+import { buildTeamsThreadId } from "@/bot/bot-utils";
 import { PubSubEventTypes } from "@/models/pubsub-event-types";
 import { isIUserClientState } from "@/models/user-client-state";
 import { pubsubServiceClient } from "@/pubsub/pubsub-client";
@@ -61,8 +62,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const changes: StoreItems = {};
-  // TODO: handle personal app case where threadId isn't known
-  const key = `custom/${body.threadId}/${jwtPayload.user._id}`;
+  const threadId = body.threadId ?? buildTeamsThreadId(jwtPayload.user._id);
+  const key = `custom/${threadId}/${jwtPayload.user._id}`;
   // Check for existing value to get eTag, if there is one
   const existingValue = (await botStorage.read([key]))[key];
   if (existingValue) {

@@ -1,5 +1,8 @@
 import { botStorage, sendProactiveMessage } from "@/bot/bot-app";
-import { getIntelligentSuggestionActivity } from "@/bot/bot-utils";
+import {
+  buildTeamsThreadId,
+  getIntelligentSuggestionActivity,
+} from "@/bot/bot-utils";
 import { suggestionCard } from "@/bot/cards";
 import { prepareBotPromptFiles } from "@/bot/fs-utils";
 import { isIUserClientState } from "@/models/user-client-state";
@@ -77,7 +80,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const threadReferenceId =
-    body.threadId ?? jwtPayload.user.connections.aad.oid;
+    body.threadId ?? buildTeamsThreadId(jwtPayload.user.connections.aad.oid);
   if (typeof threadReferenceId !== "string") {
     console.error(
       "/api/messages/request-suggestions.ts: invalid thread reference id"

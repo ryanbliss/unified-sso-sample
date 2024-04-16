@@ -25,7 +25,7 @@ import { MongoDBStorage } from "./MongoDBStorage";
 import {
   getAppAuthToken,
   getIntelligentSuggestionActivity,
-  getTeamsThreadId,
+  getTeamsActivityThreadId,
   getValidatedAppAuthToken,
   sendAppSignInCard,
 } from "./bot-utils";
@@ -274,7 +274,7 @@ botApp.ai.action(
       await sendAppSignInCard(context);
       return "You are not authenticated, please sign in to continue";
     }
-    const threadId = getTeamsThreadId(context.activity);
+    const threadId = getTeamsActivityThreadId(context.activity);
     const suggestionActivity = await getIntelligentSuggestionActivity(
       threadId,
       jwtPayload.user._id
@@ -471,7 +471,7 @@ async function addConversationReference(activity: Activity): Promise<void> {
     // But in teams-js in chat contexts it will return the standard 19:{userId}_{recipientId}@unq.gbl.spaces
     // TODO: figure out if other tenant environments (e.g., GCCH) use something different than @unq.gbl.spaces
     promises.push(
-      upsertReference(getTeamsThreadId(activity), conversationReference)
+      upsertReference(getTeamsActivityThreadId(activity), conversationReference)
     );
   }
   // Store standard reference for all other thread types
