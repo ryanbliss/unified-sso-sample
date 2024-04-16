@@ -60,12 +60,14 @@ export default function ConnectionsPage() {
       // Redirect to home page
       router.push("/");
     } else {
-      // If in a task module, we submit the task, which will close the task module
+      // If in a task module, we submit the task
       teamsJs.dialog.url.submit({
         success: true,
         // Teams AI library requires the verb be attached to the data field
         verb: "connect-account",
       });
+      // Then we immediately call it again with no props, which closes the dialog
+      teamsJs.dialog.url.submit();
     }
   };
 
