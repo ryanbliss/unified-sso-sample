@@ -61,6 +61,7 @@ export default function ConnectionsPage(props: { user: IUserPasswordless }) {
     if (teamsContext?.page?.frameContext !== teamsJs.FrameContexts.task) {
       // Redirect to home page
       router.push("/");
+      router.refresh();
     } else {
       // If in a task module, we submit the task
       teamsJs.dialog.url.submit({
@@ -94,6 +95,7 @@ export default function ConnectionsPage(props: { user: IUserPasswordless }) {
     // Likely to take user straight back to connections page in current implementation
     // This is fine, as it will reload the "user" prop & ensure everything is cleaned up
     router.push("/");
+    router.refresh();
   };
 
   return (
