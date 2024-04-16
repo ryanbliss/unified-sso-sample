@@ -360,7 +360,8 @@ botApp.taskModules.submit("connect-account", async (context, state, data) => {
     `bot-app.ts taskModules.submit("connect-account"): data`,
     JSON.stringify(data, null, 4)
   );
-  return "You are all set! Now, how can I help you today?";
+  await context.sendActivity("You are all set! Now, how can I help you today?");
+  return undefined;
 });
 
 /**
