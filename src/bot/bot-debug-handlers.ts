@@ -148,6 +148,45 @@ export function setupBotDebugMessageHandlers() {
     }
   );
 
+  botApp.message("/collab-stage", async (context, state) => {
+    const card = CardFactory.adaptiveCard({
+      $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+      version: "1.5",
+      type: "AdaptiveCard",
+      body: [
+        {
+          type: "TextBlock",
+          text: `This card is for testing collab stage prior to account linking.`,
+          size: "Medium",
+          weight: "Bolder",
+        },
+      ],
+      actions: [
+        {
+          type: "Action.Submit",
+          title: "View",
+          data: {
+            msteams: {
+              type: "invoke",
+              value: {
+                type: "tab/tabInfoAction",
+                tabInfo: {
+                  contentUrl: `https://${process.env.BOT_DOMAIN}`,
+                  websiteUrl: `https://${process.env.BOT_DOMAIN}`,
+                  name: "Notes",
+                  entityId: "UNIFY_NOTES",
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+    await context.sendActivity({
+      attachments: [card],
+    });
+  });
+
   botApp.message("/task-module", async (context, state) => {
     const card = CardFactory.adaptiveCard({
       $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
