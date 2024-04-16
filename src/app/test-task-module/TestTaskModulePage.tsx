@@ -73,7 +73,7 @@ export function TestTaskModulePage() {
               title: "Test",
               height: "medium",
               width: "medium",
-              url: chainUrl,
+              url: chainUrl.toString(),
             },
           });
         }}
