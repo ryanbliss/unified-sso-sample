@@ -6,14 +6,6 @@ import {
 import jwt from "jsonwebtoken";
 import validateTeamsToken from "./teams-token-utils";
 
-// Creating MSAL client
-export const msalClient = new ConfidentialClientApplication({
-  auth: {
-    clientId: process.env.BOT_ID!,
-    clientSecret: process.env.BOT_PASSWORD!,
-  },
-});
-
 export async function exchangeTeamsTokenForMSALToken(
   teamsIdentityToken: string
 ): Promise<IValidatedAuthenticationResult> {
@@ -22,6 +14,13 @@ export async function exchangeTeamsTokenForMSALToken(
     "msal-token-utils exchangeTeamsTokenForMSALToken: exchanging token for msal"
   );
   const scopes = ["https://graph.microsoft.com/User.Read"];
+  // Creating MSAL client
+  const msalClient = new ConfidentialClientApplication({
+    auth: {
+      clientId: process.env.BOT_ID!,
+      clientSecret: process.env.BOT_PASSWORD!,
+    },
+  });
   const result = await msalClient.acquireTokenOnBehalfOf({
     authority: `https://login.microsoftonline.com/${jwt.tid}`,
     oboAssertion: teamsIdentityToken,

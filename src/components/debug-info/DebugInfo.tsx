@@ -63,13 +63,15 @@ export const DebugInfo: FC = ({}) => {
         )}
       </FlexRow>
       <Title3>{"Connections"}</Title3>
-      <Button
-        onClick={() => {
-          router.push("/connections");
-        }}
-      >
-        {"Go to connections"}
-      </Button>
+      <FlexRow>
+        <Button
+          onClick={() => {
+            router.push("/connections");
+          }}
+        >
+          {"Go to connections"}
+        </Button>
+      </FlexRow>
       <Title3>{"Tab context:"}</Title3>
       {teamsContext && (
         <CodeBlock text={JSON.stringify(teamsContext, null, 4)} />

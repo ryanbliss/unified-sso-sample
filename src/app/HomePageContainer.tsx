@@ -20,7 +20,7 @@ export default function HomePageContainer() {
             padding: "24px",
           }}
         >
-          <FlexRow spaceBetween>
+          <FlexRow spaceBetween vAlign="center">
             <TabList
               selectedValue={selectedTab}
               onTabSelect={(ev, data) => {

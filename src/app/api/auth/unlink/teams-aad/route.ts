@@ -67,7 +67,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     connections,
   });
   // Mint new token with updated user info
-  const token = signAppToken(user, "aad");
+  const token = signAppToken(user, "email");
   
   const response = NextResponse.json({
     success: true,
