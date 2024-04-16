@@ -42,6 +42,11 @@ export function TestTaskModulePage() {
       >
         {"Finish with undefined"}
       </Button>
+      <Button onClick={() => {
+        teamsJs.dialog.url.submit();
+      }}>
+        {"teamsJs.dialog.url.submit()"}
+      </Button>
     </>
   );
 }
