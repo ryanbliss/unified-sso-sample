@@ -101,7 +101,7 @@ function noteBlock(note: Note) {
             text: note.text,
             wrap: true,
             isSubtle: false,
-            size: "Small",
+            size: "Default",
           },
           {
             type: "TextBlock",
@@ -151,7 +151,7 @@ export function suggestionCard(
               text: clientState.editingNote?.text,
               wrap: true,
               isSubtle: false,
-              size: "Small",
+              size: "Default",
             },
           ],
           spacing: "Small",
