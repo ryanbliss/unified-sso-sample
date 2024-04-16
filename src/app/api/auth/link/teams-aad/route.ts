@@ -1,7 +1,7 @@
-import { findAADUser, findUser, upsertUser } from "@/database/user";
+import { IUser, findAADUser, findUser, upsertUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken, validateAppToken } from "@/utils/app-auth-utils";
-import { exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
+import { IValidatedAuthenticationResult, exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
 
 /**
  * Rudimentary account linking implementation that links app account with AAD account.
@@ -60,12 +60,42 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   // Validate Teams token
-  const msalResult = await exchangeTeamsTokenForMSALToken(teamsToken);
+  let msalResult: IValidatedAuthenticationResult;
+  try {
+    msalResult = await exchangeTeamsTokenForMSALToken(teamsToken);
+  } catch (err) {
+    console.error(
+      `/api/auth/link/teams-aad/route.ts error exchanging teams token, err: ${err}`
+    );
+    return NextResponse.json(
+      {
+        error: "Invalid MSAL response",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
   // Check if this AAD identity has already been linked to another account
-  const user = await findAADUser(
-    msalResult.account.localAccountId,
-    msalResult.account.tenantId
-  );
+  let user: IUser | null;
+  try {
+    user = await findAADUser(
+      msalResult.account.localAccountId,
+      msalResult.account.tenantId
+    );
+  } catch (err) {
+    console.error(
+      `/api/auth/link/teams-aad/route.ts error finding aad user, err: ${err}`
+    );
+    return NextResponse.json(
+      {
+        error: "Failed to find AAD user",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
   if (user) {
     console.error(
       "/api/auth/link/teams-aad/route.ts AAD identity is already linked to an account"

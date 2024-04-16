@@ -16,8 +16,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTeamsClientContext } from "@/context-providers";
 import * as teamsJs from "@microsoft/teams-js";
+import { IUserPasswordless } from "@/models/user";
 
-export default function ConnectionsPage() {
+export default function ConnectionsPage(props: { user: IUserPasswordless }) {
+  const { user } = props;
   const [loading, setLoading] = useState(false);
   const { authError, authenticateWithTeamsSSO } = useTeamsClientSSO();
   const [accountLinkError, setAccountLinkError] = useState<Error>();
@@ -71,6 +73,29 @@ export default function ConnectionsPage() {
     }
   };
 
+  const unauthorizeLinkedAccount = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/unlink/teams-aad", {
+        method: "POST",
+      });
+      const body = await res.json();
+      if (res.status !== 200) {
+        throw new Error(body.error);
+      }
+    } catch (err) {
+      setLoading(false);
+      console.error(err);
+      if (err instanceof Error) {
+        setAccountLinkError(err);
+      }
+      return;
+    }
+    // Likely to take user straight back to connections page in current implementation
+    // This is fine, as it will reload the "user" prop & ensure everything is cleaned up
+    router.push("/");
+  };
+
   return (
     <ScrollWrapper>
       <FlexColumn
@@ -93,7 +118,14 @@ export default function ConnectionsPage() {
           </FlexRow>
           {!loading && (
             <FlexRow>
-              <Button onClick={authorizeAndLinkAccount}>{"Authorize"}</Button>
+              {!user.connections?.aad && (
+                <Button onClick={authorizeAndLinkAccount}>{"Authorize"}</Button>
+              )}
+              {!!user.connections?.aad && (
+                <Button onClick={unauthorizeLinkedAccount}>
+                  {"Unauthorize"}
+                </Button>
+              )}
             </FlexRow>
           )}
           {loading && <Spinner />}

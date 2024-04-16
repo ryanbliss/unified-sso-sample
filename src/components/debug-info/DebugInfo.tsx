@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 
 export const DebugInfo: FC = ({}) => {
   const { teamsContext } = useTeamsClientContext();
-  const router = useRouter();
   const { authError, token, authenticateWithTeamsSSO } = useTeamsClientSSO();
+  const router = useRouter();
   return (
     <>
       <Title3>{"Auth:"}</Title3>
@@ -48,13 +48,6 @@ export const DebugInfo: FC = ({}) => {
             >
               {"Send message"}
             </Button>
-            <Button
-              onClick={() => {
-                router.push("/api/auth/signout");
-              }}
-            >
-              {"Sign out"}
-            </Button>
           </FlexRow>
         </>
       )}
@@ -65,10 +58,18 @@ export const DebugInfo: FC = ({}) => {
               authenticateWithTeamsSSO(false);
             }}
           >
-            {"Log in"}
+            {"Log in with Teams SSO"}
           </Button>
         )}
       </FlexRow>
+      <Title3>{"Connections"}</Title3>
+      <Button
+        onClick={() => {
+          router.push("/connections");
+        }}
+      >
+        {"Go to connections"}
+      </Button>
       <Title3>{"Tab context:"}</Title3>
       {teamsContext && (
         <CodeBlock text={JSON.stringify(teamsContext, null, 4)} />

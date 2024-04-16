@@ -2,7 +2,7 @@
 
 import { FlexRow } from "@/components/flex";
 import { Button, Input, Text, tokens } from "@fluentui/react-components";
-import { FC, useCallback, useState } from "react";
+import { FC, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export const LoginForm: FC<{}> = (props) => {
@@ -29,15 +29,8 @@ export const LoginForm: FC<{}> = (props) => {
       if (res.status !== 200) {
         throw new Error(body.error);
       }
-      const connections: unknown = body?.connections;
-      if (Array.isArray(connections)) {
-        if (connections.length === 0) {
-          // For this sample, we go straight to the connections page if not already connected to AAD.
-          // This is where users will connect their account to Teams, if needed.
-          router.push("/connections");
-          return;
-        }
-      }
+      // '/' will redirect go straight to the connections page if not already connected to AAD.
+      // This is where users will connect their account to Teams, if needed.
       router.push("/");
     } catch (err) {
       console.error(err);

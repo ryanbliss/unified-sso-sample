@@ -1,4 +1,5 @@
-import { IUser, IUserPasswordless } from "@/database/user";
+import { IUser } from "@/database/user";
+import { IUserPasswordless } from "@/models/user";
 import jwt from "jsonwebtoken";
 
 /**
@@ -61,6 +62,8 @@ export function validateAppToken(token: string): IAppJwtToken | null {
 export interface IAppJwtToken extends jwt.JwtPayload {
   user: IUserPasswordless;
   connection: "email" | "aad";
+  exp: number;
+  iat: number;
 }
 function isIAppJwtToken(value: jwt.JwtPayload): value is IAppJwtToken {
   return (
@@ -68,6 +71,8 @@ function isIAppJwtToken(value: jwt.JwtPayload): value is IAppJwtToken {
     typeof value.user._id === "string" &&
     typeof value.user.email === "string" &&
     (!value.user.connections || typeof value.user.connections === "object") &&
-    ["email", "aad"].includes(value.connection)
+    ["email", "aad"].includes(value.connection) &&
+    value.exp &&
+    value.iat
   );
 }

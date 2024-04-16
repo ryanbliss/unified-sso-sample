@@ -12,7 +12,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.json();
   if (!isISignUpBody(body)) {
     throw new Error(
-      "/api/auth/login body is invalid type, must be type ILoginBody"
+      "/api/auth/signup body is invalid type, must be type ILoginBody"
     );
   }
   // Check if user already exists for email

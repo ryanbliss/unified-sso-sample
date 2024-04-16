@@ -11,8 +11,14 @@ import { signAppToken } from "@/utils/app-auth-utils";
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.json();
   if (!isILoginBody(body)) {
-    throw new Error(
-      "/api/auth/login body is invalid type, must be type ILoginBody"
+    console.error("/api/auth/login body is invalid type, must be type ILoginBody");
+    return NextResponse.json(
+      {
+        error: "/api/auth/login body is invalid type, must be type ILoginBody",
+      },
+      {
+        status: 400,
+      }
     );
   }
   const user = await findUser(body.email);
