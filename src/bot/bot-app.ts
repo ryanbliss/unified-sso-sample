@@ -116,10 +116,11 @@ export const botApp = new ApplicationBuilder<ApplicationTurnState>()
   })
   .withAuthentication(botAdapter, {
     autoSignIn: (context: TurnContext) => {
-      // Disable auto sign in for message activities
-      // if (USE_CARD_AUTH && context.activity.type == ActivityTypes.Message) {
-      //   return Promise.resolve(false);
-      // }
+      // Disable auto sign in for specific debug messages
+      const activity = context.activity
+      if (activity.text === "/collab-stage") {
+        return Promise.resolve(false);
+      }
       return Promise.resolve(true);
     },
     settings: {
