@@ -27,6 +27,7 @@ export default function LoginPage() {
             Authorization: token!,
           },
           body: JSON.stringify({}),
+          cache: 'no-store',
         });
         const body = await res.json();
         if (res.status !== 200) {

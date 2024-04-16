@@ -24,6 +24,7 @@ export const SignupForm: FC<{}> = (props) => {
           email,
           password,
         }),
+        cache: 'no-store',
       });
       const body = await res.json();
       const connections: unknown = body?.connections;
