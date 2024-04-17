@@ -1,18 +1,18 @@
-import { IUserBase } from "@/models/user";
 import clientPromise from "./mongodb-client";
-import { Collection, WithId } from "mongodb";
+import { Collection } from "mongodb";
 
-/**
- * User type interface, which includes the ID inserted by MongoDB
- */
-export type IUser = WithId<IUserBase>;
+export interface IFeatureFlag {
+    key: string;
+    value: string;
+}
 
-async function getCollection(): Promise<Collection<IUserBase>> {
+
+async function getCollection(): Promise<Collection<IFeatureFlag>> {
   // Get MongoDB client
   const client = await clientPromise;
   // Connect to the tenant database and access the collection
   const database = client.db("unified-sso");
-  const db = database.collection<IUserBase>("feature-flags");
+  const db = database.collection<IFeatureFlag>("feature-flags");
   return db;
 }
 
@@ -32,5 +32,5 @@ export async function findFeatureFlag(key: string): Promise<unknown> {
   if (!referenceDoc) {
     throw new Error(`feature-flags.ts findFeatureFlag document not found for key ${key}`);
   }
-  return referenceDoc;
+  return referenceDoc.value;
 }
