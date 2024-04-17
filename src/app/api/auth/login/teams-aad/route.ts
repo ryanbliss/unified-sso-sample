@@ -1,7 +1,11 @@
-import { findAADUser } from "@/database/user";
+import { IUser, findAADUser } from "@/database/user";
 import { NextRequest, NextResponse } from "next/server";
 import { signAppToken } from "@/utils/app-auth-utils";
-import { exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
+import {
+  IValidatedAuthenticationResult,
+  cacheMSALResultWithCode,
+  exchangeTeamsTokenForMSALToken,
+} from "@/utils/msal-token-utils";
 import { cookies } from "next/headers";
 
 /**
@@ -24,18 +28,54 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
     return NextResponse.json(
       {
-        error: "Unauthorized",
+        error: "Invalid 'Authorization' header",
       },
       {
-        status: 401,
+        status: 400,
       }
     );
   }
-  const msalResult = await exchangeTeamsTokenForMSALToken(teamsToken);
-  const user = await findAADUser(
-    msalResult.account.localAccountId,
-    msalResult.account.tenantId
-  );
+  let msalResult: IValidatedAuthenticationResult;
+  try {
+    msalResult = await exchangeTeamsTokenForMSALToken(teamsToken);
+  } catch (err) {
+    console.error(`/api/auth/login/teams-aad/route.ts ${err}`);
+    return NextResponse.json(
+      {
+        error:
+          "Unable to validate Teams AAD token with MSAL. Please ensure you have a valid Microsoft identity token in your 'Authroization' header.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+  let user: IUser | null;
+  try {
+    user = await findAADUser(
+      msalResult.account.localAccountId,
+      msalResult.account.tenantId
+    );
+  } catch (err) {
+    console.error(
+      `/api/auth/login/teams-aad/route.ts error while findAADUser ${err}`
+    );
+    const code = cacheMSALResultWithCode(msalResult);
+    cookieStore.set({
+      name: "AADConnectionCode",
+      value: code,
+      sameSite: "none",
+      secure: true,
+    });
+    return NextResponse.json(
+      {
+        error: "An internal error occurred",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
   if (!user) {
     console.error(
       "/api/auth/login/teams-aad/route.ts invalid login attempt, user does not exist"

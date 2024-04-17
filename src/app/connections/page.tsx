@@ -8,7 +8,9 @@ export default async function Connections() {
   const tokenCookie = cookieStore.get("Authorization");
   const token = tokenCookie?.value;
   if (!token) {
-    redirect(`/auth/login`);
+    // In production apps that work outside of Teams, you'd likely want a request header/param for "redirectTo"
+    // In Teams, you'd go to your Teams-specific route; out of Teams, you'd go to your normal route.
+    redirect(`/auth/teams`);
   }
   // This fails because token is invalid / expired, so we clear the token and redirect to login
   const jwtPayload = validateAppToken(token);

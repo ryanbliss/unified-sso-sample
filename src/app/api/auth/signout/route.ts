@@ -13,5 +13,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     sameSite: "none",
     secure: true,
   });
-  return NextResponse.redirect(new URL("/auth/login", req.url));
+  // In production apps that work outside of Teams, you'd likely want a request header/param for "redirectTo"
+  // In Teams, you'd go to your Teams-specific route; out of Teams, you'd go to your normal route.
+  return NextResponse.redirect(new URL("/auth/teams", req.url));
 }

@@ -5,6 +5,8 @@ import {
 } from "@azure/msal-node";
 import jwt from "jsonwebtoken";
 import validateTeamsToken from "./teams-token-utils";
+import { randomBytes } from "crypto";
+import { IAuthConnections } from "@/models/user";
 
 export async function exchangeTeamsTokenForMSALToken(
   teamsIdentityToken: string
@@ -54,10 +56,68 @@ function isIValidatedAuthenticationResult(
   return value.account !== null;
 }
 
-export const decodeMSALToken = (token: string): jwt.JwtPayload => {
+export function decodeMSALToken(token: string): jwt.JwtPayload {
   const payload = jwt.decode(token);
   if (payload === null || typeof payload === "string") {
     throw new Error("Invalid token type");
   }
   return payload;
-};
+}
+
+// Temp token storage for MSAL tokens.
+// This is used for users signing up with the `aad` connection.
+const tempTokens = new Map<string, IValidatedAuthenticationResult>();
+
+/**
+ * Function that stores a token in a local cache.
+ * This is used for users signing up with the `aad` connection.
+ * 
+ * @param result validated MSAL token reesult, which we will cache temporarily
+ * @returns the exchange code
+ */
+export function cacheMSALResultWithCode(result: IValidatedAuthenticationResult): string {
+  // Generate cryptographically secure random string
+  const code = generateAuthCode(124);
+  tempTokens.set(code, result);
+  return code;
+}
+
+/**
+ * Exchange a code for an MSAL result.
+ * This is used for users signing up with the `aad` connection.
+ * 
+ * @param code authorization code
+ * @returns validated MSAL authentication result
+ */
+export function getMSALResultForCode(code: string): IValidatedAuthenticationResult | undefined {
+  const result = tempTokens.get(code);
+  // Delete the token from the cache so that it can't be used again
+  tempTokens.delete(code);
+  return result;
+}
+
+export function addAADConnection(connections: IAuthConnections, msalResult: IValidatedAuthenticationResult): IAuthConnections {
+  const newConnections = {
+    ...connections,
+    aad: {
+      oid: msalResult.account.localAccountId,
+      tid: msalResult.account.tenantId,
+      upn: msalResult.account.username,
+    },
+  };
+  return newConnections;
+}
+
+/**
+ * 
+ * @param length 
+ * @returns random string
+ */
+function generateAuthCode(length: number): string {
+  // Generate a random byte array
+  const buffer = randomBytes(length);
+
+  // Convert byte array to hexadecimal format for easy use as a string
+  // and slice it to the required length in case of any length mismatches due to conversion.
+  return buffer.toString("hex").slice(0, length);
+}

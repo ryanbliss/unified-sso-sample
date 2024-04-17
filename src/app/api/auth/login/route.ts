@@ -46,10 +46,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const token = signAppToken(user, "email");
-  const connections: string[] = [];
-  if (user.connections?.aad) {
-    connections.push("aad");
-  }
   cookieStore.set({
     name: "Authorization",
     value: token,
@@ -59,7 +55,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({
     success: true,
-    connections,
   });
 }
 

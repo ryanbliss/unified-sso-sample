@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { signAppToken, validateAppToken } from "@/utils/app-auth-utils";
 import {
   IValidatedAuthenticationResult,
+  addAADConnection,
   exchangeTeamsTokenForMSALToken,
 } from "@/utils/msal-token-utils";
 import { cookies } from "next/headers";
@@ -130,14 +131,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   // Upsert user with new connection
-  const connections = {
-    ...appUser.connections,
-    aad: {
-      oid: msalResult.account.localAccountId,
-      tid: msalResult.account.tenantId,
-      upn: msalResult.account.username,
-    },
-  };
+  const connections = addAADConnection(appUser.connections ?? {}, msalResult);
   try {
     const updatedUser = await upsertUser({
       email: appUser.email,

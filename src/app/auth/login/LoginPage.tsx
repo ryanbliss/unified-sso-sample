@@ -2,8 +2,7 @@
 
 import { FlexColumn, FlexRow } from "@/components/flex";
 import { ScrollWrapper } from "@/components/scroll-wrapper";
-import { LoginForm } from "./LoginForm";
-import { Button, Subtitle2, Title1 } from "@fluentui/react-components";
+import { Button, Input, Subtitle2, Text, Title1, tokens } from "@fluentui/react-components";
 import { useRouter } from "next/navigation";
 import { useTeamsClientSSO } from "@/hooks/useTeamsClientSSO";
 import { LoadWrapper } from "@/components/view-wrappers";
@@ -13,7 +12,46 @@ export default function LoginPage() {
   const { token, silentAuthLoading } = useTeamsClientSSO();
   const [attemptedLoginWithAADToken, setAttemptedLoginWithAADToken] =
     useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<Error>();
+
   const router = useRouter();
+
+  const onLogin = async () => {
+    try {
+      // Log in
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+      const body = await res.json();
+      if (res.status !== 200) {
+        throw new Error(body.error);
+      }
+      // '/' will redirect go straight to the connections page if not already connected to AAD.
+      // This is where users will connect their account to Teams, if needed.
+      router.push("/");
+    } catch (err) {
+      console.error(err);
+      if (err instanceof Error) {
+        setAuthError(err);
+      } else {
+        setAuthError(
+          new Error(
+            "An unknown error occurred. Check the console logs for more information."
+          )
+        );
+      }
+    }
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -62,7 +100,34 @@ export default function LoginPage() {
           }}
         >
           <Title1>{"Log in to Unify SSO"}</Title1>
-          <LoginForm />
+          <Input
+            type="email"
+            value={email}
+            placeholder={"Email"}
+            onChange={(ev, data) => {
+              setEmail(data.value);
+            }}
+          />
+          <Input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(ev, data) => {
+              setPassword(data.value);
+            }}
+          />
+          <FlexRow>
+            <Button onClick={onLogin}>{"Log in"}</Button>
+          </FlexRow>
+          {!!authError && (
+            <Text
+              style={{
+                color: tokens.colorPaletteRedForeground1,
+              }}
+            >
+              {authError.message}
+            </Text>
+          )}
           <Subtitle2>{"Don't have an account?"}</Subtitle2>
           <FlexRow>
             <Button
