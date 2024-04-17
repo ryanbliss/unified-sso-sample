@@ -37,7 +37,11 @@ export default function ConnectionsPage(props: { user: IUserPasswordless }) {
       setLoading(false);
       return;
     }
-    if (!authToken) return;
+    if (!authToken) {
+      // This is a "silent" error, such as SSO canceled by user
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch("/api/auth/link/teams-aad", {
         method: "POST",
