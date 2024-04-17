@@ -1,4 +1,4 @@
-import { isSdkError } from "@/utils/teams-js-type-guards";
+import { isSdkError } from "@/utils/teams-js-utils";
 import * as teamsJs from "@microsoft/teams-js";
 import { useCallback, useEffect, useState } from "react";
 

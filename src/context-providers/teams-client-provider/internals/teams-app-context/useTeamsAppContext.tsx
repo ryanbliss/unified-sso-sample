@@ -1,15 +1,14 @@
 "use client";
 
+import { isInIFrame } from "@/utils/teams-js-utils";
 import {
   teamsDarkTheme,
   teamsHighContrastTheme,
   // teamsLightTheme,
   Theme,
 } from "@fluentui/react-components";
-import { app, HostClientType, FrameContexts } from "@microsoft/teams-js";
+import * as teamsJs from "@microsoft/teams-js";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-
-const LOCAL_STORAGE_KEY = "codebox-live-user-id";
 
 /**
  * @hidden
@@ -19,16 +18,17 @@ export const useTeamsAppContext = (
   initialized: boolean,
   setTheme: Dispatch<SetStateAction<Theme>>
 ): {
-  teamsContext: app.Context | undefined;
+  teamsContext: teamsJs.app.Context | undefined;
   error: Error | undefined;
 } => {
-  const [ctx, setCtx] = useState<app.Context | undefined>();
+  const [ctx, setCtx] = useState<teamsJs.app.Context | undefined>();
   const [error, setError] = useState<Error | undefined>();
 
   useEffect(() => {
+    if (isInIFrame()) return;
     if (!ctx?.user?.id && initialized) {
       console.log("useTeamsContext: Attempting to get Teams context");
-      app
+      teamsJs.app
         .getContext()
         .then((context) => {
           console.log(

@@ -125,41 +125,66 @@ export default function TeamsAuthPage() {
     <FlexColumn expand="fill">
       <ScrollWrapper>
         <FlexColumn
-          marginSpacer="small"
+          marginSpacer="medium"
+          hAlign="center"
           style={{
             padding: "24px",
           }}
         >
-          <Title1>{`"Let's get started"`}</Title1>
-          <FlexRow
-            spaceBetween
-            expand="horizontal"
-            vAlign="center"
-            marginSpacer="small"
+          <FlexColumn
             style={{
-              borderRadius: tokens.borderRadiusLarge,
-              borderStyle: "solid",
-              borderWidth: tokens.strokeWidthThin,
-              borderColor: tokens.colorNeutralStroke1,
-              padding: "8px",
+              width: "356px",
+              padding: "32px",
+              backgroundColor: tokens.colorNeutralBackground1,
+              boxShadow: tokens.shadow8,
+              borderRadius: tokens.borderRadiusXLarge,
             }}
+            marginSpacer="medium"
+            vAlign="center"
+            hAlign="center"
           >
-            <Text weight="semibold">
-              {teamsContext?.user?.userPrincipalName}
-            </Text>
-            <Button
-              appearance="primary"
-              onClick={() => {
-                setSSOManualAttemptActive(true);
-                authenticateWithTeamsSSO(false).finally(() => {
-                  if (!mountedRef.current) return;
-                  setSSOManualAttemptActive(false);
-                });
+            <Title1 align="center">{"Let's get started"}</Title1>
+            <FlexRow
+              spaceBetween
+              expand="horizontal"
+              vAlign="center"
+              marginSpacer="small"
+              style={{
+                borderRadius: tokens.borderRadiusLarge,
+                borderStyle: "solid",
+                borderWidth: tokens.strokeWidthThin,
+                borderColor: tokens.colorNeutralStroke1,
+                padding: "8px",
               }}
             >
-              {"Continue"}
-            </Button>
-          </FlexRow>
+              <Text weight="semibold">
+                {teamsContext?.user?.userPrincipalName}
+              </Text>
+              <Button
+                appearance="primary"
+                onClick={() => {
+                  setSSOManualAttemptActive(true);
+                  authenticateWithTeamsSSO(false).finally(() => {
+                    if (!mountedRef.current) return;
+                    setSSOManualAttemptActive(false);
+                  });
+                }}
+              >
+                {"Continue"}
+              </Button>
+            </FlexRow>
+            {!!authError ||
+              (!!manualAuthError && (
+                <Text
+                  align="center"
+                  style={{
+                    color: tokens.colorPaletteRedForeground1,
+                  }}
+                >
+                  {authError ?? manualAuthError?.message}
+                </Text>
+              ))}
+          </FlexColumn>
           <FlexColumn vAlign="center" hAlign="center" marginSpacer="small">
             <Text>{`Not ${teamsContext?.user?.userPrincipalName}?`}</Text>
             <FlexColumn hAlign="center">
@@ -181,16 +206,6 @@ export default function TeamsAuthPage() {
                 {"Create new account"}
               </Button>
             </FlexColumn>
-            {!!authError ||
-              (!!manualAuthError && (
-                <Text
-                  style={{
-                    color: tokens.colorPaletteRedForeground1,
-                  }}
-                >
-                  {authError ?? manualAuthError?.message}
-                </Text>
-              ))}
           </FlexColumn>
         </FlexColumn>
       </ScrollWrapper>

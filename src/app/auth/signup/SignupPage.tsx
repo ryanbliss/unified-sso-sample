@@ -12,6 +12,7 @@ import {
 } from "@fluentui/react-components";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import * as teamsJs from "@microsoft/teams-js";
 
 interface ISignupPageProps {
   connection: "email" | "aad";
@@ -45,9 +46,7 @@ export default function SignupPage(props: ISignupPageProps) {
       if (res.status !== 200) {
         throw new Error(body.error ?? "An unknown error occurred");
       }
-      // '/' will redirect go straight to the connections page if not already connected to AAD.
-      // This is where users will connect their account to Teams, if needed.
-      router.push("/");
+      teamsJs.authentication.notifySuccess();
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {

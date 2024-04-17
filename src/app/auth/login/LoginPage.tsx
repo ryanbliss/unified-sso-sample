@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useTeamsClientSSO } from "@/hooks/useTeamsClientSSO";
 import { LoadWrapper } from "@/components/view-wrappers";
 import { useEffect, useState } from "react";
+import * as teamsJs from "@microsoft/teams-js";
 
 export default function LoginPage() {
   const { token, silentAuthLoading } = useTeamsClientSSO();
@@ -36,9 +37,7 @@ export default function LoginPage() {
       if (res.status !== 200) {
         throw new Error(body.error);
       }
-      // '/' will redirect go straight to the connections page if not already connected to AAD.
-      // This is where users will connect their account to Teams, if needed.
-      router.push("/");
+      teamsJs.authentication.notifySuccess();
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {

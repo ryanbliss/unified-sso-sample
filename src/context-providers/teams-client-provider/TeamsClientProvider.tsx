@@ -10,13 +10,14 @@ import {
   useEffect,
   useState,
 } from "react";
-import { app } from "@microsoft/teams-js";
+import * as teamsJs from "@microsoft/teams-js";
 import { LoadErrorWrapper } from "../../components/view-wrappers";
 import { Theme } from "@fluentui/react-components";
 import { useTeamsAppContext } from "./internals";
+import { isInIFrame } from "@/utils/teams-js-utils";
 
 export interface ITeamsClientContext {
-  teamsContext: app.Context | undefined;
+  teamsContext: teamsJs.app.Context | undefined;
   threadId: string | undefined;
 }
 
@@ -45,12 +46,15 @@ export const TeamsClientProvider: FC<{
 
   useEffect(() => {
     if (!initialized) {
-      app
+      if (!isInIFrame()) {
+        setInitialized(true);
+      }
+      teamsJs.app
         .initialize()
         .then(() => {
           console.log("App.tsx: initializing client SDK initialized");
-          app.notifyAppLoaded();
-          app.notifySuccess();
+          teamsJs.app.notifyAppLoaded();
+          teamsJs.app.notifySuccess();
           setInitialized(true);
         })
         .catch((error) => setError(error));
