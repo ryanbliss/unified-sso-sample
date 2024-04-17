@@ -66,7 +66,7 @@ export default function TeamsAuthPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: token!,
+            Authorization: tokenToUse,
           },
           body: JSON.stringify({}),
         });
