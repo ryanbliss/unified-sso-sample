@@ -15,7 +15,9 @@ export async function exchangeTeamsTokenForMSALToken(
   console.log(
     "msal-token-utils exchangeTeamsTokenForMSALToken: exchanging token for msal"
   );
-  const scopes = ["https://graph.microsoft.com/User.Read"];
+  const scopes = [
+    "api://unified-sso-sample.vercel.app/botid-ce0c57f0-5fea-482a-9efa-3810af5ec6dd/User.Read",
+  ];
   // Creating MSAL client
   const msalClient = new ConfidentialClientApplication({
     auth: {
@@ -71,11 +73,13 @@ const tempTokens = new Map<string, IValidatedAuthenticationResult>();
 /**
  * Function that stores a token in a local cache.
  * This is used for users signing up with the `aad` connection.
- * 
+ *
  * @param result validated MSAL token reesult, which we will cache temporarily
  * @returns the exchange code
  */
-export function cacheMSALResultWithCode(result: IValidatedAuthenticationResult): string {
+export function cacheMSALResultWithCode(
+  result: IValidatedAuthenticationResult
+): string {
   // Generate cryptographically secure random string
   const code = generateAuthCode(124);
   tempTokens.set(code, result);
@@ -85,18 +89,23 @@ export function cacheMSALResultWithCode(result: IValidatedAuthenticationResult):
 /**
  * Exchange a code for an MSAL result.
  * This is used for users signing up with the `aad` connection.
- * 
+ *
  * @param code authorization code
  * @returns validated MSAL authentication result
  */
-export function getMSALResultForCode(code: string): IValidatedAuthenticationResult | undefined {
+export function getMSALResultForCode(
+  code: string
+): IValidatedAuthenticationResult | undefined {
   const result = tempTokens.get(code);
   // Delete the token from the cache so that it can't be used again
   tempTokens.delete(code);
   return result;
 }
 
-export function addAADConnection(connections: IAuthConnections, msalResult: IValidatedAuthenticationResult): IAuthConnections {
+export function addAADConnection(
+  connections: IAuthConnections,
+  msalResult: IValidatedAuthenticationResult
+): IAuthConnections {
   const newConnections = {
     ...connections,
     aad: {
@@ -109,8 +118,8 @@ export function addAADConnection(connections: IAuthConnections, msalResult: IVal
 }
 
 /**
- * 
- * @param length 
+ *
+ * @param length
  * @returns random string
  */
 function generateAuthCode(length: number): string {
