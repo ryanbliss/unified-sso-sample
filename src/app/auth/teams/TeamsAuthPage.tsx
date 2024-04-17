@@ -34,7 +34,7 @@ export default function TeamsAuthPage() {
     async (path: "signup" | "login", connection: "email" | "aad" = "email") => {
       setManualLoginActive(true);
       try {
-        const url = new URL(window.location.origin + "/" + path);
+        const url = new URL(window.location.origin + "/auth/" + path);
         url.searchParams.append("connection", connection);
         if (connection === "aad" && teamsContext?.user?.userPrincipalName) {
           url.searchParams.append("upn", teamsContext?.user?.userPrincipalName);
