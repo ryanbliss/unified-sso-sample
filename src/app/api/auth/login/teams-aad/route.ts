@@ -60,13 +60,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     console.error(
       `/api/auth/login/teams-aad/route.ts error while findAADUser ${err}`
     );
-    const code = cacheMSALResultWithCode(msalResult);
-    cookieStore.set({
-      name: "AADConnectionCode",
-      value: code,
-      sameSite: "none",
-      secure: true,
-    });
     return NextResponse.json(
       {
         error: "An internal error occurred",
@@ -80,6 +73,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     console.error(
       "/api/auth/login/teams-aad/route.ts invalid login attempt, user does not exist"
     );
+    const code = cacheMSALResultWithCode(msalResult);
+    cookieStore.set({
+      name: "AADConnectionCode",
+      value: code,
+      sameSite: "none",
+      secure: true,
+    });
     return NextResponse.json(
       {
         error: "Unauthorized",
