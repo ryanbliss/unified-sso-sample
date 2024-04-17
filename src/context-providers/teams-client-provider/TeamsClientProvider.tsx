@@ -14,7 +14,7 @@ import * as teamsJs from "@microsoft/teams-js";
 import { LoadErrorWrapper } from "../../components/view-wrappers";
 import { Theme } from "@fluentui/react-components";
 import { useTeamsAppContext } from "./internals";
-import { isInIFrame } from "@/utils/teams-js-utils";
+import { isTeamsJsPath } from "@/utils/teams-js-utils";
 
 export interface ITeamsClientContext {
   teamsContext: teamsJs.app.Context | undefined;
@@ -46,8 +46,9 @@ export const TeamsClientProvider: FC<{
 
   useEffect(() => {
     if (!initialized) {
-      if (!isInIFrame()) {
+      if (!isTeamsJsPath()) {
         setInitialized(true);
+        return;
       }
       teamsJs.app
         .initialize()

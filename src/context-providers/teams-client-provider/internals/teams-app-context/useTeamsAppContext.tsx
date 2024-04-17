@@ -1,6 +1,6 @@
 "use client";
 
-import { isInIFrame } from "@/utils/teams-js-utils";
+import { isTeamsJsPath } from "@/utils/teams-js-utils";
 import {
   teamsDarkTheme,
   teamsHighContrastTheme,
@@ -25,7 +25,7 @@ export const useTeamsAppContext = (
   const [error, setError] = useState<Error | undefined>();
 
   useEffect(() => {
-    if (isInIFrame()) return;
+    if (!isTeamsJsPath()) return;
     if (!ctx?.user?.id && initialized) {
       console.log("useTeamsContext: Attempting to get Teams context");
       teamsJs.app
