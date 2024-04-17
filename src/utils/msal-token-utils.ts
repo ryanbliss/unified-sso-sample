@@ -7,6 +7,8 @@ import jwt from "jsonwebtoken";
 import validateTeamsToken from "./teams-token-utils";
 import { randomBytes } from "crypto";
 import { IAuthConnections } from "@/models/user";
+import { findFeatureFlag } from "@/database/feature-flags";
+import { isStringList } from "./generic-type-guards";
 
 export async function exchangeTeamsTokenForMSALToken(
   teamsIdentityToken: string
@@ -15,9 +17,16 @@ export async function exchangeTeamsTokenForMSALToken(
   console.log(
     "msal-token-utils exchangeTeamsTokenForMSALToken: exchanging token for msal"
   );
-  const scopes = [
-    "api://unified-sso-sample.vercel.app/botid-ce0c57f0-5fea-482a-9efa-3810af5ec6dd/User.Read",
-  ];
+  const scopes = await findFeatureFlag("scopes");
+  if (!isStringList(scopes)) {
+    throw new Error(
+      "msal-token-utils exchangeTeamsTokenForMSALToken: Invalid scopes feature flag"
+    );
+  }
+  // const scopes = [
+  //   "api://unified-sso-sample.vercel.app/botid-ce0c57f0-5fea-482a-9efa-3810af5ec6dd/User.Read",
+  //   "https://graph.microsoft.com/User.Read",
+  // ];
   // Creating MSAL client
   const msalClient = new ConfidentialClientApplication({
     auth: {
@@ -29,7 +38,7 @@ export async function exchangeTeamsTokenForMSALToken(
     authority: `https://login.microsoftonline.com/${jwt.tid}`,
     oboAssertion: teamsIdentityToken,
     scopes: scopes,
-    skipCache: false,
+    skipCache: true,
   });
   if (!result) {
     throw new Error(
