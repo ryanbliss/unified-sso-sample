@@ -3,7 +3,7 @@ import { Collection } from "mongodb";
 
 export interface IFeatureFlag {
     key: string;
-    value: string;
+    value: unknown;
 }
 
 
