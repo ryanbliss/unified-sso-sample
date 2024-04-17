@@ -164,7 +164,7 @@ export default function TeamsAuthPage() {
                 appearance="primary"
                 onClick={() => {
                   setSSOManualAttemptActive(true);
-                  authenticateWithTeamsSSO(false).finally(() => {
+                  attemptLoginWithAADToken(false).finally(() => {
                     if (!mountedRef.current) return;
                     setSSOManualAttemptActive(false);
                   });
