@@ -6,7 +6,5 @@ export const isSdkError = (value: any): value is SdkError => {
 
 export function isTeamsJsPath(): boolean {
   const url = new URL(window.location.href);
-  return ["/", "/auth/teams", "/connections", "/test-task-module"].includes(
-    url.pathname
-  );
+  return !["/legal"].includes(url.pathname);
 }
