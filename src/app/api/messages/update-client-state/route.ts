@@ -14,22 +14,23 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const cookieStore = cookies();
-  console.log("/api/messages/update-client-state");
+  // Validate request includes an Authorization token
   const token =
     cookieStore.get("Authorization")?.value ?? req.headers.get("Authorization");
   if (!token) {
     console.error(
-      "/api/notes/list/route.ts: no 'Authorization' cookie, should contain app token"
+      "/api/notes/list/route.ts: no 'Authorization' cookie or header, should contain app token"
     );
     return NextResponse.json(
       {
-        error: "Must include an 'Authorization' cookie with a valid app token",
+        error: "Must include an 'Authorization' cookie or header with a valid app token",
       },
       {
         status: 400,
       }
     );
   }
+  // Validate user has valid app auth token
   const jwtPayload = validateAppToken(token);
   if (!jwtPayload) {
     console.error("/api/messages/update-client-state.ts: Invavlid token.");
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-
+  // Parse the request body
   const body = await req.json();
   console.log(
     "/api/messages/update-client-state body",
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  const changes: StoreItems = {};
+  // If not threadId was provided, user is in the personal app.
   const threadId =
     body.threadId ??
     buildTeamsThreadId(jwtPayload.user.connections?.aad?.oid ?? "");
@@ -69,18 +70,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // Check for existing value to get eTag, if there is one
   const existingValue = (await botStorage.read([key]))[key];
   if (existingValue) {
+    // Set the latest storage eTag (used to prevent conflict resolution)
     (body as any).eTag = existingValue.eTag;
   }
-  changes[key] = body;
   // Store client state in bot storage
+  const changes: StoreItems = {};
+  changes[key] = body;
   await botStorage.write(changes);
   const url = new URL(req.url);
+  // Only send pubsub when bot is initiating the change, since client already has the state otherwise
   if (url.searchParams.get("sendPubSub") === "true") {
     await pubsubServiceClient.group(jwtPayload.user._id).sendToAll({
       type: PubSubEventTypes.UPDATE_USER_CLIENT_STATE,
       data: body,
     });
   }
-  // In production, you may want to validate the token (body.query[0]) and its claims (body.claims).
   return NextResponse.json({});
 }
