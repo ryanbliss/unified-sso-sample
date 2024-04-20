@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import ConnectionsPage from "./ConnectionsPage";
 import { cookies } from "next/headers";
-import { validateAppToken } from "@/utils/app-auth-utils";
+import { IAppJwtToken, validateAppToken } from "@/utils/app-auth-utils";
 
 export default async function Connections() {
   const cookieStore = cookies();
@@ -13,7 +13,12 @@ export default async function Connections() {
     redirect(`/auth/teams`);
   }
   // This fails because token is invalid / expired, so we clear the token and redirect to login
-  const jwtPayload = validateAppToken(token);
+  let jwtPayload: IAppJwtToken | null;
+  try {
+    jwtPayload = validateAppToken(token);
+  } catch {
+    redirect(`/api/auth/signout`);
+  }
   if (!jwtPayload) {
     redirect(`/api/auth/signout`);
   }

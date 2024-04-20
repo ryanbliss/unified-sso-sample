@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import HomePageContainer from "./HomePageContainer";
 import { redirect } from "next/navigation";
-import { validateAppToken } from "@/utils/app-auth-utils";
+import { IAppJwtToken, validateAppToken } from "@/utils/app-auth-utils";
 
 export default async function Home() {
   const cookieStore = cookies();
@@ -12,7 +12,12 @@ export default async function Home() {
     // In Teams, you'd go to your Teams-specific route; out of Teams, you'd go to your normal route.
     redirect(`/auth/teams`);
   }
-  const jwtPayload = validateAppToken(token);
+  let jwtPayload: IAppJwtToken | null;
+  try {
+    jwtPayload = validateAppToken(token);
+  } catch {
+    redirect(`/api/auth/signout`);
+  }
   if (!jwtPayload) {
     redirect(`/api/auth/signout`);
   }
