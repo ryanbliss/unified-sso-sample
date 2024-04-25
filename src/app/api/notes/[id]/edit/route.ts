@@ -1,7 +1,7 @@
-import { editNote, isNoteEditable } from "@/database/notes";
-import { PubSubEventTypes } from "@/models/pubsub-event-types";
-import { pubsubServiceClient } from "@/pubsub/pubsub-client";
-import { validateAppToken } from "@/utils/app-auth-utils";
+import { editNote, isNoteEditable } from "@/server/database/notes";
+import { PubSubEventTypes } from "@/shared/models/pubsub-event-types";
+import { pubsubServiceClient } from "@/server/pubsub/pubsub-client";
+import { validateAppToken } from "@/server/utils/app-auth-utils";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 

@@ -1,6 +1,6 @@
-import { sendProactiveMessage } from "@/bot/bot-app";
-import { prepareBotPromptFiles } from "@/bot/fs-utils";
-import { exchangeTeamsTokenForMSALToken } from "@/utils/msal-token-utils";
+import { sendProactiveMessage } from "@/server/bot/bot-app";
+import { prepareBotPromptFiles } from "@/server/bot/fs-utils";
+import { exchangeTeamsTokenForMSALToken } from "@/server/utils/msal-token-utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {

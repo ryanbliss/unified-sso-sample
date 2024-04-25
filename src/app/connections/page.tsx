@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import ConnectionsPage from "./ConnectionsPage";
 import { cookies } from "next/headers";
-import { IAppJwtToken, validateAppToken } from "@/utils/app-auth-utils";
+import { IAppJwtToken, validateAppToken } from "@/server/utils/app-auth-utils";
 
 export default async function Connections() {
   const cookieStore = cookies();

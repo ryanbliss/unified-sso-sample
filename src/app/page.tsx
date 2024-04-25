@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import HomePageContainer from "./HomePageContainer";
 import { redirect } from "next/navigation";
-import { IAppJwtToken, validateAppToken } from "@/utils/app-auth-utils";
+import { IAppJwtToken, validateAppToken } from "@/server/utils/app-auth-utils";
 
 export default async function Home() {
   const cookieStore = cookies();

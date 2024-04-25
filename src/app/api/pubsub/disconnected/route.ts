@@ -6,12 +6,9 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const url = new URL(req.url);
-  console.log("/api/pubsub/disconnected url", url.href);
-  console.log("/api/pubsub/disconnected headers", req.headers);
-  console.log("/api/pubsub/disconnected userId", req.headers.get("ce-userId"));
   const hub = url.searchParams.get("hub");
   console.log("/api/pubsub/disconnected hub", hub);
-  // If you set a secret in your PubSub webhook, validate it here...
+  // TODO: If you set a secret in your PubSub webhook, validate it here to prevent outside actors from using this endpoint...
   // For this sample, there is no secret configured so we just log it.
   const secret = url.searchParams.get("secret");
   console.log("/api/pubsub/disconnected secret", secret);
@@ -19,6 +16,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   console.log("/api/pubsub/disconnected body", JSON.stringify(body, null, 4));
   // TODO: could reset the user client state, so that when the user navigates away from the tab that
   // the bot doesn't think they are still editing a note.
+  const userId = req.headers.get("ce-userId");
+  console.log("/api/pubsub/disconnected userId", userId);
 
   // In production, you may want to validate the token (body.query[0]) and its claims (body.claims).
   return NextResponse.json(

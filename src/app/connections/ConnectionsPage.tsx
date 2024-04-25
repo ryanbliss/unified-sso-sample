@@ -1,7 +1,7 @@
 "use client";
 
-import { FlexColumn, FlexRow } from "@/components/flex";
-import { ScrollWrapper } from "@/components/scroll-wrapper";
+import { FlexColumn, FlexRow } from "@/client/components/flex";
+import { ScrollWrapper } from "@/client/components/scroll-wrapper";
 import {
   Button,
   Card,
@@ -11,12 +11,12 @@ import {
   Title3,
   tokens,
 } from "@fluentui/react-components";
-import { useTeamsClientSSO } from "../../hooks/useTeamsClientSSO";
+import { useTeamsClientSSO } from "../../client/hooks/useTeamsClientSSO";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTeamsClientContext } from "@/context-providers";
+import { useTeamsClientContext } from "@/client/context-providers";
 import * as teamsJs from "@microsoft/teams-js";
-import { IUserPasswordless } from "@/models/user";
+import { IUserPasswordless } from "@/shared/models/user";
 
 export default function ConnectionsPage(props: { user: IUserPasswordless }) {
   const { user } = props;

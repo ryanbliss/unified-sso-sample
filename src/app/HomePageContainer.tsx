@@ -1,10 +1,10 @@
 "use client";
-import { FlexColumn, FlexRow } from "@/components/flex";
+import { FlexColumn, FlexRow } from "@/client/components/flex";
 import { Button, Tab, TabList } from "@fluentui/react-components";
-import { ScrollWrapper } from "@/components/scroll-wrapper";
+import { ScrollWrapper } from "@/client/components/scroll-wrapper";
 import { useState } from "react";
-import { DebugInfo } from "@/components/debug-info/DebugInfo";
-import { ViewNotes } from "@/components/notes/ViewNotes";
+import { DebugInfo } from "@/client/components/debug-info/DebugInfo";
+import { ViewNotes } from "@/client/components/notes/ViewNotes";
 import { useRouter } from "next/navigation";
 
 export default function HomePageContainer() {

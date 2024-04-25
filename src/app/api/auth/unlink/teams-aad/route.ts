@@ -1,6 +1,6 @@
-import { findUser, upsertUser } from "@/database/user";
+import { findUser, upsertUser } from "@/server/database/user";
 import { NextRequest, NextResponse } from "next/server";
-import { signAppToken, validateAppToken } from "@/utils/app-auth-utils";
+import { signAppToken, validateAppToken } from "@/server/utils/app-auth-utils";
 import { cookies } from "next/headers";
 
 /**

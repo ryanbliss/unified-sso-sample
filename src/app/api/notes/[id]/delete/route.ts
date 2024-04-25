@@ -1,8 +1,8 @@
-import { deleteNote } from "@/database/notes";
-import { IDeleteNoteResponse } from "@/models/note-base-models";
-import { PubSubEventTypes } from "@/models/pubsub-event-types";
-import { pubsubServiceClient } from "@/pubsub/pubsub-client";
-import { validateAppToken } from "@/utils/app-auth-utils";
+import { deleteNote } from "@/server/database/notes";
+import { IDeleteNoteResponse } from "@/shared/models/note-base-models";
+import { PubSubEventTypes } from "@/shared/models/pubsub-event-types";
+import { pubsubServiceClient } from "@/server/pubsub/pubsub-client";
+import { validateAppToken } from "@/server/utils/app-auth-utils";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 

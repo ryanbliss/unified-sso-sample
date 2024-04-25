@@ -1,11 +1,11 @@
-import { IUser, findAADUser, findUser, upsertUser } from "@/database/user";
+import { IUser, findAADUser, findUser, upsertUser } from "@/server/database/user";
 import { NextRequest, NextResponse } from "next/server";
-import { signAppToken, validateAppToken } from "@/utils/app-auth-utils";
+import { signAppToken, validateAppToken } from "@/server/utils/app-auth-utils";
 import {
   IValidatedAuthenticationResult,
   addAADConnection,
   exchangeTeamsTokenForMSALToken,
-} from "@/utils/msal-token-utils";
+} from "@/server/utils/msal-token-utils";
 import { cookies } from "next/headers";
 
 /**

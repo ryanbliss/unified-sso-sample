@@ -1,7 +1,7 @@
 "use client";
 
-import { FlexColumn, FlexRow } from "@/components/flex";
-import { ScrollWrapper } from "@/components/scroll-wrapper";
+import { FlexColumn, FlexRow } from "@/client/components/flex";
+import { ScrollWrapper } from "@/client/components/scroll-wrapper";
 import {
   Button,
   Input,

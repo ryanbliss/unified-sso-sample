@@ -1,11 +1,11 @@
 "use client";
 
-import { FlexColumn, FlexRow } from "@/components/flex";
-import { ScrollWrapper } from "@/components/scroll-wrapper";
+import { FlexColumn, FlexRow } from "@/client/components/flex";
+import { ScrollWrapper } from "@/client/components/scroll-wrapper";
 import { Button, Input, Subtitle2, Text, Title1, tokens } from "@fluentui/react-components";
 import { useRouter } from "next/navigation";
-import { useTeamsClientSSO } from "@/hooks/useTeamsClientSSO";
-import { LoadWrapper } from "@/components/view-wrappers";
+import { useTeamsClientSSO } from "@/client/hooks/useTeamsClientSSO";
+import { LoadWrapper } from "@/client/components/view-wrappers";
 import { useEffect, useState } from "react";
 import * as teamsJs from "@microsoft/teams-js";
 

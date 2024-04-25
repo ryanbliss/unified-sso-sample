@@ -1,5 +1,5 @@
-import { pubsubServiceClient } from "@/pubsub/pubsub-client";
-import { validateAppToken } from "@/utils/app-auth-utils";
+import { pubsubServiceClient } from "@/server/pubsub/pubsub-client";
+import { validateAppToken } from "@/server/utils/app-auth-utils";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 

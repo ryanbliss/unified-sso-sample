@@ -1,7 +1,7 @@
 "use client";
 
-import { FlexColumn, FlexRow } from "@/components/flex";
-import { ScrollWrapper } from "@/components/scroll-wrapper";
+import { FlexColumn, FlexRow } from "@/client/components/flex";
+import { ScrollWrapper } from "@/client/components/scroll-wrapper";
 import {
   Button,
   Card,
@@ -11,10 +11,10 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useRouter } from "next/navigation";
-import { useTeamsClientSSO } from "@/hooks/useTeamsClientSSO";
-import { LoadWrapper } from "@/components/view-wrappers";
+import { useTeamsClientSSO } from "@/client/hooks/useTeamsClientSSO";
+import { LoadWrapper } from "@/client/components/view-wrappers";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useTeamsClientContext } from "@/context-providers";
+import { useTeamsClientContext } from "@/client/context-providers";
 import * as teamsJs from "@microsoft/teams-js";
 
 export default function TeamsAuthPage() {

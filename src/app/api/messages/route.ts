@@ -2,8 +2,8 @@
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 import { Response as BotResponse } from "botbuilder";
 import { NextRequest, NextResponse } from "next/server";
-import { botAdapter, botApp } from "@/bot/bot-app";
-import { prepareBotPromptFiles } from "@/bot/fs-utils";
+import { botAdapter, botApp } from "@/server/bot/bot-app";
+import { prepareBotPromptFiles } from "@/server/bot/fs-utils";
 
 interface ResponseHolder {
   status: number;

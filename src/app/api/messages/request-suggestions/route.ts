@@ -1,13 +1,13 @@
-import { botStorage, sendProactiveMessage } from "@/bot/bot-app";
+import { botStorage, sendProactiveMessage } from "@/server/bot/bot-app";
 import {
-  buildTeamsThreadId,
+  getTeamsPersonalScopeThreadId,
   getIntelligentSuggestionActivity,
-} from "@/bot/bot-utils";
-import { suggestionCard } from "@/bot/cards";
-import { prepareBotPromptFiles } from "@/bot/fs-utils";
-import { isIUserClientState } from "@/models/user-client-state";
-import { validateAppToken } from "@/utils/app-auth-utils";
-import { offerIntelligentSuggestionForText } from "@/utils/openai-utils";
+} from "@/server/bot/bot-utils";
+import { suggestionCard } from "@/server/bot/cards";
+import { prepareBotPromptFiles } from "@/server/bot/fs-utils";
+import { isIUserClientState } from "@/shared/models/user-client-state";
+import { validateAppToken } from "@/server/utils/app-auth-utils";
+import { getIntelligentSuggestionForText } from "@/server/utils/openai-utils";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   const threadReferenceId =
-    body.threadId ?? buildTeamsThreadId(jwtPayload.user.connections.aad.oid);
+    body.threadId ?? getTeamsPersonalScopeThreadId(jwtPayload.user.connections.aad.oid);
   if (typeof threadReferenceId !== "string") {
     console.error(
       "/api/messages/request-suggestions.ts: invalid thread reference id"

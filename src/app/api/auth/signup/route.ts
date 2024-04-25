@@ -1,12 +1,12 @@
-import { IUser, findAADUser, findUser, upsertUser } from "@/database/user";
+import { IUser, findAADUser, findUser, upsertUser } from "@/server/database/user";
 import { NextRequest, NextResponse } from "next/server";
-import { signAppToken } from "@/utils/app-auth-utils";
+import { signAppToken } from "@/server/utils/app-auth-utils";
 import { cookies } from "next/headers";
-import { IAuthConnections } from "@/models/user";
+import { IAuthConnections } from "@/shared/models/user";
 import {
   addAADConnection,
   getMSALResultForCode,
-} from "@/utils/msal-token-utils";
+} from "@/server/utils/msal-token-utils";
 
 /**
  * Rudimentary login implementation for illustrative purposes. Do not use in production.

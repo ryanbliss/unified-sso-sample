@@ -5,7 +5,7 @@ import {
   teamsLightTheme,
   tokens,
 } from "@fluentui/react-components";
-import { TeamsClientProvider } from "@/context-providers";
+import { TeamsClientProvider } from "@/client/context-providers";
 
 export const RootLayoutContainer: FC<{ children: ReactNode }> = ({
   children,

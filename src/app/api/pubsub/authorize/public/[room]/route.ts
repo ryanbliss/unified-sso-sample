@@ -1,4 +1,4 @@
-import { validateAppToken } from "@/utils/app-auth-utils";
+import { validateAppToken } from "@/server/utils/app-auth-utils";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 

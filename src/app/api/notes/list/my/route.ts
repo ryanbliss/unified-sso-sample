@@ -1,5 +1,5 @@
-import { getUserNotes } from "@/database/notes";
-import { validateAppToken } from "@/utils/app-auth-utils";
+import { getUserNotes } from "@/server/database/notes";
+import { validateAppToken } from "@/server/utils/app-auth-utils";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 

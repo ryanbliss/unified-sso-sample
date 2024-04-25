@@ -1,9 +1,9 @@
-import { botStorage } from "@/bot/bot-app";
-import { buildTeamsThreadId } from "@/bot/bot-utils";
-import { PubSubEventTypes } from "@/models/pubsub-event-types";
-import { isIUserClientState } from "@/models/user-client-state";
-import { pubsubServiceClient } from "@/pubsub/pubsub-client";
-import { validateAppToken } from "@/utils/app-auth-utils";
+import { botStorage } from "@/server/bot/bot-app";
+import { getTeamsPersonalScopeThreadId } from "@/server/bot/bot-utils";
+import { PubSubEventTypes } from "@/shared/models/pubsub-event-types";
+import { isIUserClientState } from "@/shared/models/user-client-state";
+import { pubsubServiceClient } from "@/server/pubsub/pubsub-client";
+import { validateAppToken } from "@/server/utils/app-auth-utils";
 import { StoreItems } from "botbuilder";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // If not threadId was provided, user is in the personal app.
   const threadId =
     body.threadId ??
-    buildTeamsThreadId(jwtPayload.user.connections?.aad?.oid ?? "");
+    getTeamsPersonalScopeThreadId(jwtPayload.user.connections?.aad?.oid ?? "");
   const key = `custom/${threadId}/${jwtPayload.user._id}`;
   // Check for existing value to get eTag, if there is one
   const existingValue = (await botStorage.read([key]))[key];
