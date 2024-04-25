@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const url = new URL(req.url);
   console.log("/api/pubsub/disconnected url", url.href);
+  console.log("/api/pubsub/disconnected headers", req.headers);
+  console.log("/api/pubsub/disconnected userId", req.headers.get("ce-userId"));
   const hub = url.searchParams.get("hub");
   console.log("/api/pubsub/disconnected hub", hub);
   // If you set a secret in your PubSub webhook, validate it here...
