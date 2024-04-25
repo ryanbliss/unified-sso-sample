@@ -5,10 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
  * @param req request
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  console.log(
-    "/api/pubsub/disconnected origin",
-    req.headers.get("WebHook-Request-Origin")
-  );
   const url = new URL(req.url);
   const hub = url.searchParams.get("hub");
   console.log("/api/pubsub/disconnected hub", hub);
@@ -18,6 +14,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   console.log("/api/pubsub/disconnected secret", secret);
   const body = await req.json();
   console.log("/api/pubsub/disconnected body", JSON.stringify(body, null, 4));
+  // TODO: could reset the user client state, so that when the user navigates away from the tab that
+  // the bot doesn't think they are still editing a note.
+
   // In production, you may want to validate the token (body.query[0]) and its claims (body.claims).
   return NextResponse.json(
     {},

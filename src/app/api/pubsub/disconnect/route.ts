@@ -5,19 +5,18 @@ import { NextRequest, NextResponse } from "next/server";
  * @param req request
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  console.log(
-    "/api/pubsub/note-change origin",
-    req.headers.get("WebHook-Request-Origin")
-  );
   const url = new URL(req.url);
   const hub = url.searchParams.get("hub");
-  console.log("/api/pubsub/group-message hub", hub);
+  console.log("/api/pubsub/disconnect hub", hub);
   // If you set a secret in your PubSub webhook, validate it here...
   // For this sample, there is no secret configured so we just log it.
   const secret = url.searchParams.get("secret");
-  console.log("/api/pubsub/group-message secret", secret);
+  console.log("/api/pubsub/disconnect secret", secret);
   const body = await req.json();
-  console.log("/api/pubsub/group-message body", JSON.stringify(body, null, 4));
+  console.log("/api/pubsub/disconnect body", JSON.stringify(body, null, 4));
+  // TODO: could reset the user client state, so that when the user navigates away from the tab that
+  // the bot doesn't think they are still editing a note.
+
   // In production, you may want to validate the token (body.query[0]) and its claims (body.claims).
   return NextResponse.json(
     {},
