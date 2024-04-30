@@ -22,7 +22,7 @@ export function prepareBotPromptFiles() {
   if (process.env.NODE_ENV === "development") return;
   // We only want to do this once per server boot
   if (finished) return;
-  const basePath = "/src/bot/prompts/sequence";
+  const basePath = "/src/server/bot/prompts/sequence";
   // Write files to path Teams AI library expects
   try {
     writeFile(basePath, "config.json", JSON.stringify(config, null, 4));

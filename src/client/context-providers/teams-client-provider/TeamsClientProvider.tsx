@@ -64,11 +64,12 @@ export const TeamsClientProvider: FC<{
 
   const isLoading = !initialized || !teamsContext;
   const error = initializeError || appContextError;
+  const threadId = teamsContext?.chat?.id ?? teamsContext?.channel?.id;
   return (
     <TeamsClientContext.Provider
       value={{
         teamsContext,
-        threadId: teamsContext?.chat?.id ?? teamsContext?.channel?.id,
+        threadId,
       }}
     >
       <LoadErrorWrapper loading={isLoading} error={error}>
