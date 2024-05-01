@@ -7,26 +7,29 @@ import jwt from "jsonwebtoken";
 import validateTeamsToken from "./teams-token-utils";
 import { randomBytes } from "crypto";
 import { IAuthConnections } from "@/shared/models/user";
-import { findFeatureFlag } from "@/server/database/feature-flags";
+import { getFeatureFlag } from "@/server/database/feature-flags";
 import { isStringList } from "./generic-type-guards";
 
 export async function exchangeTeamsTokenForMSALToken(
   teamsIdentityToken: string
 ): Promise<IValidatedAuthenticationResult> {
+  // Validate the Teams token and get the jwt payload
   const jwt = await validateTeamsToken(teamsIdentityToken);
   console.log(
     "msal-token-utils exchangeTeamsTokenForMSALToken: exchanging token for msal"
   );
-  const scopes = await findFeatureFlag("scopes");
+  // Uncomment if you'd rather hardcode the scopes
+  // I chose to use feature flags for easier testing
+  // const scopes = [
+  //   "https://graph.microsoft.com/profile",
+  //   "https://graph.microsoft.com/openid",
+  // ];
+  const scopes = await getFeatureFlag("scopes");
   if (!isStringList(scopes)) {
     throw new Error(
       "msal-token-utils exchangeTeamsTokenForMSALToken: Invalid scopes feature flag"
     );
   }
-  // const scopes = [
-  //   "api://unified-sso-sample.vercel.app/botid-ce0c57f0-5fea-482a-9efa-3810af5ec6dd/User.Read",
-  //   "https://graph.microsoft.com/User.Read",
-  // ];
   // Creating MSAL client
   const msalClient = new ConfidentialClientApplication({
     auth: {

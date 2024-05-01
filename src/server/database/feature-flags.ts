@@ -21,7 +21,7 @@ async function getCollection(): Promise<Collection<IFeatureFlag>> {
  * @param key email to lookup user by
  * @returns IUser object
  */
-export async function findFeatureFlag(key: string): Promise<unknown> {
+export async function getFeatureFlag(key: string): Promise<unknown> {
   // Get the MongoDB collection
   const collection = await getCollection();
   // Query for a movie that has the title 'The Room'
