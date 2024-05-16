@@ -24,6 +24,9 @@ export function createAppSignInCard(userName: string): Attachment {
         wrap: true,
       },
     ],
+    msteams: {
+      width: "Full",
+    },
     actions: [
       {
         id: "connect-account",
@@ -56,6 +59,9 @@ export function notesCard(notes: Note[]): Attachment {
       },
       ...notes.map((note) => noteBlock(note)),
     ],
+    msteams: {
+      width: "Full",
+    },
     actions: [
       {
         type: "Action.Submit",
@@ -85,6 +91,9 @@ export function noteCard(note: Note): Attachment {
     version: "1.5",
     type: "AdaptiveCard",
     body: [noteBlock(note)],
+    msteams: {
+      width: "Full",
+    },
   });
 }
 
@@ -183,6 +192,9 @@ export function suggestionCard(
     version: "1.5",
     type: "AdaptiveCard",
     body,
+    msteams: {
+      width: "Full",
+    },
     actions,
   });
 }
@@ -214,6 +226,9 @@ export function createGraphSignInCard(): Attachment {
         ],
       },
     ],
+    msteams: {
+      width: "Full",
+    },
   });
 }
 
@@ -267,5 +282,8 @@ export function createUserProfileCard(
         ],
       },
     ],
+    msteams: {
+      width: "Full",
+    },
   });
 }
