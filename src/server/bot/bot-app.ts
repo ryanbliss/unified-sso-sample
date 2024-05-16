@@ -173,9 +173,16 @@ botApp.ai.action(
         userAppToken = await getAppAuthToken(context);
       } catch (err) {
         console.error(`bot-app.ai.GetNotes: error ${err}`);
-        // TODO: probably shouldn't show this in a group context
-        await sendAppSignInCard(context);
-        context.sendActivity("You are not authenticated, please sign in to continue");
+        await continueProactively(
+          context.activity,
+          async (proactiveContext) => {
+            // TODO: probably shouldn't show this in a group context
+            await sendAppSignInCard(proactiveContext);
+            await proactiveContext.sendActivity(
+              "You are not authenticated, please sign in to continue"
+            );
+          }
+        );
         return;
       }
       try {
@@ -192,15 +199,33 @@ botApp.ai.action(
         );
         const body = await response.json();
         if (response.status !== 200) {
-          context.sendActivity(JSON.stringify(body.error));
+          await continueProactively(
+            context.activity,
+            async (proactiveContext) => {
+              proactiveContext.sendActivity(JSON.stringify(body.error));
+            }
+          );
           return;
         }
-        await context.sendActivity({
-          attachments: [notesCard(body.notes)],
-        });
+
+        await continueProactively(
+          context.activity,
+          async (proactiveContext) => {
+            await proactiveContext.sendActivity({
+              attachments: [notesCard(body.notes)],
+            });
+          }
+        );
       } catch (err) {
         console.error(`bot-app.message /notes: error ${err}`);
-        context.sendActivity("Error getting notes");
+
+        await continueProactively(
+          context.activity,
+          async (proactiveContext) => {
+            // TODO: probably shouldn't show this in a group context
+            proactiveContext.sendActivity("Error getting notes");
+          }
+        );
       }
     }
     handleAction();
@@ -226,8 +251,16 @@ botApp.ai.action(
         userAppToken = await getAppAuthToken(context);
       } catch (err) {
         console.error(`bot-app.message /notes: error ${err}`);
-        // TODO: probably shouldn't show this in a group context
-        await sendAppSignInCard(context);
+        await continueProactively(
+          context.activity,
+          async (proactiveContext) => {
+            // TODO: probably shouldn't show this in a group context
+            await sendAppSignInCard(proactiveContext);
+            await proactiveContext.sendActivity(
+              "You are not authenticated, please sign in to continue"
+            );
+          }
+        );
         return;
       }
       try {
@@ -249,15 +282,31 @@ botApp.ai.action(
         );
         const body = await response.json();
         if (response.status !== 200) {
-          context.sendActivity(JSON.stringify(body.error));
+          await continueProactively(
+            context.activity,
+            async (proactiveContext) => {
+              await proactiveContext.sendActivity(JSON.stringify(body.error));
+            }
+          );
           return;
         }
-        await context.sendActivity({
-          attachments: [noteCard(body.note)],
-        });
+        await continueProactively(
+          context.activity,
+          async (proactiveContext) => {
+            await proactiveContext.sendActivity({
+              attachments: [noteCard(body.note)],
+            });
+          }
+        );
       } catch (err) {
         console.error(`bot-app.message /notes: error ${err}`);
         context.sendActivity("Error getting notes");
+        await continueProactively(
+          context.activity,
+          async (proactiveContext) => {
+            await proactiveContext.sendActivity("Error getting notes");
+          }
+        );
       }
     }
     handleAction();
@@ -275,14 +324,27 @@ botApp.ai.action(
       try {
         const payload = await getValidatedAppAuthToken(context);
         if (!payload) {
-          context.sendActivity("Invalid token.");
+          await continueProactively(
+            context.activity,
+            async (proactiveContext) => {
+              proactiveContext.sendActivity("Invalid token.");
+            }
+          );
           return;
         }
         jwtPayload = payload;
       } catch (err) {
         console.error(`bot-app.ai.SuggestEdits: error ${err}`);
-        // TODO: probably shouldn't show this in a group context
-        await sendAppSignInCard(context);
+        await continueProactively(
+          context.activity,
+          async (proactiveContext) => {
+            // TODO: probably shouldn't show this in a group context
+            await sendAppSignInCard(proactiveContext);
+            await proactiveContext.sendActivity(
+              "You are not authenticated, please sign in to continue"
+            );
+          }
+        );
         return;
       }
       const threadId = getTeamsActivityThreadId(context.activity);
@@ -291,12 +353,19 @@ botApp.ai.action(
         jwtPayload.user._id
       );
       if (!suggestionActivity) {
-        context.sendActivity(
-          "You are not currently editing any notes. Please start editing a note to continue."
+        await continueProactively(
+          context.activity,
+          async (proactiveContext) => {
+            proactiveContext.sendActivity(
+              "You are not currently editing any notes. Please start editing a note to continue."
+            );
+          }
         );
         return;
       }
-      await context.sendActivity(suggestionActivity);
+      await continueProactively(context.activity, async (proactiveContext) => {
+        proactiveContext.sendActivity(suggestionActivity);
+      });
     }
     handleAction();
     return "Okay, give me a second please.";
@@ -500,5 +569,17 @@ async function addConversationReference(activity: Activity): Promise<void> {
   await Promise.all(promises);
   console.log(
     "bot-app.ts addConversationReference: upserted conversation reference"
+  );
+}
+
+async function continueProactively(
+  activity: Activity,
+  logic: (context: TurnContext) => Promise<void>
+) {
+  const conversationReference = TurnContext.getConversationReference(activity);
+  return await botAdapter.continueConversationAsync(
+    process.env.BOT_ID!,
+    conversationReference,
+    logic
   );
 }
