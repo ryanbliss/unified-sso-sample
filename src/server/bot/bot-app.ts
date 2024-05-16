@@ -167,70 +167,40 @@ botApp.ai.action(
     paramaters: undefined
   ) => {
     console.log("ot-app.ai.GetNotes: action start");
-    async function handleAction() {
-      let userAppToken: string;
-      try {
-        userAppToken = await getAppAuthToken(context);
-      } catch (err) {
-        console.error(`bot-app.ai.GetNotes: error ${err}`);
-        await continueProactively(
-          context.activity,
-          async (proactiveContext) => {
-            // TODO: probably shouldn't show this in a group context
-            await sendAppSignInCard(proactiveContext);
-            await proactiveContext.sendActivity(
-              "You are not authenticated, please sign in to continue"
-            );
-          }
-        );
-        return;
-      }
-      try {
-        // Get user notes
-        const response = await fetch(
-          new URL(`https://${process.env.BOT_DOMAIN}/api/notes/list/my`),
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: userAppToken,
-            },
-          }
-        );
-        const body = await response.json();
-        if (response.status !== 200) {
-          await continueProactively(
-            context.activity,
-            async (proactiveContext) => {
-              proactiveContext.sendActivity(JSON.stringify(body.error));
-            }
-          );
-          return;
-        }
-
-        await continueProactively(
-          context.activity,
-          async (proactiveContext) => {
-            await proactiveContext.sendActivity({
-              attachments: [notesCard(body.notes)],
-            });
-          }
-        );
-      } catch (err) {
-        console.error(`bot-app.message /notes: error ${err}`);
-
-        await continueProactively(
-          context.activity,
-          async (proactiveContext) => {
-            // TODO: probably shouldn't show this in a group context
-            proactiveContext.sendActivity("Error getting notes");
-          }
-        );
-      }
+    let userAppToken: string;
+    try {
+      userAppToken = await getAppAuthToken(context);
+    } catch (err) {
+      console.error(`bot-app.ai.GetNotes: error ${err}`);
+      // TODO: probably shouldn't show this in a group context
+      await sendAppSignInCard(context);
+      return "You are not authenticated, please sign in to continue";
     }
-    handleAction();
+    try {
+      // Get user notes
+      const response = await fetch(
+        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/list/my`),
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: userAppToken,
+          },
+        }
+      );
+      const body = await response.json();
+      if (response.status !== 200) {
+        throw new Error(body.error);
+      }
+      await context.sendActivity({
+        attachments: [notesCard(body.notes)],
+      });
+    } catch (err) {
+      console.error(`bot-app.message /notes: error ${err}`);
+      return "Error getting notes";
+    }
 
-    return "Okay, I'm finding your notes.";
+    return "I've retrieved your notes for you. What else can I help you with?";
   }
 );
 
@@ -245,72 +215,44 @@ botApp.ai.action(
     }
   ) => {
     console.log("bot-app.ai.CreateNote: action start");
-    async function handleAction() {
-      let userAppToken: string;
-      try {
-        userAppToken = await getAppAuthToken(context);
-      } catch (err) {
-        console.error(`bot-app.message /notes: error ${err}`);
-        await continueProactively(
-          context.activity,
-          async (proactiveContext) => {
-            // TODO: probably shouldn't show this in a group context
-            await sendAppSignInCard(proactiveContext);
-            await proactiveContext.sendActivity(
-              "You are not authenticated, please sign in to continue"
-            );
-          }
-        );
-        return;
-      }
-      try {
-        // Create the note, which will also trigger an update through the PubSub the user is listening to
-        const response = await fetch(
-          new URL(`https://${process.env.BOT_DOMAIN}/api/notes/create`),
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: userAppToken,
-            },
-            body: JSON.stringify({
-              text: paramaters.text,
-              color: "yellow",
-              threadId: context.activity.conversation.id,
-            }),
-          }
-        );
-        const body = await response.json();
-        if (response.status !== 200) {
-          await continueProactively(
-            context.activity,
-            async (proactiveContext) => {
-              await proactiveContext.sendActivity(JSON.stringify(body.error));
-            }
-          );
-          return;
-        }
-        await continueProactively(
-          context.activity,
-          async (proactiveContext) => {
-            await proactiveContext.sendActivity({
-              attachments: [noteCard(body.note)],
-            });
-          }
-        );
-      } catch (err) {
-        console.error(`bot-app.message /notes: error ${err}`);
-        context.sendActivity("Error getting notes");
-        await continueProactively(
-          context.activity,
-          async (proactiveContext) => {
-            await proactiveContext.sendActivity("Error getting notes");
-          }
-        );
-      }
+    let userAppToken: string;
+    try {
+      userAppToken = await getAppAuthToken(context);
+    } catch (err) {
+      console.error(`bot-app.message /notes: error ${err}`);
+      // TODO: probably shouldn't show this in a group context
+      await sendAppSignInCard(context);
+      return "You are not authenticated, please sign in to continue";
     }
-    handleAction();
-    return "Okay, I am creating a note...";
+    try {
+      // Create the note, which will also trigger an update through the PubSub the user is listening to
+      const response = await fetch(
+        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/create`),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: userAppToken,
+          },
+          body: JSON.stringify({
+            text: paramaters.text,
+            color: "yellow",
+            threadId: context.activity.conversation.id,
+          }),
+        }
+      );
+      const body = await response.json();
+      if (response.status !== 200) {
+        throw new Error(body.error);
+      }
+      await context.sendActivity({
+        attachments: [noteCard(body.note)],
+      });
+    } catch (err) {
+      console.error(`bot-app.message /notes: error ${err}`);
+      return "Error getting notes";
+    }
+    return "Here you go! What else can I help you with?";
   }
 );
 
@@ -319,56 +261,29 @@ botApp.ai.action(
   "SuggestEdits",
   async (context: TurnContext, state: ApplicationTurnState) => {
     console.log("bot-app.ai.SuggestEdits: action start");
-    async function handleAction() {
-      let jwtPayload: IAppJwtToken;
-      try {
-        const payload = await getValidatedAppAuthToken(context);
-        if (!payload) {
-          await continueProactively(
-            context.activity,
-            async (proactiveContext) => {
-              proactiveContext.sendActivity("Invalid token.");
-            }
-          );
-          return;
-        }
-        jwtPayload = payload;
-      } catch (err) {
-        console.error(`bot-app.ai.SuggestEdits: error ${err}`);
-        await continueProactively(
-          context.activity,
-          async (proactiveContext) => {
-            // TODO: probably shouldn't show this in a group context
-            await sendAppSignInCard(proactiveContext);
-            await proactiveContext.sendActivity(
-              "You are not authenticated, please sign in to continue"
-            );
-          }
-        );
-        return;
+    let jwtPayload: IAppJwtToken;
+    try {
+      const payload = await getValidatedAppAuthToken(context);
+      if (!payload) {
+        throw new Error("Invalid token");
       }
-      const threadId = getTeamsActivityThreadId(context.activity);
-      const suggestionActivity = await getIntelligentSuggestionActivity(
-        threadId,
-        jwtPayload.user._id
-      );
-      if (!suggestionActivity) {
-        await continueProactively(
-          context.activity,
-          async (proactiveContext) => {
-            proactiveContext.sendActivity(
-              "You are not currently editing any notes. Please start editing a note to continue."
-            );
-          }
-        );
-        return;
-      }
-      await continueProactively(context.activity, async (proactiveContext) => {
-        proactiveContext.sendActivity(suggestionActivity);
-      });
+      jwtPayload = payload;
+    } catch (err) {
+      console.error(`bot-app.ai.SuggestEdits: error ${err}`);
+      // TODO: probably shouldn't show this in a group context
+      await sendAppSignInCard(context);
+      return "You are not authenticated, please sign in to continue";
     }
-    handleAction();
-    return "Okay, give me a second please.";
+    const threadId = getTeamsActivityThreadId(context.activity);
+    const suggestionActivity = await getIntelligentSuggestionActivity(
+      threadId,
+      jwtPayload.user._id
+    );
+    if (!suggestionActivity) {
+      return "You are not currently editing any notes. Please start editing a note to continue.";
+    }
+    await context.sendActivity(suggestionActivity);
+    return "Here you go! What else can I help you with?";
   }
 );
 
@@ -569,17 +484,5 @@ async function addConversationReference(activity: Activity): Promise<void> {
   await Promise.all(promises);
   console.log(
     "bot-app.ts addConversationReference: upserted conversation reference"
-  );
-}
-
-async function continueProactively(
-  activity: Activity,
-  logic: (context: TurnContext) => Promise<void>
-) {
-  const conversationReference = TurnContext.getConversationReference(activity);
-  return await botAdapter.continueConversationAsync(
-    process.env.BOT_ID!,
-    conversationReference,
-    logic
   );
 }
