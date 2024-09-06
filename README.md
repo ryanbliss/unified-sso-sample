@@ -2,7 +2,7 @@
 
 This application aims to show how to leverage AAD tokens granted via Microsoft Teams Platform can be used to authenticate users into this app's custom user identity system. It is a simple sticky notes app, allowing users to create notes via the bot and use AI to recommend improvements. It shows how a Teams bot and tab can work seamlessly together from a user-experience POV. I do not shy away from the complexities of our platform. This sample helped me understand Teams auth, bot, and tab capabilities a lot better -- hopefully it can do the same for you!
 
-This is a [Next.js](https://nextjs.org/) project, which uses React server components and serverless API functions in one application. I know, what kind of Microsoft employee am I?
+This is a [Next.js](https://nextjs.org/) project, which uses React server components and serverless API functions in one application. It is hosted on Vercel. I know, what kind of Microsoft employee am I?
 
 ## Getting Started
 
