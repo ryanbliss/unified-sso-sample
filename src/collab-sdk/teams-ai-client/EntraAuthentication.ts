@@ -33,7 +33,7 @@ export class EntraAuthentication {
   }
 
   public async initialize() {
-    if (!this.configuration || this.client) return;
+    if (!this.configuration || this._client) return;
     console.log("EntraAuthentication.initialize: Initializing Entra client");
     this._client = await createNestablePublicClientApplication(
       this.configuration
