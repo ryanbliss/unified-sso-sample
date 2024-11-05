@@ -69,7 +69,7 @@ export function getTeamsActivityThreadId(activity: Activity): string {
  * @returns Teams threadId for personal bot <-> user chat
  */
 export function getTeamsPersonalScopeThreadId(userAadId: string): string {
-  return `19:${userAadId}_${process.env.BOT_ID}@unq.gbl.spaces`;
+  return `19:${userAadId}_${process.env.NEXT_PUBLIC_BOT_ID}@unq.gbl.spaces`;
 }
 
 /**

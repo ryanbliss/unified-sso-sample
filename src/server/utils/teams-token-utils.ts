@@ -53,7 +53,7 @@ export default async function validateTeamsToken(
   if (!isITeamsTokenJwtPayload(metadata)) {
     throw new Error("teams-token-utils.ts validateTeamsToken: Invalid jwt.JwtPayload response");
   }
-  if (metadata.aud !== process.env.BOT_ID) {
+  if (metadata.aud !== process.env.NEXT_PUBLIC_BOT_ID) {
     console.log("Invalid audience", JSON.stringify(metadata));
     throw new Error("teams-token-utils.ts validateTeamsToken: Invalid AAD audience");
   }

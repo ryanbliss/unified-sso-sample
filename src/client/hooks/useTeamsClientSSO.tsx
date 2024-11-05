@@ -1,11 +1,14 @@
 import { isSdkError } from "@/client/utils/teams-js-utils";
-import * as teamsJs from "@microsoft/teams-js";
 import { useCallback, useEffect, useState } from "react";
+import { useTeamsClientContext } from "../context-providers";
 
 export const useTeamsClientSSO = () => {
   const [authError, setAuthError] = useState<string>();
   const [token, setToken] = useState<string>();
   const [attemptedSilentAuth, setAttemptedSilentAuth] = useState(false);
+
+  const { client } = useTeamsClientContext();
+
   const setUnknownAuthError = useCallback((err: unknown, silent?: boolean) => {
     console.log("setUnknownAuthError", err);
     let prefix: string = "";
@@ -31,18 +34,33 @@ export const useTeamsClientSSO = () => {
   const authenticateWithTeamsSSO = useCallback(
     async (silent: boolean) => {
       try {
-        const token = await teamsJs.authentication.getAuthToken({
-          silent,
-        });
-        setToken(token);
-        return token;
+        if (!client) {
+          throw new Error("Teams client not initialized");
+        }
+        const tokenRequest = {
+          scopes: [
+            "https://graph.microsoft.com/profile",
+            "https://graph.microsoft.com/openid",
+          ],
+          account:
+            client.authentication.entra.client.getActiveAccount() ?? undefined,
+        };
+        const token = silent
+          ? await client.authentication.entra.client.acquireTokenSilent(
+              tokenRequest
+            )
+          : await client.authentication.entra.client.acquireTokenPopup(
+              tokenRequest
+            );
+        setToken(token.accessToken);
+        return token.accessToken;
       } catch (err: unknown) {
         setUnknownAuthError(err, silent);
       } finally {
         setAttemptedSilentAuth(true);
       }
     },
-    [setUnknownAuthError]
+    [client, setUnknownAuthError]
   );
 
   useEffect(() => {

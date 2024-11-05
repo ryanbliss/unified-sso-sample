@@ -4,7 +4,7 @@ import { FlexColumn } from "@/client/components/flex";
 import { ScrollWrapper } from "@/client/components/scroll-wrapper";
 import { useTeamsClientContext } from "@/client/context-providers";
 import { Title1 } from "@fluentui/react-components";
-import { FrameContexts } from "@microsoft/teams-js";
+import * as teamsJs from "@microsoft/teams-js";
 import { FC, ReactNode } from "react";
 
 interface ITitledPageWrapper {
@@ -15,9 +15,9 @@ export const TitledPageWrapper: FC<ITitledPageWrapper> = ({
   title,
   children,
 }) => {
-  const { teamsContext } = useTeamsClientContext();
+  const { client } = useTeamsClientContext();
   const isSidePanel =
-    teamsContext?.page.frameContext === FrameContexts.sidePanel;
+    client?.host.page.frameContext === teamsJs.FrameContexts.sidePanel;
   return (
     <FlexColumn expand="fill" style={{ maxHeight: "100vh" }}>
       <ScrollWrapper>

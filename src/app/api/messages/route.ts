@@ -19,7 +19,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   prepareBotPromptFiles();
   console.log(
     "POST /api/messages for w/ env variables",
-    process.env.BOT_ID,
+    process.env.NEXT_PUBLIC_BOT_ID,
     process.env.BOT_PASSWORD
   );
   const resPromise: Promise<ResponseHolder> = new Promise<ResponseHolder>(

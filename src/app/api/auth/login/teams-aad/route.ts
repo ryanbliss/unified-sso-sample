@@ -4,6 +4,7 @@ import { signAppToken } from "@/server/utils/app-auth-utils";
 import {
   IValidatedAuthenticationResult,
   cacheMSALResultWithCode,
+  decodeMSALToken,
   exchangeTeamsTokenForMSALToken,
 } from "@/server/utils/msal-token-utils";
 import { cookies } from "next/headers";
@@ -21,8 +22,8 @@ import { cookies } from "next/headers";
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const cookieStore = cookies();
-  const teamsToken = req.headers.get("Authorization");
-  if (!teamsToken) {
+  const msalToken = req.headers.get("Authorization");
+  if (!msalToken) {
     console.error(
       "/api/auth/login/teams-aad/route.ts: no 'Authorization' header"
     );
@@ -35,30 +36,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     );
   }
-  let msalResult: IValidatedAuthenticationResult;
-  try {
-    msalResult = await exchangeTeamsTokenForMSALToken(teamsToken);
-  } catch (err) {
-    console.error(`/api/auth/login/teams-aad/route.ts ${err}`);
-    return NextResponse.json(
-      {
-        error:
-          "Unable to validate Teams AAD token with MSAL. Please ensure you have a valid Microsoft identity token in your 'Authroization' header.",
-      },
-      {
-        status: 400,
-      }
-    );
-  }
+  const msalResult = decodeMSALToken(msalToken);
   let user: IUser | null;
   try {
-    user = await findAADUser(
-      msalResult.account.localAccountId,
-      msalResult.account.tenantId
-    );
+    user = await findAADUser(msalResult.oid, msalResult.tid);
   } catch (err) {
     console.error(
-      `/api/auth/login/teams-aad/route.ts error while findAADUser ${err}`
+      `/api/auth/login/teams-aad/route.ts error while findAADUser ${err}\n${msalResult}`
     );
     return NextResponse.json(
       {

@@ -6,18 +6,21 @@ import {
   FC,
   ReactNode,
   SetStateAction,
+  startTransition,
+  useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
-import * as teamsJs from "@microsoft/teams-js";
 import { LoadErrorWrapper } from "../../components/view-wrappers";
-import { Theme } from "@fluentui/react-components";
-import { useTeamsAppContext } from "./internals";
+import { teamsDarkTheme, teamsHighContrastTheme, Theme } from "@fluentui/react-components";
 import { isTeamsJsPath } from "@/client/utils/teams-js-utils";
+import { Application, ApplicationBuilder } from "@/collab-sdk/teams-ai-client";
+import { getTestContext } from "./internals/teams-app-context/test-teams-utils";
 
 export interface ITeamsClientContext {
-  teamsContext: teamsJs.app.Context | undefined;
+  client: Application | undefined;
   threadId: string | undefined;
 }
 
@@ -32,43 +35,91 @@ export const useTeamsClientContext = (): ITeamsClientContext => {
   return context;
 };
 
+const applicationBuilder = new ApplicationBuilder()
+  .withBot({
+    endpoint:
+      process.env.NEXT_PUBLIC_MESSAGE_ENDPOINT ??
+      "https://unified-sso-sample.vercel.app/api/messages",
+    id:
+      process.env.NEXT_PUBLIC_BOT_ID ?? "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
+  })
+  .withEntraAuthentication({
+    auth: {
+      clientId:
+        process.env.NEXT_PUBLIC_BOT_ID ??
+        "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
+      authority: "https://login.microsoftonline.com/common",
+    },
+  });
+
 // React Context Provider
 export const TeamsClientProvider: FC<{
   children: ReactNode;
   setTheme: Dispatch<SetStateAction<Theme>>;
 }> = ({ children, setTheme }) => {
-  const [initialized, setInitialized] = useState(false);
   const [initializeError, setError] = useState<Error | undefined>(undefined);
-  const { teamsContext, error: appContextError } = useTeamsAppContext(
-    initialized,
-    setTheme
+  const [client, setClient] = useState<Application | undefined>();
+
+  const startedRef = useRef(false);
+
+  const applyTheme = useCallback(
+    (theme: string) => {
+      switch (theme) {
+        case "default": {
+          // starts in light theme
+          // setTheme(teamsLightTheme);
+          break;
+        }
+        case "dark": {
+          // App starts in dark theme
+          setTheme(teamsDarkTheme);
+          break;
+        }
+        case "contrast": {
+          setTheme(teamsHighContrastTheme);
+          break;
+        }
+      }
+    },
+    [setTheme]
   );
 
   useEffect(() => {
-    if (!initialized) {
-      if (!isTeamsJsPath()) {
-        setInitialized(true);
-        return;
-      }
-      teamsJs.app
-        .initialize()
-        .then(() => {
-          console.log("App.tsx: initializing client SDK initialized");
-          teamsJs.app.notifyAppLoaded();
-          teamsJs.app.notifySuccess();
-          setInitialized(true);
-        })
-        .catch((error) => setError(error));
-    }
-  }, [initialized]);
+    if (startedRef.current) return;
+    startedRef.current = true;
+    const maybeTestContext = isTeamsJsPath()
+      ? undefined
+      : getTestContext();
 
-  const isLoading = !initialized || !teamsContext;
-  const error = initializeError || appContextError;
-  const threadId = teamsContext?.chat?.id ?? teamsContext?.channel?.id;
+    applicationBuilder
+      .withTestContext(maybeTestContext)
+      .build()
+      .then((app) => {
+        startTransition(() => {
+          setClient(app);
+          applyTheme(app.host.theme);
+        });
+        app.host.notifyAppLoaded();
+        app.host.notifySuccess();
+      })
+      .catch((error) => setError(error));
+  }, [applyTheme]);
+
+  // Listen for theme changes
+  useEffect(() => {
+    client?.host.on("themeChanged", applyTheme);
+    return () => {
+      client?.host.off("themeChanged", applyTheme);
+    };
+  }, [client, applyTheme]);
+
+  const isLoading = !client;
+  const error = initializeError;
+  const threadId = client?.conversation.id;
   return (
     <TeamsClientContext.Provider
       value={{
-        teamsContext,
+        client,
         threadId,
       }}
     >

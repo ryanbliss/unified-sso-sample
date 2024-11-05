@@ -8,9 +8,7 @@ import {
 } from "botbuilder";
 import * as path from "path";
 import {
-  ApplicationBuilder,
   TurnState,
-  TeamsAdapter,
   AuthError,
   OpenAIModel,
   PromptManager,
@@ -33,6 +31,8 @@ import "./fs-utils";
 import { setupBotDebugMessageHandlers } from "./bot-debug-handlers";
 import { IAppJwtToken } from "@/server/utils/app-auth-utils";
 import { isIUserClientState } from "@/shared/models/user-client-state";
+import { TeamsAdapter } from "@/collab-sdk/teams-ai-server-extended/TeamsAdapter";
+import { ApplicationBuilder } from "@/collab-sdk/teams-ai-server-extended/ApplicationBuilder";
 
 interface ConversationState {
   count: number;
@@ -44,7 +44,7 @@ export type ApplicationTurnState = TurnState<ConversationState>;
 export const botAdapter = new TeamsAdapter(
   {},
   new ConfigurationServiceClientCredentialFactory({
-    MicrosoftAppId: process.env.BOT_ID,
+    MicrosoftAppId: process.env.NEXT_PUBLIC_BOT_ID,
     MicrosoftAppPassword: process.env.BOT_PASSWORD,
     MicrosoftAppType: "MultiTenant",
   })
@@ -179,7 +179,7 @@ botApp.ai.action(
     try {
       // Get user notes
       const response = await fetch(
-        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/list/my`),
+        new URL(`https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}/api/notes/list/my`),
         {
           method: "GET",
           headers: {
@@ -227,7 +227,7 @@ botApp.ai.action(
     try {
       // Create the note, which will also trigger an update through the PubSub the user is listening to
       const response = await fetch(
-        new URL(`https://${process.env.BOT_DOMAIN}/api/notes/create`),
+        new URL(`https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}/api/notes/create`),
         {
           method: "POST",
           headers: {
@@ -319,7 +319,7 @@ botApp.adaptiveCards.actionExecute(
       return "You are not authenticated, please sign in to continue";
     }
     const response = await fetch(
-      `https://${process.env.BOT_DOMAIN}/api/messages/update-client-state?sendPubSub=true`,
+      `https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}/api/messages/update-client-state?sendPubSub=true`,
       {
         method: "POST",
         headers: {
@@ -350,9 +350,9 @@ botApp.taskModules.fetch("connect-account", async (context, state, data) => {
     title: "Connect your Microsoft 365 account",
     height: "medium",
     width: "medium",
-    url: `https://${process.env.BOT_DOMAIN}/connections`,
-    fallbackUrl: `https://${process.env.BOT_DOMAIN}/connections`,
-    completionBotId: process.env.BOT_ID,
+    url: `https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}/connections`,
+    fallbackUrl: `https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}/connections`,
+    completionBotId: process.env.NEXT_PUBLIC_BOT_ID,
   };
   return taskInfo;
 });
@@ -412,6 +412,13 @@ botApp.authentication
     }
   );
 
+botApp.embed.action("some-action", async (context, data) => {
+  console.log("bot-app embed action some-action: data", data);
+  return {
+    foo: "bar",
+  };
+});
+
 /**
  * Proactive message handlers
  */
@@ -433,7 +440,7 @@ export async function sendProactiveMessage(
   }
   console.log("bot-app.ts sendMessage: sending message");
   return await botAdapter.continueConversationAsync(
-    process.env.BOT_ID!,
+    process.env.NEXT_PUBLIC_BOT_ID!,
     conversationReference,
     async (context: TurnContext) => {
       await context.sendActivity(activityOrText);

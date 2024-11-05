@@ -33,7 +33,7 @@ export async function exchangeTeamsTokenForMSALToken(
   // Creating MSAL client
   const msalClient = new ConfidentialClientApplication({
     auth: {
-      clientId: process.env.BOT_ID!,
+      clientId: process.env.NEXT_PUBLIC_BOT_ID!,
       clientSecret: process.env.BOT_PASSWORD!,
     },
   });
@@ -75,12 +75,13 @@ export function decodeMSALToken(token: string): jwt.JwtPayload {
   if (payload === null || typeof payload === "string") {
     throw new Error("Invalid token type");
   }
+  console.log("MSAL Payload:", JSON.stringify(payload, null, 4));
   return payload;
 }
 
 // Temp token storage for MSAL tokens.
 // This is used for users signing up with the `aad` connection.
-const tempTokens = new Map<string, IValidatedAuthenticationResult>();
+const tempTokens = new Map<string, jwt.JwtPayload>();
 
 /**
  * Function that stores a token in a local cache.
@@ -90,7 +91,7 @@ const tempTokens = new Map<string, IValidatedAuthenticationResult>();
  * @returns the exchange code
  */
 export function cacheMSALResultWithCode(
-  result: IValidatedAuthenticationResult
+  result: jwt.JwtPayload
 ): string {
   // Generate cryptographically secure random string
   const code = generateAuthCode(124);
@@ -105,9 +106,7 @@ export function cacheMSALResultWithCode(
  * @param code authorization code
  * @returns validated MSAL authentication result
  */
-export function getMSALResultForCode(
-  code: string
-): IValidatedAuthenticationResult | undefined {
+export function getMSALResultForCode(code: string): jwt.JwtPayload | undefined {
   const result = tempTokens.get(code);
   // Delete the token from the cache so that it can't be used again
   tempTokens.delete(code);
@@ -116,14 +115,14 @@ export function getMSALResultForCode(
 
 export function addAADConnection(
   connections: IAuthConnections,
-  msalResult: IValidatedAuthenticationResult
+  msalResult: jwt.JwtPayload
 ): IAuthConnections {
   const newConnections = {
     ...connections,
     aad: {
-      oid: msalResult.account.localAccountId,
-      tid: msalResult.account.tenantId,
-      upn: msalResult.account.username,
+      oid: msalResult.oid,
+      tid: msalResult.tid,
+      upn: msalResult.upn,
     },
   };
   return newConnections;

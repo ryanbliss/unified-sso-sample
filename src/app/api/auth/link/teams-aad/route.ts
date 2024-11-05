@@ -4,9 +4,11 @@ import { signAppToken, validateAppToken } from "@/server/utils/app-auth-utils";
 import {
   IValidatedAuthenticationResult,
   addAADConnection,
+  decodeMSALToken,
   exchangeTeamsTokenForMSALToken,
 } from "@/server/utils/msal-token-utils";
 import { cookies } from "next/headers";
+import { JwtPayload } from "jsonwebtoken";
 
 /**
  * Rudimentary account linking implementation that links app account with AAD account.
@@ -21,8 +23,8 @@ import { cookies } from "next/headers";
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const cookieStore = cookies();
-  const teamsToken = req.headers.get("Authorization");
-  if (!teamsToken) {
+  const msalToken = req.headers.get("Authorization");
+  if (!msalToken) {
     console.error(
       "/api/auth/link/teams-aad/route.ts: no 'Authorization' header, should contain Teams AAD token"
     );
@@ -66,9 +68,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
   // Validate Teams token
-  let msalResult: IValidatedAuthenticationResult;
+  let msalResult: JwtPayload;
   try {
-    msalResult = await exchangeTeamsTokenForMSALToken(teamsToken);
+    msalResult = decodeMSALToken(msalToken);
   } catch (err) {
     console.error(
       `/api/auth/link/teams-aad/route.ts error exchanging teams token, err: ${err}`
@@ -86,12 +88,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   let user: IUser | null;
   try {
     user = await findAADUser(
-      msalResult.account.localAccountId,
-      msalResult.account.tenantId
+      msalResult.oid,
+      msalResult.tid
     );
   } catch (err) {
     console.error(
-      `/api/auth/link/teams-aad/route.ts error finding aad user, err: ${err}`
+      `/api/auth/link/teams-aad/route.ts error finding aad user, err: ${err}\n${msalResult}`
     );
     return NextResponse.json(
       {

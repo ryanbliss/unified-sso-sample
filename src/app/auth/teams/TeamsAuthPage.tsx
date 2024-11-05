@@ -4,8 +4,6 @@ import { FlexColumn, FlexRow } from "@/client/components/flex";
 import { ScrollWrapper } from "@/client/components/scroll-wrapper";
 import {
   Button,
-  Card,
-  Subtitle2,
   Text,
   Title1,
   tokens,
@@ -15,10 +13,9 @@ import { useTeamsClientSSO } from "@/client/hooks/useTeamsClientSSO";
 import { LoadWrapper } from "@/client/components/view-wrappers";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTeamsClientContext } from "@/client/context-providers";
-import * as teamsJs from "@microsoft/teams-js";
 
 export default function TeamsAuthPage() {
-  const { teamsContext } = useTeamsClientContext();
+  const { client } = useTeamsClientContext();
   const { authError, token, silentAuthLoading, authenticateWithTeamsSSO } =
     useTeamsClientSSO();
   const [attemptedLoginWithAADToken, setAttemptedLoginWithAADToken] =
@@ -36,10 +33,10 @@ export default function TeamsAuthPage() {
       try {
         const url = new URL(window.location.origin + "/auth/" + path);
         url.searchParams.append("connection", connection);
-        if (connection === "aad" && teamsContext?.user?.userPrincipalName) {
-          url.searchParams.append("upn", teamsContext?.user?.userPrincipalName);
+        if (connection === "aad" && client?.user?.userPrincipalName) {
+          url.searchParams.append("upn", client?.user?.userPrincipalName);
         }
-        await teamsJs.authentication.authenticate({
+        await client?.authentication.authenticate({
           url: url.href,
         });
         router.push(`/`);
@@ -51,7 +48,7 @@ export default function TeamsAuthPage() {
         setManualLoginActive(false);
       }
     },
-    [router, teamsContext?.user?.userPrincipalName]
+    [router, client?.user?.userPrincipalName]
   );
 
   const attemptLoginWithAADToken = useCallback(
@@ -158,7 +155,7 @@ export default function TeamsAuthPage() {
               }}
             >
               <Text weight="semibold">
-                {teamsContext?.user?.userPrincipalName}
+                {client?.user?.userPrincipalName}
               </Text>
               <Button
                 appearance="primary"
@@ -186,7 +183,7 @@ export default function TeamsAuthPage() {
               ))}
           </FlexColumn>
           <FlexColumn vAlign="center" hAlign="center" marginSpacer="small">
-            <Text>{`Not ${teamsContext?.user?.userPrincipalName}?`}</Text>
+            <Text>{`Not ${client?.user?.userPrincipalName}?`}</Text>
             <FlexColumn hAlign="center">
               <Button
                 appearance="subtle"

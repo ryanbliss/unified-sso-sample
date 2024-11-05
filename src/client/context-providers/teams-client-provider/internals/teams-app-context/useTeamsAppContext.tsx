@@ -8,7 +8,13 @@ import {
   Theme,
 } from "@fluentui/react-components";
 import * as teamsJs from "@microsoft/teams-js";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 /**
  * @hidden
@@ -46,8 +52,9 @@ export const useTeamsAppContext = (
         },
         user: {
           id: "test",
-          userPrincipalName: "test@test.com"
+          userPrincipalName: "test@test.com",
         },
+        dialogParameters: {},
       });
       return;
     }

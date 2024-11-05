@@ -72,8 +72,8 @@ export function notesCard(notes: Note[]): Attachment {
             value: {
               type: "tab/tabInfoAction",
               tabInfo: {
-                contentUrl: `https://${process.env.BOT_DOMAIN}`,
-                websiteUrl: `https://${process.env.BOT_DOMAIN}`,
+                contentUrl: `https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}`,
+                websiteUrl: `https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}`,
                 name: "Notes",
                 entityId: "UNIFY_NOTES",
               },

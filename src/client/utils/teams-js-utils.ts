@@ -1,7 +1,7 @@
-import { SdkError, ErrorCode } from "@microsoft/teams-js";
+import * as teamsJs from "@microsoft/teams-js";
 
-export const isSdkError = (value: any): value is SdkError => {
-  return typeof value?.errorCode === "number" && value.errorCode in ErrorCode;
+export const isSdkError = (value: any): value is teamsJs.SdkError => {
+  return typeof value?.errorCode === "number" && value.errorCode in teamsJs.ErrorCode;
 };
 
 export function isTeamsJsPath(): boolean {

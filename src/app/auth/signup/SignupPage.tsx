@@ -12,7 +12,7 @@ import {
 } from "@fluentui/react-components";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import * as teamsJs from "@microsoft/teams-js";
+import { useTeamsClientContext } from "@/client/context-providers";
 
 interface ISignupPageProps {
   connection: "email" | "aad";
@@ -21,6 +21,8 @@ interface ISignupPageProps {
 
 export default function SignupPage(props: ISignupPageProps) {
   const { connection, upn } = props;
+
+  const { client } = useTeamsClientContext();
 
   const [email, setEmail] = useState(upn ?? "");
   const [password, setPassword] = useState("");
@@ -46,7 +48,7 @@ export default function SignupPage(props: ISignupPageProps) {
       if (res.status !== 200) {
         throw new Error(body.error ?? "An unknown error occurred");
       }
-      teamsJs.authentication.notifySuccess();
+      client?.authentication.notifySuccess();
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {

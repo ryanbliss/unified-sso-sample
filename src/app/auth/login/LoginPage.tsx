@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useTeamsClientSSO } from "@/client/hooks/useTeamsClientSSO";
 import { LoadWrapper } from "@/client/components/view-wrappers";
 import { useEffect, useState } from "react";
-import * as teamsJs from "@microsoft/teams-js";
+import { useTeamsClientContext } from "@/client/context-providers";
 
 export default function LoginPage() {
   const { token, silentAuthLoading } = useTeamsClientSSO();
@@ -17,6 +17,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<Error>();
+
+  const { client } = useTeamsClientContext();
 
   const router = useRouter();
 
@@ -37,7 +39,7 @@ export default function LoginPage() {
       if (res.status !== 200) {
         throw new Error(body.error);
       }
-      teamsJs.authentication.notifySuccess();
+      client?.authentication.notifySuccess();
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {
