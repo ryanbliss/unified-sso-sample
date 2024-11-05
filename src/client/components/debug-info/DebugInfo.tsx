@@ -7,7 +7,7 @@ import { FlexRow } from "../flex";
 import { useRouter } from "next/navigation";
 
 export const DebugInfo: FC = ({}) => {
-  const { teamsContext } = useTeamsClientContext();
+  const { client } = useTeamsClientContext();
   const { authError, token, authenticateWithTeamsSSO } = useTeamsClientSSO();
   const router = useRouter();
   return (
@@ -20,16 +20,10 @@ export const DebugInfo: FC = ({}) => {
           <FlexRow>
             <Button
               onClick={() => {
-                if (!teamsContext) return;
+                if (!client) return;
                 console.log("HomePageContainer: sending message");
-                let scope = "personal";
-                if (!!teamsContext.chat) {
-                  scope = "chat";
-                } else if (!!teamsContext.channel) {
-                  scope = "channel";
-                }
-                const threadId =
-                  teamsContext.chat?.id ?? teamsContext.channel?.id;
+                let scope = client.conversation.type;
+                const threadId = client.conversation.id;
                 fetch("/api/messages/send", {
                   method: "POST",
                   headers: {
@@ -39,7 +33,7 @@ export const DebugInfo: FC = ({}) => {
                   body: JSON.stringify({
                     scope,
                     threadId,
-                    data: teamsContext,
+                    data: client.host.teamsJsContext,
                   }),
                 })
                   .then((res) => console.log(res))
@@ -73,8 +67,8 @@ export const DebugInfo: FC = ({}) => {
         </Button>
       </FlexRow>
       <Title3>{"Tab context:"}</Title3>
-      {teamsContext && (
-        <CodeBlock text={JSON.stringify(teamsContext, null, 4)} />
+      {client && (
+        <CodeBlock text={JSON.stringify(client.host.teamsJsContext, null, 4)} />
       )}
     </>
   );

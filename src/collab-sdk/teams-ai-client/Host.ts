@@ -13,7 +13,7 @@ export interface IHostEvents extends IEvent {
 }
 
 export class Host extends TypedEventEmitter<IHostEvents> {
-  private teamsJsContext: teamsJs.app.Context;
+  public teamsJsContext: teamsJs.app.Context;
 
   public readonly page: Page;
 

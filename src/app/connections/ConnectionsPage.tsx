@@ -24,7 +24,7 @@ export default function ConnectionsPage(props: { user: IUserPasswordless }) {
   const { authError, authenticateWithTeamsSSO } = useTeamsClientSSO();
   const [accountLinkError, setAccountLinkError] = useState<Error>();
 
-  const { teamsContext } = useTeamsClientContext();
+  const { client } = useTeamsClientContext();
 
   const router = useRouter();
 
@@ -62,7 +62,7 @@ export default function ConnectionsPage(props: { user: IUserPasswordless }) {
       }
       return;
     }
-    if (teamsContext?.page?.frameContext !== teamsJs.FrameContexts.task) {
+    if (client?.host?.page.frameContext !== teamsJs.FrameContexts.task) {
       // Redirect to home page
       router.push("/");
       router.refresh();

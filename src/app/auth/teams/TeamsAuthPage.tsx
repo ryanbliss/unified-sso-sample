@@ -48,7 +48,7 @@ export default function TeamsAuthPage() {
         setManualLoginActive(false);
       }
     },
-    [router, client?.user?.userPrincipalName]
+    [router, client]
   );
 
   const attemptLoginWithAADToken = useCallback(
