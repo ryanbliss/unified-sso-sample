@@ -62,7 +62,8 @@ export class EntraAuthentication {
     const accountWithFilter = this._client.getAccount(accountFilter);
     if (!accountWithFilter) {
       console.error(
-        "EntraAuthentication.initialize: unable to find account for filter"
+        "EntraAuthentication.initialize: unable to find account for filter",
+        accountFilter
       );
       return;
     }
