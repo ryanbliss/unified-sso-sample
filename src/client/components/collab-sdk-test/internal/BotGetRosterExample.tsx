@@ -27,7 +27,7 @@ export const BotGetRosterExample: FC = () => {
               }
             }}
           >
-            {"Test action"}
+            {"Get bot roster"}
           </Button>
         </FlexRow>
         {res && <CodeBlock text={res}></CodeBlock>}

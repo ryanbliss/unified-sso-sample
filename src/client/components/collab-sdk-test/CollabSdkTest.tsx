@@ -4,6 +4,7 @@ import { FlexColumn } from "../flex";
 import { BotActionExample } from "./internal/BotActionExample";
 import { BotUserStorageExample } from "./internal/BotUserStorageExample";
 import { BotConversationStorageExample } from "./internal/BotConversationStorageExample";
+import { BotGetRosterExample } from "./internal/BotGetRosterExample";
 
 export const CollabSdkTest: FC = () => {
   return (
@@ -13,6 +14,7 @@ export const CollabSdkTest: FC = () => {
         <BotActionExample />
         <BotUserStorageExample />
         <BotConversationStorageExample />
+        <BotGetRosterExample />
       </FlexColumn>
     </>
   );
