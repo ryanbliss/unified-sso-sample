@@ -54,22 +54,22 @@ export class BotInteropNetworkClient {
 
     if (isIBotInteropEntraAuth(authentication)) {
       return {
-        "Authorization-Type": `EntraAuth`,
-        "Entra-Authorization": `Bearer ${entraResult.accessToken}`,
+        "authorization-type": `EntraAuth`,
+        "entra-authorization": `Bearer ${entraResult.accessToken}`,
       };
     }
     if (isIBotInteropAuthCookie(authentication)) {
       return {
-        "Authorization-Type": `Cookie`,
+        "authorization-type": `Cookie`,
         AuthCookieKey: authentication.cookieKey,
-        "Entra-Authorization": `Bearer ${entraResult.accessToken}`,
+        "entra-authorization": `Bearer ${entraResult.accessToken}`,
       };
     }
     if (isIBotInteropAuthHeader(authentication)) {
       return {
-        "Authorization-Type": `Header`,
+        "authorization-type": `Header`,
         Authorization: authentication.headerValue,
-        "Entra-Authorization": `Bearer ${entraResult.accessToken}`,
+        "entra-authorization": `Bearer ${entraResult.accessToken}`,
       };
     }
     throw new Error("Unexpected `configuration.authentication` format.");

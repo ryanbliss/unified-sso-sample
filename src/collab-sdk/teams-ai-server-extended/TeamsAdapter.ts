@@ -58,7 +58,7 @@ export class TeamsAdapter extends TeamsAdapterBase {
     logicOrHead: ((context: TurnContext) => Promise<void>) | INodeBuffer,
     maybeLogic?: (context: TurnContext) => Promise<void>
   ): Promise<void> {
-    const authType = req.headers["Authorization-Type"];
+    const authType = req.headers["authorization-type"];
     console.log("TeamsAdapter.process: req.headers", req.headers);
     const end = (status: StatusCodes, body?: unknown) => {
       if (isResponse(resOrSocket)) {
@@ -86,7 +86,7 @@ export class TeamsAdapter extends TeamsAdapterBase {
       }
       // We intercept the behavior for handling client-side requests
       const threadId = req.body.threadId;
-      const entraToken = req.headers["Entra-Authorization"];
+      const entraToken = req.headers["entra-authorization"];
       if (
         !(
           this.credentialsFactory instanceof
