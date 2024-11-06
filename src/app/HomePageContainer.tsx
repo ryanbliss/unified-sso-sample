@@ -6,6 +6,7 @@ import { useState } from "react";
 import { DebugInfo } from "@/client/components/debug-info/DebugInfo";
 import { ViewNotes } from "@/client/components/notes/ViewNotes";
 import { useRouter } from "next/navigation";
+import { CollabSdkTest } from "@/client/components/collab-sdk-test/CollabSdkTest";
 
 export default function HomePageContainer() {
   const [selectedTab, setSelectedTab] = useState("tab1");
@@ -36,6 +37,7 @@ export default function HomePageContainer() {
             >
               <Tab value="tab1">{"Notes"}</Tab>
               <Tab value="tab2">{"Debug"}</Tab>
+              <Tab value="tab3">{"Collab SDK"}</Tab>
             </TabList>
             <Button
               onClick={() => {
@@ -47,6 +49,7 @@ export default function HomePageContainer() {
           </FlexRow>
           {selectedTab === "tab1" && <ViewNotes />}
           {selectedTab === "tab2" && <DebugInfo />}
+          {selectedTab === "tab3" && <CollabSdkTest />}
         </FlexColumn>
       </ScrollWrapper>
     </main>

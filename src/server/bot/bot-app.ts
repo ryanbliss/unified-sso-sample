@@ -179,7 +179,9 @@ botApp.ai.action(
     try {
       // Get user notes
       const response = await fetch(
-        new URL(`https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}/api/notes/list/my`),
+        new URL(
+          `https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}/api/notes/list/my`
+        ),
         {
           method: "GET",
           headers: {
@@ -227,7 +229,9 @@ botApp.ai.action(
     try {
       // Create the note, which will also trigger an update through the PubSub the user is listening to
       const response = await fetch(
-        new URL(`https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}/api/notes/create`),
+        new URL(
+          `https://${process.env.NEXT_PUBLIC_BOT_DOMAIN}/api/notes/create`
+        ),
         {
           method: "POST",
           headers: {
@@ -414,6 +418,9 @@ botApp.authentication
 
 botApp.embed.action("some-action", async (context, data) => {
   console.log("bot-app embed action some-action: data", data);
+  await context.sendActivity(
+    `some-action processed with JSON ${JSON.stringify(data, null, 4)}`
+  );
   return {
     foo: "bar",
   };
