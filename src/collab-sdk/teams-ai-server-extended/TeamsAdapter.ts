@@ -110,7 +110,7 @@ export class TeamsAdapter extends TeamsAdapterBase {
 
             (context as any).embed = req.body;
             (context as any).onEmbedSuccess = (data: any) => {
-              end(200, data);
+              end(200, { data });
             };
             (context as any).onEmbedFailure = (
               statusCode: StatusCodes,

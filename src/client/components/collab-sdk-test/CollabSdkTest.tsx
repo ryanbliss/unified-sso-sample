@@ -15,9 +15,9 @@ export const CollabSdkTest: FC = () => {
       <FlexColumn>
         <FlexRow>
           <Button
-            onClick={() => {
+            onClick={async () => {
               try {
-                const response = client.conversation.bot.triggerAction(
+                const response = await client.conversation.bot.triggerAction(
                   "some-action",
                   {
                     input: "hello world",

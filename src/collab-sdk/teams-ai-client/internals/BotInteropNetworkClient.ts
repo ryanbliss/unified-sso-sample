@@ -34,20 +34,33 @@ export class BotInteropNetworkClient {
       throw new Error("BotInterop config not set");
     }
     if (!this.application.authentication.entra.isInitialized) {
-      throw new Error("Entra authentication not initialized, please call `Application.authentication.entra.initialize` before making requests");
+      throw new Error(
+        "Entra authentication not initialized, please call `Application.authentication.entra.initialize` before making requests"
+      );
     }
     let entraResult: AuthenticationResult | null = null;
     const tokenRequest = {
-      scopes: ["https://graph.microsoft.com/profile", "https://graph.microsoft.com/openid"],
-      account: this.application.authentication.entra.client.getActiveAccount() ?? undefined,
+      scopes: [
+        "https://graph.microsoft.com/profile",
+        "https://graph.microsoft.com/openid",
+      ],
+      account:
+        this.application.authentication.entra.client.getActiveAccount() ??
+        undefined,
     };
     try {
-      entraResult = await this.application.authentication.entra.client.acquireTokenSilent(tokenRequest);
+      entraResult =
+        await this.application.authentication.entra.client.acquireTokenSilent(
+          tokenRequest
+        );
     } catch (error) {
       console.error(error);
     }
     if (!entraResult) {
-      entraResult = await this.application.authentication.entra.client.acquireTokenPopup(tokenRequest);
+      entraResult =
+        await this.application.authentication.entra.client.acquireTokenPopup(
+          tokenRequest
+        );
     }
 
     const { authentication } = this._configuration;
@@ -101,8 +114,8 @@ export class BotInteropNetworkClient {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const responseData: TResponse = await response.json();
-      return responseData;
+      const responseData: { data: TResponse } = await response.json();
+      return responseData.data;
     } catch (error) {
       console.error("Error making POST request:", error);
       throw error;
