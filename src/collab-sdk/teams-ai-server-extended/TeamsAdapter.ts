@@ -59,7 +59,7 @@ export class TeamsAdapter extends TeamsAdapterBase {
     maybeLogic?: (context: TurnContext) => Promise<void>
   ): Promise<void> {
     const authType = req.headers["Authorization-Type"];
-    console.log("TeamsAdapter.process: authType", authType);
+    console.log("TeamsAdapter.process: req.headers", req.headers);
     const end = (status: StatusCodes, body?: unknown) => {
       if (isResponse(resOrSocket)) {
         resOrSocket.status(status);
