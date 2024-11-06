@@ -59,11 +59,31 @@ export class TeamsAdapter extends TeamsAdapterBase {
     maybeLogic?: (context: TurnContext) => Promise<void>
   ): Promise<void> {
     const authType = req.headers["Authorization-Type"];
+    console.log("TeamsAdapter.process: authType", authType);
+    const end = (status: StatusCodes, body?: unknown) => {
+      if (isResponse(resOrSocket)) {
+        resOrSocket.status(status);
+        if (body) {
+          resOrSocket.send(body);
+        }
+        resOrSocket.end();
+      } else {
+        throw new Error("Not implemented socket scenario");
+      }
+    };
     if (
-      authType &&
-      isIBotInteropRequestData(req.body) &&
-      typeof logicOrHead === "function"
+      authType
     ) {
+      if (!(typeof logicOrHead === "function")) {
+        console.error("TeamsAdapter.process: Unexpected logicOrHead prop", req.body);
+        end(500, "Unexpected logicOrHead prop");
+        return;
+      }
+      if (!isIBotInteropRequestData(req.body)) {
+        console.error("TeamsAdapter.process: Invalid request data", req.body);
+        end(500, "Invalid request data");
+        return;
+      }
       // We intercept the behavior for handling client-side requests
       const threadId = req.body.threadId;
       const entraToken = req.headers["Entra-Authorization"];
@@ -86,17 +106,7 @@ export class TeamsAdapter extends TeamsAdapterBase {
           this.credentialsFactory.appId!,
           conversationReference,
           async (context: TurnContext) => {
-            const end = (status: StatusCodes, body?: unknown) => {
-              if (isResponse(resOrSocket)) {
-                resOrSocket.status(status);
-                if (body) {
-                  resOrSocket.send(body);
-                }
-                resOrSocket.end();
-              } else {
-                throw new Error("Not implemented socket scenario");
-              }
-            };
+            
 
             (context as any).embed = req.body;
             (context as any).onEmbedSuccess = (data: any) => {
