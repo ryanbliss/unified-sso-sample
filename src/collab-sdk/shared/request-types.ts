@@ -71,11 +71,3 @@ export function isIBotInteropGetValuesRequestResponseData(
     typeof (value as any).conversation === "object"
   );
 }
-export interface IBotInteropGetValuesRequestResponse {
-  data: IBotInteropGetValuesRequestResponseData;
-}
-export function isIBotInteropGetValuesRequestResponse(
-  value: any
-): value is IBotInteropGetValuesRequestResponse {
-  return isIBotInteropGetValuesRequestResponseData(value?.data);
-}

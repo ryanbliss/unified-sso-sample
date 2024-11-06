@@ -1,4 +1,4 @@
-import { isIBotInteropGetValuesRequestResponse, isIBotInteropGetValuesRequestResponseData } from "../shared/request-types";
+import { isIBotInteropGetValuesRequestResponseData } from "../shared/request-types";
 import { BotStorageScope } from "./BotStorageScope";
 import { IBotInteropConfig } from "./client-bot-interop-types";
 import { BotInteropNetworkClient } from "./internals/BotInteropNetworkClient";
@@ -37,14 +37,13 @@ export class BotStorage {
       type: "get-values",
     };
 
-    const response = await this._networkClient.request<unknown>(
+    const values = await this._networkClient.request<unknown>(
       this.configuration.endpoint,
       requestData
     );
-    if (!isIBotInteropGetValuesRequestResponse(response)) {
-      throw new Error("Unexpected response from get-values request");
+    if (!isIBotInteropGetValuesRequestResponseData(values)) {
+      throw new Error(`Unexpected response from get-values request, ${values}`);
     }
-    const values = response.data;
     this.user.internalUpdateValues(values.user);
     this.conversation.internalUpdateValues(values.conversation);
   }
