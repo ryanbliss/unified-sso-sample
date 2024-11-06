@@ -53,11 +53,21 @@ export interface IBotInteropGetValuesRequestData
   extends IBotInteropRequestData {
   type: "get-values";
 }
+export function isIBotInteropGetRosterRequestData(
+  value: any
+): value is IBotInteropGetRosterRequestData {
+  return isIBotInteropRequestData(value) && value.type === "get-paged-roster";
+}
+export interface IBotInteropGetRosterRequestData extends IBotInteropRequestData {
+  type: "get-paged-roster";
+  continuationToken?: string;
+}
 export function isIBotInteropGetValuesRequestData(
   value: any
 ): value is IBotInteropGetValuesRequestData {
   return isIBotInteropRequestData(value) && value.type === "get-values";
 }
+
 export interface IBotInteropGetValuesRequestResponseData {
   user: Record<string, any>;
   conversation: Record<string, any>;

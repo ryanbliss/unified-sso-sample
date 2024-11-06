@@ -2,6 +2,7 @@ import { Application } from "./Application";
 import { BotStorage } from "./BotStorage";
 import { IBotInteropConfig } from "./client-bot-interop-types";
 import { BotInteropNetworkClient } from "./internals/BotInteropNetworkClient";
+import { isTeamsPagedMembersResult, TeamsPagedMembersResult } from "./roster-types";
 
 export class Bot {
   private application: Application;
@@ -26,7 +27,7 @@ export class Bot {
     TResponse extends any = unknown
   >(type: string, data: TData): Promise<TResponse> {
     if (!this.configuration) {
-      throw new Error("Thread.postAction: BotInterop config not set");
+      throw new Error("Thread.triggerAction: Bot config not set");
     }
 
     const requestData = {
@@ -41,5 +42,25 @@ export class Bot {
       this.configuration.endpoint,
       requestData
     );
+  }
+
+  public async getPagedRoster(continuationToken?: string): Promise<TeamsPagedMembersResult> {
+    if (!this.configuration) {
+      throw new Error("Thread.getRoster: bot config not set");
+    }
+
+    const requestData = {
+      type: "get-paged-roster",
+      continuationToken,
+    };
+
+    const response = await this._networkClient.request<TeamsPagedMembersResult>(
+      this.configuration.endpoint,
+      requestData
+    );
+    if (!isTeamsPagedMembersResult(response)) {
+      throw new Error(`Thread.getRoster: Unexpected response from get-paged-roster request, ${response}`);
+    }
+    return response;
   }
 }

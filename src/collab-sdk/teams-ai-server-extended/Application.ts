@@ -3,10 +3,11 @@ import {
   ApplicationOptions,
   TurnState,
 } from "@microsoft/teams-ai";
-import { TurnContext } from "botbuilder";
+import { TeamsInfo, TurnContext } from "botbuilder";
 import { isEmbedTurnContext } from "./turn-context-extended";
 import {
   isIBotInteropActionRequestData,
+  isIBotInteropGetRosterRequestData,
   isIBotInteropGetValuesRequestData,
   isIBotInteropSetValueRequestData,
 } from "../shared/request-types";
@@ -81,6 +82,17 @@ export class Application<
             turnContext.embed.value
           );
           turnContext.onEmbedSuccess({ result: "success" });
+        } catch (err) {
+          console.error(err);
+          turnContext.onEmbedFailure(
+            500,
+            "Unable to set the value. Check server logs for more details."
+          );
+        }
+      } else if (isIBotInteropGetRosterRequestData(turnContext.embed)) {
+        try {
+          const pagedMembers = await TeamsInfo.getPagedMembers(turnContext, 100, turnContext.embed.continuationToken);
+          turnContext.onEmbedSuccess(pagedMembers);
         } catch (err) {
           console.error(err);
           turnContext.onEmbedFailure(

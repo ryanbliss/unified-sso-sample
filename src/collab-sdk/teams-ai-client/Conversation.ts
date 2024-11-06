@@ -2,6 +2,7 @@ import * as teamsJs from "@microsoft/teams-js";
 import { Application } from "./Application";
 import { Bot } from "./Bot";
 import { IBotInteropConfig } from "./client-bot-interop-types";
+import { TeamsPagedMembersResult } from "./roster-types";
 
 export class Conversation {
   private application: Application;
@@ -70,7 +71,7 @@ export class Conversation {
     );
   }
 
-  public getRoster(): Promise<any[]> {
+  public getRoster(): Promise<TeamsPagedMembersResult> {
     throw new Error(
       "Not implemented, teams-js only exposes local user tenantId"
     );
