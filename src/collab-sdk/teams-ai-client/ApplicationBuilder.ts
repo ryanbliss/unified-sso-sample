@@ -16,9 +16,20 @@ export class ApplicationBuilder {
       this.botInteropConfig,
       this.entraConfiguration
     );
+    const promises: Promise<any>[] = [];
     if (this.entraConfiguration) {
-      await application.authentication.entra.initialize();
+      promises.push(application.authentication.entra.initialize());
     }
+    if (this.botInteropConfig) {
+      promises.push(application.conversation.bot.storage.initialize());
+    }
+    // TODO: more graceful handling of errors
+    const settledResults = await Promise.allSettled(promises);
+    settledResults.forEach((result) => {
+      if (result.status === "rejected") {
+        console.error(result.reason);
+      }
+    });
     return application;
   }
   public withHostConfig(config: {

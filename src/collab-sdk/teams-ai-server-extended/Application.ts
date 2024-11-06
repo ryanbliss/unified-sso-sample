@@ -1,13 +1,31 @@
-import { Application as ApplicationBase, TurnState } from "@microsoft/teams-ai";
+import {
+  Application as ApplicationBase,
+  ApplicationOptions,
+  TurnState,
+} from "@microsoft/teams-ai";
 import { TurnContext } from "botbuilder";
 import { isEmbedTurnContext } from "./turn-context-extended";
-import { isIBotInteropActionRequestData } from "../shared/request-types";
+import {
+  isIBotInteropActionRequestData,
+  isIBotInteropGetValuesRequestData,
+  isIBotInteropSetValueRequestData,
+} from "../shared/request-types";
 import { Embed } from "./Embed";
 
 export class Application<
   TState extends TurnState = TurnState
 > extends ApplicationBase<TState> {
-  embed = new Embed();
+  public readonly embed: Embed;
+
+  /**
+   * Creates a new Application instance.
+   * @param {ApplicationOptions<TState>} options Optional. Options used to configure the application.
+   */
+  public constructor(options?: Partial<ApplicationOptions<TState>>) {
+    super(options);
+    // @ts-expect-error - This is a private property, but we need to access it to create the embed instance.
+    this.embed = new Embed(this._options);
+  }
 
   /**
    * Dispatches an incoming activity to a handler registered with the application.
@@ -39,6 +57,35 @@ export class Application<
           turnContext.onEmbedFailure(
             500,
             "Unable to process the action. Check server logs for more details."
+          );
+        }
+      } else if (isIBotInteropGetValuesRequestData(turnContext.embed)) {
+        try {
+          const response = await this.embed.storage.processGetValues(
+            turnContext
+          );
+          turnContext.onEmbedSuccess(response);
+        } catch (err) {
+          console.error(err);
+          turnContext.onEmbedFailure(
+            500,
+            "Unable to get the values. Check server logs for more details."
+          );
+        }
+      } else if (isIBotInteropSetValueRequestData(turnContext.embed)) {
+        try {
+          await this.embed.storage.processSetValue(
+            turnContext,
+            turnContext.embed.scope,
+            turnContext.embed.key,
+            turnContext.embed.value
+          );
+          turnContext.onEmbedSuccess({ result: "success" });
+        } catch (err) {
+          console.error(err);
+          turnContext.onEmbedFailure(
+            500,
+            "Unable to set the value. Check server logs for more details."
           );
         }
       }

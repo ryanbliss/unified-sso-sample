@@ -1,7 +1,6 @@
 import { Application } from "./Application";
 import { BotStorage } from "./BotStorage";
 import { IBotInteropConfig } from "./client-bot-interop-types";
-import { Conversation } from "./Conversation";
 import { BotInteropNetworkClient } from "./internals/BotInteropNetworkClient";
 
 export class Bot {

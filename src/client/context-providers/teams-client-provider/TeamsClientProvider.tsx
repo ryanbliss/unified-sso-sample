@@ -37,17 +37,12 @@ export const useTeamsClientContext = (): ITeamsClientContext => {
 
 const applicationBuilder = new ApplicationBuilder()
   .withBot({
-    endpoint:
-      process.env.NEXT_PUBLIC_MESSAGE_ENDPOINT ??
-      "https://unified-sso-sample.vercel.app/api/messages",
-    id:
-      process.env.NEXT_PUBLIC_BOT_ID ?? "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
+    endpoint: "https://unified-sso-sample.vercel.app/api/messages",
+    id: "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
   })
   .withEntraAuthentication({
     auth: {
-      clientId:
-        process.env.NEXT_PUBLIC_BOT_ID ??
-        "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
+      clientId: "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
       authority: "https://login.microsoftonline.com/common",
     },
   });

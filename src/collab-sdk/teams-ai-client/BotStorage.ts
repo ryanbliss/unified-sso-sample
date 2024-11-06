@@ -1,11 +1,20 @@
+import { isIBotInteropGetValuesRequestResponse } from "../shared/request-types";
+import { BotStorageScope } from "./BotStorageScope";
 import { IBotInteropConfig } from "./client-bot-interop-types";
 import { BotInteropNetworkClient } from "./internals/BotInteropNetworkClient";
 
 export class BotStorage {
   private _networkClient: BotInteropNetworkClient;
-  private _values: Record<string, any> = {};
+  public readonly user: BotStorageScope;
+  public readonly conversation: BotStorageScope;
+
   constructor(networkClient: BotInteropNetworkClient) {
     this._networkClient = networkClient;
+    this.user = new BotStorageScope(this._networkClient, "user");
+    this.conversation = new BotStorageScope(
+      this._networkClient,
+      "conversation"
+    );
   }
 
   public get configuration(): IBotInteropConfig | undefined {
@@ -20,39 +29,10 @@ export class BotStorage {
     return await this.getLatestValues();
   }
 
-  public get<TData extends any = unknown>(
-    key: string,
-    typeGuard?: (value: any) => value is TData
-  ): TData {
-    const value = this._values[key];
-    if (typeGuard && !typeGuard(value)) {
-      throw new Error("Value does not match the expected type");
-    }
-    return this._values[key];
-  }
-
-  public async set<TData extends any = unknown>(key: string, value: TData) {
-    if (!this.configuration) {
-      throw new Error("BotInterop config not set");
-    }
-
-    const requestData = {
-      type: "set-value",
-      key,
-      value,
-    };
-
-    return await this._networkClient.request<void>(
-      this.configuration.endpoint,
-      requestData
-    );
-  }
-
   private async getLatestValues() {
     if (!this.configuration) {
-      throw new Error("BotInterop config not set");
+      throw new Error("BotStorage config not set");
     }
-
     const requestData = {
       type: "get-values",
     };
@@ -61,9 +41,10 @@ export class BotStorage {
       this.configuration.endpoint,
       requestData
     );
-    if (values === null || typeof values !== "object") {
+    if (!isIBotInteropGetValuesRequestResponse(values)) {
       throw new Error("Unexpected response from get-values request");
     }
-    this._values = values;
+    this.user.internalUpdateValues(values.user);
+    this.conversation.internalUpdateValues(values.conversation);
   }
 }
