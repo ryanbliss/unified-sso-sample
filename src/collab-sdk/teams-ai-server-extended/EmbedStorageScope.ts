@@ -7,7 +7,6 @@ export class EmbedStorageScope<TState extends TurnState = TurnState> {
     (
       context: TurnContext,
       state: TState,
-      key: string,
       value: any,
       previousValue: any
     ) => Promise<any>
@@ -16,25 +15,23 @@ export class EmbedStorageScope<TState extends TurnState = TurnState> {
   /**
    * Registers a didSet callback when a value was set by an embedded application.
    *
-   * @param type action unique identifying type
+   * @param key action unique identifying type
    * @param handler handler function to be called when action is received. The handler should return a boolean indicating whether the value is approved or not.
    * @param handler.context context of the current turn
    * @param handler.state state of the current turn
-   * @param handler.key key sent by the embed application to set
    * @param handler.value value sent by the embed application to set
    * @param handler.previousValue previous value of the key
    */
   public didSet<TValue = any>(
-    type: string,
+    key: string,
     handler: (
       context: TurnContext,
       state: TState,
-      key: string,
       value: TValue,
       previousValue: TValue
     ) => Promise<void>
   ) {
-    this.didSetHandlers.set(type, handler);
+    this.didSetHandlers.set(key, handler);
   }
 
   /**
@@ -51,6 +48,6 @@ export class EmbedStorageScope<TState extends TurnState = TurnState> {
     if (!handler) {
       return;
     }
-    return await handler(context, state, key, value, previousValue);
+    return await handler(context, state, value, previousValue);
   }
 }

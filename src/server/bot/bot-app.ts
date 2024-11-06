@@ -416,7 +416,7 @@ botApp.authentication
     }
   );
 
-botApp.embed.action("some-action", async (context, data) => {
+botApp.embed.action("some-action", async (context, state, data) => {
   console.log("bot-app embed action some-action: data", data);
   await context.sendActivity(
     `some-action processed with JSON ${JSON.stringify(data, null, 4)}`
@@ -425,6 +425,15 @@ botApp.embed.action("some-action", async (context, data) => {
     foo: "bar",
   };
 });
+
+botApp.embed.storage.user.didSet(
+  "count",
+  async (context, state, value, previous) => {
+    await context.sendActivity(
+      `user key count changed from ${previous} to ${value}`
+    );
+  }
+);
 
 /**
  * Proactive message handlers
