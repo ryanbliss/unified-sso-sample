@@ -35,7 +35,7 @@ export type TBotStorageScopeType = "conversation" | "user";
 export interface IBotInteropSetValueRequestData<TData extends any = unknown>
   extends IBotInteropRequestData {
   type: "set-value";
-  scope: TBotStorageScopeType,
+  scope: TBotStorageScopeType;
   key: string;
   value: TData;
 }
@@ -58,16 +58,24 @@ export function isIBotInteropGetValuesRequestData(
 ): value is IBotInteropGetValuesRequestData {
   return isIBotInteropRequestData(value) && value.type === "get-values";
 }
-export interface IBotInteropGetValuesRequestResponse {
+export interface IBotInteropGetValuesRequestResponseData {
   user: Record<string, any>;
   conversation: Record<string, any>;
+}
+export function isIBotInteropGetValuesRequestResponseData(
+  value: any
+): value is IBotInteropGetValuesRequestResponseData {
+  return (
+    typeof value === "object" &&
+    typeof (value as any).user === "object" &&
+    typeof (value as any).conversation === "object"
+  );
+}
+export interface IBotInteropGetValuesRequestResponse {
+  data: IBotInteropGetValuesRequestResponseData;
 }
 export function isIBotInteropGetValuesRequestResponse(
   value: any
 ): value is IBotInteropGetValuesRequestResponse {
-  return (
-    isIBotInteropRequestData(value) &&
-    typeof (value as any).user === "object" &&
-    typeof (value as any).conversation === "object"
-  );
+  return isIBotInteropGetValuesRequestResponseData(value?.data);
 }

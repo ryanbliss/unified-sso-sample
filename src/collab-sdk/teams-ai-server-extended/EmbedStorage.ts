@@ -6,7 +6,7 @@ import {
   USER_SCOPE,
 } from "./EmbedTurnState";
 import {
-  IBotInteropGetValuesRequestResponse,
+  IBotInteropGetValuesRequestResponseData,
   TBotStorageScopeType,
 } from "../shared/request-types";
 import { EmbedStorageScope } from "./EmbedStorageScope";
@@ -68,7 +68,7 @@ export class EmbedStorage<TState extends TurnState = TurnState> {
    */
   async processGetValues(
     context: TurnContext
-  ): Promise<IBotInteropGetValuesRequestResponse> {
+  ): Promise<IBotInteropGetValuesRequestResponseData> {
     const { storage } = this._options;
     const state = new EmbedTurnState();
     await state.load(context, storage);
