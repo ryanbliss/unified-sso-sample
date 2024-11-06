@@ -12,7 +12,6 @@ import {
   TurnContext,
 } from "botbuilder";
 import { INodeSocket, INodeBuffer } from "botframework-streaming";
-import { ConfidentialClientApplication } from "@azure/msal-node";
 import { decodeMSALToken } from "@/server/utils/msal-token-utils";
 import { findReference } from "@/server/database/conversation-references";
 import { isIBotInteropRequestData } from "../shared/request-types";
@@ -59,7 +58,7 @@ export class TeamsAdapter extends TeamsAdapterBase {
     logicOrHead: ((context: TurnContext) => Promise<void>) | INodeBuffer,
     maybeLogic?: (context: TurnContext) => Promise<void>
   ): Promise<void> {
-    const authType = req.headers[""Authorization-Type""];
+    const authType = req.headers["Authorization-Type"];
     if (
       authType &&
       isIBotInteropRequestData(req.body) &&
@@ -67,7 +66,7 @@ export class TeamsAdapter extends TeamsAdapterBase {
     ) {
       // We intercept the behavior for handling client-side requests
       const threadId = req.body.threadId;
-      const entraToken = req.headers[""Entra-Authorization""];
+      const entraToken = req.headers["Entra-Authorization"];
       if (
         !(
           this.credentialsFactory instanceof
@@ -78,8 +77,8 @@ export class TeamsAdapter extends TeamsAdapterBase {
           "Credentials factory is not of type ConfigurationServiceClientCredentialFactory"
         );
       }
-      if (typeof entraToken === "string") {
-        const tokenPayload = decodeMSALToken(entraToken);
+      if (typeof entraToken === "string" && entraToken.startsWith("Bearer ")) {
+        const tokenPayload = decodeMSALToken(entraToken.replace("Bearer ", ""));
         // TODO: validate token
         const { oid } = tokenPayload;
         const conversationReference = await findReference(threadId ?? oid);
