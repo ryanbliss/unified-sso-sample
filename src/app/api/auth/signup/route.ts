@@ -59,8 +59,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       let checkMSALUser: IUser | null;
       try {
         checkMSALUser = await findAADUser(
-          msalResult.account.localAccountId,
-          msalResult.account.tenantId
+          msalResult.oid,
+          msalResult.tid
         );
       } catch (err) {
         console.error(`/api/auth/signup: failed to lookup checkMSALUser`);
