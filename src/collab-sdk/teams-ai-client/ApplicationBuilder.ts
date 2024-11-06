@@ -18,7 +18,7 @@ export class ApplicationBuilder {
     );
     const promises: Promise<any>[] = [];
     if (this.entraConfiguration) {
-      promises.push(application.authentication.entra.initialize());
+      await application.authentication.entra.initialize()
     }
     if (this.botInteropConfig) {
       promises.push(application.conversation.bot.storage.initialize());
