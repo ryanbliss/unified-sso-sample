@@ -5,7 +5,8 @@ import { BotActionExample } from "./internal/BotActionExample";
 import { BotUserStorageExample } from "./internal/BotUserStorageExample";
 import { BotConversationStorageExample } from "./internal/BotConversationStorageExample";
 import { BotGetRosterExample } from "./internal/BotGetRosterExample";
-import { BotGetInstalledRscPermissionsExample } from "./internal/BotInstalledRscPermissionsExample";
+import { GraphGetInstalledRscPermissionsExample } from "./internal/GraphInstalledRscPermissionsExample";
+import { GraphGetRosterExample } from "./internal/GraphGetRosterExample";
 
 export const CollabSdkTest: FC = () => {
   return (
@@ -16,7 +17,8 @@ export const CollabSdkTest: FC = () => {
         <BotUserStorageExample />
         <BotConversationStorageExample />
         <BotGetRosterExample />
-        <BotGetInstalledRscPermissionsExample />
+        <GraphGetRosterExample />
+        <GraphGetInstalledRscPermissionsExample />
       </FlexColumn>
     </>
   );

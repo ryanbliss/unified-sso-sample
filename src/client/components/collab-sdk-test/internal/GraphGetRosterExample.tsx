@@ -4,7 +4,7 @@ import { FC, useState } from "react";
 import { FlexColumn, FlexRow } from "../../flex";
 import CodeBlock from "../../code-block/CodeBlock";
 
-export const BotGetInstalledRscPermissionsExample: FC = () => {
+export const GraphGetRosterExample: FC = () => {
   const [res, setRes] = useState<string>();
   const [err, setErr] = useState<string>();
   const { client } = useTeamsClientContext();
@@ -16,7 +16,7 @@ export const BotGetInstalledRscPermissionsExample: FC = () => {
           <Button
             onClick={async () => {
               try {
-                const response = await client.conversation.getInstalledRscPermissions();
+                const response = await client.conversation.getRoster();
                 setRes(JSON.stringify(response, null, 4));
               } catch (err: unknown) {
                 const message: string =
@@ -27,7 +27,7 @@ export const BotGetInstalledRscPermissionsExample: FC = () => {
               }
             }}
           >
-            {"Get installed permissions"}
+            {"Get RSC roster"}
           </Button>
         </FlexRow>
         {res && <CodeBlock text={res}></CodeBlock>}

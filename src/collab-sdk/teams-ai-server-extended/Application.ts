@@ -17,6 +17,8 @@ import {
   IPermission,
   isIPermissionDetailsResponse,
   isIBotInteropGetInstalledRscPermissionsData,
+  isIGraphMemberDetailsResponse,
+  IGraphMemberDetailsResponse,
 } from "../shared";
 import { Embed } from "./Embed";
 
@@ -125,6 +127,18 @@ export class Application<
             message ?? "Unknown error, check server logs for more details"
           );
         }
+      } else if (isIBotInteropGetRosterRequestData(turnContext.embed)) {
+        try {
+          const roster = await this.getGraphRoster(turnContext);
+          turnContext.embed.onEmbedSuccess(roster);
+        } catch (err) {
+          console.error(err);
+          const message = (err as any)?.message;
+          turnContext.embed.onEmbedFailure(
+            500,
+            message ?? "Unknown error, check server logs for more details"
+          );
+        }
       }
       return true;
     }
@@ -214,5 +228,37 @@ export class Application<
       throw new Error("Invalid response from token endpoint");
     }
     return responseData.access_token;
+  }
+
+  private async getGraphRoster(
+    context: IEmbedTurnContext
+  ): Promise<IGraphMemberDetailsResponse> {
+    if (context.embed.threadType === "personal") {
+      throw new Error("Personal scope is not supported for this operation");
+    }
+    const token = await this.getAppAccessToken(context);
+    const graphPhotoEndpoint =
+      context.embed.threadType === "chat"
+        ? `https://graph.microsoft.com/v1.0/chats/${context.embed.threadId}/members`
+        : `https://graph.microsoft.com/v1.0/teams/${context.embed.threadId}/members`;
+    const graphRequestParams = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "bearer " + token,
+      },
+    };
+
+    const response = await fetch(graphPhotoEndpoint, graphRequestParams);
+    const json = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        json.error?.message || `HTTP error! status: ${response.status}`
+      );
+    }
+    if (!isIGraphMemberDetailsResponse(json)) {
+      throw new Error("Invalid response from Graph API");
+    }
+    return json;
   }
 }

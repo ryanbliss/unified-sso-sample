@@ -2,7 +2,7 @@ import * as teamsJs from "@microsoft/teams-js";
 import { Application } from "./Application";
 import { Bot } from "./Bot";
 import { TeamsPagedMembersResult } from "./roster-types";
-import { isTPermissionsList, TPermissionList, TThreadType } from "../shared";
+import { IGraphMember, isIGraphMemberDetailsResponse, isTPermissionsList, TPermissionList, TThreadType } from "../shared";
 import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
 
 export class Conversation {
@@ -72,10 +72,23 @@ export class Conversation {
     );
   }
 
-  public getRoster(): Promise<TeamsPagedMembersResult> {
-    throw new Error(
-      "Not implemented, teams-js only exposes local user tenantId"
+  public async getRoster(): Promise<IGraphMember[]> {
+    if (!this._networkClient.configuration) {
+      throw new Error("Thread.getRoster: bot config not set");
+    }
+
+    const requestData = {
+      type: "get-graph-roster",
+    };
+
+    const response = await this._networkClient.request<any>(
+      this._networkClient.configuration.endpoint,
+      requestData
     );
+    if (!isIGraphMemberDetailsResponse(response)) {
+      throw new Error(`Thread.getRoster: Unexpected response from get-paged-roster request, ${response}`);
+    }
+    return response.value;
   }
 
   public async getInstalledRscPermissions(): Promise<TPermissionList> {

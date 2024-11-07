@@ -64,6 +64,22 @@
         {
           "name": "TeamsAppInstallation.Read.Chat",
           "type": "Application"
+        },
+        {
+          "name": "TeamsAppInstallation.Read.Group",
+          "type": "Application"
+        },
+        {
+          "name": "ChatMember.Read.Chat",
+          "type": "Application"
+        },
+        {
+          "name": "TeamMember.Read.Group",
+          "type": "Application"
+        },
+        {
+          "name": "TeamsActivity.Send.User",
+          "type": "Application"
         }
       ]
     }

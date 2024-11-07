@@ -39,3 +39,39 @@ export function isIPermissionDetailsResponse(
     value.value.every(isIPermissionDetails)
   );
 }
+
+export interface IGraphMember {
+  "@odata.type": string;
+  id: string;
+  roles: string[];
+  displayName: string;
+  userId: string;
+  email: string;
+}
+export function isIGraphMember(value: any): value is IGraphMember {
+  return (
+    typeof value === "object" &&
+    typeof value["@odata.type"] === "string" &&
+    typeof value.id === "string" &&
+    Array.isArray(value.roles) &&
+    typeof value.displayName === "string" &&
+    typeof value.userId === "string" &&
+    typeof value.email === "string"
+  );
+}
+
+export interface IGraphMemberDetailsResponse {
+  "@odata.context": string;
+  "@odata.count": number;
+  value: IGraphMember[];
+}
+export function isIGraphMemberDetailsResponse(
+  value: any
+): value is IGraphMemberDetailsResponse {
+  return (
+    typeof value === "object" &&
+    typeof value["@odata.context"] === "string" &&
+    Array.isArray(value.value) &&
+    value.value.every(isIGraphMember)
+  );
+}

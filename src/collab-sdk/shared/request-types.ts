@@ -79,3 +79,12 @@ export function isIBotInteropGetInstalledRscPermissionsData(
 ): value is IBotInteropGetValuesRequestData {
   return isIBotInteropRequestData(value) && value.type === "get-rsc-permissions";
 }
+
+export interface IBotInteropGetGraphRosterData extends IBotInteropRequestData {
+  type: "get-graph-roster";
+}
+export function isIBotInteropGetGraphRosterData(
+  value: any
+): value is IBotInteropGetValuesRequestData {
+  return isIBotInteropRequestData(value) && value.type === "get-graph-roster";
+}
