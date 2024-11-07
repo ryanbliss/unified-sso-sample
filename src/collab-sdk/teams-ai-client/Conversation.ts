@@ -84,7 +84,7 @@ export class Conversation {
     }
 
     const requestData = {
-      type: "get-paged-roster",
+      type: "get-rsc-permissions",
     };
 
     const response = await this._networkClient.request<any>(
