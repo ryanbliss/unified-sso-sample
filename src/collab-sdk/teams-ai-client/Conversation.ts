@@ -28,6 +28,7 @@ export class Conversation {
       // TODO: replace with something better
       return `19:${userId}_${this.bot.configuration.id}@unq.gbl.spaces`;
     }
+    return knownThreadId;
   }
   // TODO: replace return type with something more strongly typed
   public get type(): "chat" | "channel" | "meeting" | "personal" {
