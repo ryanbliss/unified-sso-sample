@@ -1,15 +1,17 @@
 import * as teamsJs from "@microsoft/teams-js";
 import { Application } from "./Application";
 import { Bot } from "./Bot";
-import { IBotInteropConfig } from "./client-bot-interop-types";
+import { IAppServerConfig } from "./client-bot-interop-types";
 import { TeamsPagedMembersResult } from "./roster-types";
+import { isTPermissionsList, TPermissionList, TThreadType } from "../shared";
+import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
 
 export class Conversation {
-  private application: Application;
   public readonly bot: Bot;
-  constructor(application: Application, botInteropConfig?: IBotInteropConfig) {
-    this.application = application;
-    this.bot = new Bot(application, botInteropConfig);
+  private _networkClient: AppServerNetworkClient;
+  constructor(networkClient: AppServerNetworkClient) {
+    this._networkClient = networkClient;
+    this.bot = new Bot(this._networkClient);
   }
   private get context(): teamsJs.app.Context {
     // @ts-expect-error using protected property intentionally
@@ -22,24 +24,21 @@ export class Conversation {
       if (!userId) {
         return undefined;
       }
-      if (!this.bot.configuration) {
+      if (!this._networkClient.configuration) {
         return undefined;
       }
       // TODO: replace with something better
-      return `19:${userId}_${this.bot.configuration.id}@unq.gbl.spaces`;
+      return `19:${userId}_${this._networkClient.configuration.id}@unq.gbl.spaces`;
     }
     return knownThreadId;
   }
   // TODO: replace return type with something more strongly typed
-  public get type(): "chat" | "channel" | "meeting" | "personal" {
+  public get type(): TThreadType {
     if (this.context.chat?.id) {
       return "chat";
     }
     if (this.context.channel?.id) {
       return "channel";
-    }
-    if (this.context.meeting?.id) {
-      return "meeting";
     }
     return "personal";
   }
@@ -76,5 +75,24 @@ export class Conversation {
     throw new Error(
       "Not implemented, teams-js only exposes local user tenantId"
     );
+  }
+
+  public async getInstalledRscPermissions(): Promise<TPermissionList> {
+    if (!this._networkClient.configuration) {
+      throw new Error("Thread.getRoster: bot config not set");
+    }
+
+    const requestData = {
+      type: "get-paged-roster",
+    };
+
+    const response = await this._networkClient.request<any>(
+      this._networkClient.configuration.endpoint,
+      requestData
+    );
+    if (!isTPermissionsList(response)) {
+      throw new Error(`Thread.getRoster: Unexpected response from get-paged-roster request, ${response}`);
+    }
+    return response;
   }
 }

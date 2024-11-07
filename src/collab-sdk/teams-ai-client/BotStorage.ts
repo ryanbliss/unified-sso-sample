@@ -1,14 +1,14 @@
-import { isIBotInteropGetValuesRequestResponseData } from "../shared/request-types";
+import { isIBotInteropGetValuesRequestResponseData } from "../shared";
 import { BotStorageScope } from "./BotStorageScope";
-import { IBotInteropConfig } from "./client-bot-interop-types";
-import { BotInteropNetworkClient } from "./internals/BotInteropNetworkClient";
+import { IAppServerConfig } from "./client-bot-interop-types";
+import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
 
 export class BotStorage {
-  private _networkClient: BotInteropNetworkClient;
+  private _networkClient: AppServerNetworkClient;
   public readonly user: BotStorageScope;
   public readonly conversation: BotStorageScope;
 
-  constructor(networkClient: BotInteropNetworkClient) {
+  constructor(networkClient: AppServerNetworkClient) {
     this._networkClient = networkClient;
     this.user = new BotStorageScope(this._networkClient, "user");
     this.conversation = new BotStorageScope(
@@ -17,11 +17,11 @@ export class BotStorage {
     );
   }
 
-  public get configuration(): IBotInteropConfig | undefined {
+  public get configuration(): IAppServerConfig | undefined {
     return this._networkClient.configuration;
   }
 
-  public set configuration(config: IBotInteropConfig | undefined) {
+  public set configuration(config: IAppServerConfig | undefined) {
     this._networkClient.configuration = config;
   }
 

@@ -30,7 +30,7 @@ export type TBotInteropAuthConfig =
   | IBotInteropAuthCookie
   | IBotInteropEntraAuth;
 
-export interface IBotInteropConfig {
+export interface IAppServerConfig {
   endpoint: string;
   id: string;
   authentication?: TBotInteropAuthConfig;

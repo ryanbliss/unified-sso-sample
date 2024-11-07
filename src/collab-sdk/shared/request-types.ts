@@ -1,6 +1,9 @@
+export type TThreadType = "chat" | "channel" | "personal";
+
 export interface IBotInteropRequestData {
   type: string;
   threadId: string;
+  threadType: TThreadType;
 }
 export function isIBotInteropRequestData(
   value: any
@@ -68,16 +71,11 @@ export function isIBotInteropGetValuesRequestData(
   return isIBotInteropRequestData(value) && value.type === "get-values";
 }
 
-export interface IBotInteropGetValuesRequestResponseData {
-  user: Record<string, any>;
-  conversation: Record<string, any>;
+export interface IBotInteropGetInstalledRscPermissionsData extends IBotInteropRequestData {
+  type: "get-rsc-permissions";
 }
-export function isIBotInteropGetValuesRequestResponseData(
+export function isIBotInteropGetInstalledRscPermissionsData(
   value: any
-): value is IBotInteropGetValuesRequestResponseData {
-  return (
-    typeof value === "object" &&
-    typeof (value as any).user === "object" &&
-    typeof (value as any).conversation === "object"
-  );
+): value is IBotInteropGetValuesRequestData {
+  return isIBotInteropRequestData(value) && value.type === "get-values";
 }

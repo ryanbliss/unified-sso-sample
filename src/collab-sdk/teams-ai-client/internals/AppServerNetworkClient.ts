@@ -1,5 +1,5 @@
 import {
-  IBotInteropConfig,
+  IAppServerConfig,
   isIBotInteropAuthCookie,
   isIBotInteropAuthHeader,
   isIBotInteropEntraAuth,
@@ -9,10 +9,10 @@ import { Application } from "../Application";
 import { AuthenticationResult } from "@azure/msal-browser";
 import { IBotInteropRequestData } from "@/collab-sdk/shared/request-types";
 
-export class BotInteropNetworkClient {
+export class AppServerNetworkClient {
   private application: Application;
-  private _configuration?: IBotInteropConfig;
-  constructor(application: Application, config?: IBotInteropConfig) {
+  private _configuration?: IAppServerConfig;
+  constructor(application: Application, config?: IAppServerConfig) {
     this.application = application;
     this._configuration = config;
   }
@@ -21,11 +21,11 @@ export class BotInteropNetworkClient {
     return this.application.conversation;
   }
 
-  public get configuration(): IBotInteropConfig | undefined {
+  public get configuration(): IAppServerConfig | undefined {
     return this._configuration;
   }
 
-  public set configuration(config: IBotInteropConfig | undefined) {
+  public set configuration(config: IAppServerConfig | undefined) {
     this._configuration = config;
   }
 
@@ -90,7 +90,7 @@ export class BotInteropNetworkClient {
 
   public async request<TResponse extends any = unknown>(
     url: string,
-    data: Omit<IBotInteropRequestData, "threadId">
+    data: Omit<IBotInteropRequestData, "threadId" | "threadType">
   ): Promise<TResponse> {
     if (!this.conversation.id) {
       throw new Error(
@@ -107,6 +107,7 @@ export class BotInteropNetworkClient {
         body: JSON.stringify({
           ...data,
           threadId: this.conversation.id,
+          threadType: this.conversation.type,
         }),
       });
 

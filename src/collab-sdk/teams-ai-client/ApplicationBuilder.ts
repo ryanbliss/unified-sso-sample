@@ -1,12 +1,12 @@
 import { Application } from "./Application";
 import * as teamsJs from "@microsoft/teams-js";
-import { IBotInteropConfig } from "./client-bot-interop-types";
+import { IAppServerConfig } from "./client-bot-interop-types";
 import { Configuration } from "@azure/msal-browser";
 
 export class ApplicationBuilder {
   private overrideContext: teamsJs.app.Context | undefined;
   private validMessageOrigins: string[] | undefined;
-  private botInteropConfig?: IBotInteropConfig;
+  private botInteropConfig?: IAppServerConfig;
   private entraConfiguration?: Configuration;
   public async build(): Promise<Application> {
     await teamsJs.app.initialize(this.validMessageOrigins);
@@ -38,7 +38,7 @@ export class ApplicationBuilder {
     this.validMessageOrigins = config.validMessageOrigins;
     return this;
   }
-  public withBot(config: IBotInteropConfig): ApplicationBuilder {
+  public withServer(config: IAppServerConfig): ApplicationBuilder {
     this.botInteropConfig = config;
     return this;
   }

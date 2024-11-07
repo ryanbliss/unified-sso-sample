@@ -3,14 +3,21 @@ import {
   ApplicationOptions,
   TurnState,
 } from "@microsoft/teams-ai";
-import { TeamsInfo, TurnContext } from "botbuilder";
-import { isEmbedTurnContext } from "./turn-context-extended";
+import {
+  ConfigurationServiceClientCredentialFactory,
+  TeamsInfo,
+  TurnContext,
+} from "botbuilder";
+import { IEmbedTurnContext, isEmbedTurnContext } from "./turn-context-extended";
 import {
   isIBotInteropActionRequestData,
   isIBotInteropGetRosterRequestData,
   isIBotInteropGetValuesRequestData,
   isIBotInteropSetValueRequestData,
-} from "../shared/request-types";
+  IPermission,
+  isIPermissionDetailsResponse,
+  isIBotInteropGetInstalledRscPermissionsData,
+} from "../shared";
 import { Embed } from "./Embed";
 
 export class Application<
@@ -52,10 +59,10 @@ export class Application<
             turnContext,
             turnContext.embed.action.customData
           );
-          turnContext.onEmbedSuccess(response);
+          turnContext.embed.onEmbedSuccess(response);
         } catch (err) {
           console.error(err);
-          turnContext.onEmbedFailure(
+          turnContext.embed.onEmbedFailure(
             500,
             "Unable to process the action. Check server logs for more details."
           );
@@ -65,10 +72,10 @@ export class Application<
           const response = await this.embed.storage.processGetValues(
             turnContext
           );
-          turnContext.onEmbedSuccess(response);
+          turnContext.embed.onEmbedSuccess(response);
         } catch (err) {
           console.error(err);
-          turnContext.onEmbedFailure(
+          turnContext.embed.onEmbedFailure(
             500,
             "Unable to get the values. Check server logs for more details."
           );
@@ -81,28 +88,130 @@ export class Application<
             turnContext.embed.key,
             turnContext.embed.value
           );
-          turnContext.onEmbedSuccess({ result: "success" });
+          turnContext.embed.onEmbedSuccess({ result: "success" });
         } catch (err) {
           console.error(err);
-          turnContext.onEmbedFailure(
+          turnContext.embed.onEmbedFailure(
             500,
             "Unable to set the value. Check server logs for more details."
           );
         }
       } else if (isIBotInteropGetRosterRequestData(turnContext.embed)) {
         try {
-          const pagedMembers = await TeamsInfo.getPagedMembers(turnContext, 100, turnContext.embed.continuationToken);
-          turnContext.onEmbedSuccess(pagedMembers);
+          const pagedMembers = await TeamsInfo.getPagedMembers(
+            turnContext,
+            100,
+            turnContext.embed.continuationToken
+          );
+          turnContext.embed.onEmbedSuccess(pagedMembers);
         } catch (err) {
           console.error(err);
-          turnContext.onEmbedFailure(
+          turnContext.embed.onEmbedFailure(
             500,
             "Unable to set the value. Check server logs for more details."
+          );
+        }
+      } else if (
+        isIBotInteropGetInstalledRscPermissionsData(turnContext.embed)
+      ) {
+        try {
+          const permissions = await this.getRscPermissions(turnContext);
+          turnContext.embed.onEmbedSuccess(permissions);
+        } catch (err) {
+          console.error(err);
+          turnContext.embed.onEmbedFailure(
+            500,
+            "Unable to get the permissions. Check server logs for more details."
           );
         }
       }
       return true;
     }
     return super.run(turnContext);
+  }
+
+  private get _credentialsFactory(): ConfigurationServiceClientCredentialFactory {
+    const credentialsFactory = this.options.adapter?.credentialsFactory;
+    if (
+      !credentialsFactory ||
+      !(
+        credentialsFactory instanceof
+        ConfigurationServiceClientCredentialFactory
+      )
+    ) {
+      throw new Error(
+        "Credentials factory is not of type ConfigurationServiceClientCredentialFactory"
+      );
+    }
+    return credentialsFactory;
+  }
+
+  private async getRscPermissions(
+    context: IEmbedTurnContext
+  ): Promise<IPermission[]> {
+    if (context.embed.threadType === "personal") {
+      throw new Error("Personal scope is not supported for this operation");
+    }
+    const token = await this.getAppAccessToken(context);
+    const graphPhotoEndpoint =
+      context.embed.threadType === "chat"
+        ? `https://graph.microsoft.com/beta/chats/${context.embed.threadId}/permissionGrants`
+        : `https://graph.microsoft.com/beta/teams/${context.embed.threadId}/permissionGrants`;
+    const graphRequestParams = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "bearer " + token,
+      },
+    };
+
+    const response = await fetch(graphPhotoEndpoint, graphRequestParams);
+    const json = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        `Error fetching photo: ${response.statusText} - ${JSON.stringify(json)}`
+      );
+    }
+    if (!isIPermissionDetailsResponse(json)) {
+      throw new Error("Invalid response from Graph API");
+    }
+    return json.value
+      .filter(
+        (permission) =>
+          permission.clientAppId === this._credentialsFactory.appId
+      )
+      .map((permission) => ({
+        permissionType: permission.permissionType,
+        permission: permission.permission,
+      }));
+  }
+
+  private async getAppAccessToken(context: IEmbedTurnContext): Promise<string> {
+    const credentialsFactory = this._credentialsFactory;
+
+    const url = `https://login.microsoftonline.com/${context.embed.user.tenantId}/oauth2/v2.0/token`;
+    const params = new URLSearchParams();
+    params.append("client_id", credentialsFactory.appId!);
+    params.append("client_secret", credentialsFactory.password!);
+    params.append("scope", "https://graph.microsoft.com/.default");
+    params.append("grant_type", "client_credentials");
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params.toString(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    if (typeof responseData.access_token !== "string") {
+      throw new Error("Invalid response from token endpoint");
+    }
+    return responseData.access_token;
   }
 }

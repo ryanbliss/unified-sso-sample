@@ -8,7 +8,7 @@ import {
 import {
   IBotInteropGetValuesRequestResponseData,
   TBotStorageScopeType,
-} from "../shared/request-types";
+} from "../shared";
 import { EmbedStorageScope } from "./EmbedStorageScope";
 
 export class EmbedStorage<TState extends TurnState = TurnState> {

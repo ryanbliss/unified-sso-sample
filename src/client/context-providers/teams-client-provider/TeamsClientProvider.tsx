@@ -36,7 +36,7 @@ export const useTeamsClientContext = (): ITeamsClientContext => {
 };
 
 const applicationBuilder = new ApplicationBuilder()
-  .withBot({
+  .withServer({
     endpoint: "https://unified-sso-sample.vercel.app/api/messages",
     id: "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
   })

@@ -15,6 +15,7 @@ import { INodeSocket, INodeBuffer } from "botframework-streaming";
 import { decodeMSALToken } from "@/server/utils/msal-token-utils";
 import { findReference } from "@/server/database/conversation-references";
 import { isIBotInteropRequestData } from "../shared/request-types";
+import { IEmbedContext } from "./turn-context-extended";
 
 const USER_AGENT = `teamsai-js/1.1.1`;
 
@@ -71,21 +72,23 @@ export class TeamsAdapter extends TeamsAdapterBase {
         throw new Error("Not implemented socket scenario");
       }
     };
-    if (
-      authType
-    ) {
+    if (authType) {
       if (!(typeof logicOrHead === "function")) {
-        console.error("TeamsAdapter.process: Unexpected logicOrHead prop", req.body);
+        console.error(
+          "TeamsAdapter.process: Unexpected logicOrHead prop",
+          req.body
+        );
         end(500, "Unexpected logicOrHead prop");
         return;
       }
-      if (!isIBotInteropRequestData(req.body)) {
-        console.error("TeamsAdapter.process: Invalid request data", req.body);
+      const body = req.body;
+      if (!isIBotInteropRequestData(body)) {
+        console.error("TeamsAdapter.process: Invalid request data", body);
         end(500, "Invalid request data");
         return;
       }
       // We intercept the behavior for handling client-side requests
-      const threadId = req.body.threadId;
+      const threadId = body.threadId;
       const entraToken = req.headers["entra-authorization"];
       if (
         !(
@@ -100,26 +103,28 @@ export class TeamsAdapter extends TeamsAdapterBase {
       if (typeof entraToken === "string" && entraToken.startsWith("Bearer ")) {
         const tokenPayload = decodeMSALToken(entraToken.replace("Bearer ", ""));
         // TODO: validate token
-        const { oid } = tokenPayload;
+        const { oid, tid } = tokenPayload;
         const conversationReference = await findReference(threadId ?? oid);
         await this.continueConversationAsync(
           this.credentialsFactory.appId!,
           conversationReference,
           async (context: TurnContext) => {
-            
-
-            (context as any).embed = req.body;
-            (context as any).onEmbedSuccess = (data: any) => {
-              end(200, { data });
+            const embedContext: IEmbedContext = {
+              ...body,
+              user: {
+                aadObjectId: oid,
+                tenantId: tid,
+              },
+              onEmbedSuccess: (data: any) => {
+                end(200, { data });
+              },
+              onEmbedFailure: (statusCode: StatusCodes, message: string) => {
+                end(statusCode, {
+                  error: message,
+                });
+              },
             };
-            (context as any).onEmbedFailure = (
-              statusCode: StatusCodes,
-              message: string
-            ) => {
-              end(statusCode, {
-                error: message,
-              });
-            };
+            (context as any).embed = embedContext;
 
             await logicOrHead(context);
           }

@@ -1,5 +1,5 @@
 import { TBotStorageScopeType } from "../shared/request-types";
-import { BotInteropNetworkClient } from "./internals/BotInteropNetworkClient";
+import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
 import { IEvent, TypedEventEmitter } from "./internals/TypedEventEmitter";
 
 export interface IBotStorageScopeEvents extends IEvent {
@@ -14,11 +14,11 @@ export interface IBotStorageScopeEvents extends IEvent {
 }
 
 export class BotStorageScope extends TypedEventEmitter<IBotStorageScopeEvents> {
-  private _networkClient: BotInteropNetworkClient;
+  private _networkClient: AppServerNetworkClient;
   private _values: Record<string, any> = {};
   private _scope: TBotStorageScopeType;
   constructor(
-    networkClient: BotInteropNetworkClient,
+    networkClient: AppServerNetworkClient,
     scope: TBotStorageScopeType
   ) {
     super();
