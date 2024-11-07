@@ -77,5 +77,5 @@ export interface IBotInteropGetInstalledRscPermissionsData extends IBotInteropRe
 export function isIBotInteropGetInstalledRscPermissionsData(
   value: any
 ): value is IBotInteropGetValuesRequestData {
-  return isIBotInteropRequestData(value) && value.type === "get-values";
+  return isIBotInteropRequestData(value) && value.type === "get-rsc-permissions";
 }
