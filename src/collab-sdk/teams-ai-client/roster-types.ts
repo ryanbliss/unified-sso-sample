@@ -75,7 +75,7 @@ export interface TeamsPagedMembersResult {
   /**
    * Paging token
    */
-  continuationToken: string;
+  continuationToken?: string;
   /**
    * The Channel Accounts.
    */
@@ -86,7 +86,8 @@ export function isTeamsPagedMembersResult(
 ): value is TeamsPagedMembersResult {
   return (
     typeof value === "object" &&
-    typeof value.continuationToken === "string" &&
+    (value.continuationToken === undefined ||
+      typeof value.continuationToken === "string") &&
     Array.isArray(value.members)
   );
 }
