@@ -27,7 +27,7 @@ export class Application {
     constructor(teamsJsContext: teamsJs.app.Context, serverConfig?: IAppServerConfig, entraConfiguration?: Configuration) {
         this.teamsJsContext = teamsJsContext;
         this._networkClient = new AppServerNetworkClient(this, serverConfig);
-        this.conversation = new Conversation(this._networkClient);
+        this.conversation = new Conversation(this, this._networkClient);
         this.authentication = new Authentication(teamsJsContext, entraConfiguration);
         this.host = new Host(teamsJsContext);
         this.user = new User(teamsJsContext);

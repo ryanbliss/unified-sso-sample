@@ -1,15 +1,16 @@
 import * as teamsJs from "@microsoft/teams-js";
 import { Application } from "./Application";
 import { Bot } from "./Bot";
-import { IAppServerConfig } from "./client-bot-interop-types";
 import { TeamsPagedMembersResult } from "./roster-types";
 import { isTPermissionsList, TPermissionList, TThreadType } from "../shared";
 import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
 
 export class Conversation {
+  private application: Application;
   public readonly bot: Bot;
   private _networkClient: AppServerNetworkClient;
-  constructor(networkClient: AppServerNetworkClient) {
+  constructor(application: Application, networkClient: AppServerNetworkClient) {
+    this.application = application;
     this._networkClient = networkClient;
     this.bot = new Bot(this._networkClient);
   }
