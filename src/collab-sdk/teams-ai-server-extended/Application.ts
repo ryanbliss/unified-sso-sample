@@ -19,6 +19,7 @@ import {
   isIBotInteropGetInstalledRscPermissionsData,
   isIGraphMemberDetailsResponse,
   IGraphMemberDetailsResponse,
+  isIBotInteropGetGraphRosterData,
 } from "../shared";
 import { Embed } from "./Embed";
 
@@ -127,7 +128,7 @@ export class Application<
             message ?? "Unknown error, check server logs for more details"
           );
         }
-      } else if (isIBotInteropGetRosterRequestData(turnContext.embed)) {
+      } else if (isIBotInteropGetGraphRosterData(turnContext.embed)) {
         try {
           const roster = await this.getGraphRoster(turnContext);
           turnContext.embed.onEmbedSuccess(roster);
@@ -168,7 +169,7 @@ export class Application<
       throw new Error("Personal scope is not supported for this operation");
     }
     const token = await this.getAppAccessToken(context);
-    const graphPhotoEndpoint =
+    const endpoint =
       context.embed.threadType === "chat"
         ? `https://graph.microsoft.com/beta/chats/${context.embed.threadId}/permissionGrants`
         : `https://graph.microsoft.com/beta/teams/${context.embed.threadId}/permissionGrants`;
@@ -180,7 +181,7 @@ export class Application<
       },
     };
 
-    const response = await fetch(graphPhotoEndpoint, graphRequestParams);
+    const response = await fetch(endpoint, graphRequestParams);
     const json = await response.json();
     if (!response.ok) {
       throw new Error(
@@ -199,6 +200,38 @@ export class Application<
         permissionType: permission.permissionType,
         permission: permission.permission,
       }));
+  }
+
+  private async getGraphRoster(
+    context: IEmbedTurnContext
+  ): Promise<IGraphMemberDetailsResponse> {
+    if (context.embed.threadType === "personal") {
+      throw new Error("Personal scope is not supported for this operation");
+    }
+    const token = await this.getAppAccessToken(context);
+    const endpoint =
+      context.embed.threadType === "chat"
+        ? `https://graph.microsoft.com/v1.0/chats/${context.embed.threadId}/members`
+        : `https://graph.microsoft.com/v1.0/teams/${context.embed.threadId}/members`;
+    const graphRequestParams = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "bearer " + token,
+      },
+    };
+
+    const response = await fetch(endpoint, graphRequestParams);
+    const json = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        json.error?.message || `HTTP error! status: ${response.status}`
+      );
+    }
+    if (!isIGraphMemberDetailsResponse(json)) {
+      throw new Error("Invalid response from Graph API");
+    }
+    return json;
   }
 
   private async getAppAccessToken(context: IEmbedTurnContext): Promise<string> {
@@ -230,35 +263,5 @@ export class Application<
     return responseData.access_token;
   }
 
-  private async getGraphRoster(
-    context: IEmbedTurnContext
-  ): Promise<IGraphMemberDetailsResponse> {
-    if (context.embed.threadType === "personal") {
-      throw new Error("Personal scope is not supported for this operation");
-    }
-    const token = await this.getAppAccessToken(context);
-    const graphPhotoEndpoint =
-      context.embed.threadType === "chat"
-        ? `https://graph.microsoft.com/v1.0/chats/${context.embed.threadId}/members`
-        : `https://graph.microsoft.com/v1.0/teams/${context.embed.threadId}/members`;
-    const graphRequestParams = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "bearer " + token,
-      },
-    };
-
-    const response = await fetch(graphPhotoEndpoint, graphRequestParams);
-    const json = await response.json();
-    if (!response.ok) {
-      throw new Error(
-        json.error?.message || `HTTP error! status: ${response.status}`
-      );
-    }
-    if (!isIGraphMemberDetailsResponse(json)) {
-      throw new Error("Invalid response from Graph API");
-    }
-    return json;
-  }
+  
 }
