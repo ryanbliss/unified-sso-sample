@@ -1,4 +1,4 @@
-import { IPermissionDetails, isIPermissionDetails } from "./graph-types";
+import { IPermissionDetails, isIPermission } from "./graph-types";
 
 export interface IBotInteropGetValuesRequestResponseData {
   user: Record<string, any>;
@@ -16,5 +16,5 @@ export function isIBotInteropGetValuesRequestResponseData(
 
 export type TPermissionList = IPermissionDetails[];
 export function isTPermissionsList(value: any): value is TPermissionList {
-  return Array.isArray(value) && value.every(isIPermissionDetails);
+  return Array.isArray(value) && value.every(isIPermission);
 }

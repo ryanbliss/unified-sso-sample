@@ -62,7 +62,7 @@
       "orgWide": [],
       "resourceSpecific": [
         {
-          "name": "ResourceSpecificPermissionGrant.ReadForChat.All",
+          "name": "TeamsAppInstallation.Read.Chat",
           "type": "Application"
         }
       ]
