@@ -119,9 +119,10 @@ export class Application<
           turnContext.embed.onEmbedSuccess(permissions);
         } catch (err) {
           console.error(err);
+          const message = (err as any)?.message;
           turnContext.embed.onEmbedFailure(
             500,
-            "Unable to get the permissions. Check server logs for more details."
+            message ?? "Unknown error, check server logs for more details"
           );
         }
       }
@@ -169,7 +170,7 @@ export class Application<
     const json = await response.json();
     if (!response.ok) {
       throw new Error(
-        `Error fetching photo: ${response.statusText} - ${JSON.stringify(json)}`
+        json.error?.message || `HTTP error! status: ${response.status}`
       );
     }
     if (!isIPermissionDetailsResponse(json)) {

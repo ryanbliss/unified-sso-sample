@@ -57,6 +57,17 @@
       "supportsFiles": false
     }
   ],
+  "authorization": {
+    "permissions": {
+      "orgWide": [],
+      "resourceSpecific": [
+        {
+          "name": "ResourceSpecificPermissionGrant.ReadForChat.All",
+          "type": "Application"
+        }
+      ]
+    }
+  },
   "validDomains": ["unified-sso-sample.vercel.app", "*.botframework.com"],
   "webApplicationInfo": {
     "id": "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
