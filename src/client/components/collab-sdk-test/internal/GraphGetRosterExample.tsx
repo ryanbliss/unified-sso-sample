@@ -17,6 +17,18 @@ export const GraphGetRosterExample: FC = () => {
         <FlexRow marginSpacer="small" vAlign="center">
           <Button
             onClick={async () => {
+              if (isClient) {
+                client.authentication.entra.configuration!.scopes = [
+                  "https://graph.microsoft.com/profile",
+                  "https://graph.microsoft.com/openid",
+                  "ChatMember.Read.Chat",
+                ];
+              } else {
+                client.authentication.entra.configuration!.scopes = [
+                  "https://graph.microsoft.com/profile",
+                  "https://graph.microsoft.com/openid",
+                ];
+              }
               try {
                 const response = await client.conversation.getRoster({
                   requestType: isClient ? "client" : "server",
