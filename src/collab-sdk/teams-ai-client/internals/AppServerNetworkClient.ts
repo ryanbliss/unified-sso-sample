@@ -37,7 +37,7 @@ export class AppServerNetworkClient {
         "Entra authentication not initialized, please call `Application.authentication.entra.initialize` before making requests"
       );
     }
-    const entraToken = this.application.authentication.entra.acquireToken();
+    const entraToken: string = await this.application.authentication.entra.acquireToken();
 
     const { authentication } = this._configuration;
 
