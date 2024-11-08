@@ -3,10 +3,11 @@ import { Button, Text } from "@fluentui/react-components";
 import { FC, useState } from "react";
 import { FlexColumn, FlexRow } from "../../flex";
 import CodeBlock from "../../code-block/CodeBlock";
+import { useError } from "@/client/hooks/useError";
 
 export const BotActionExample: FC = () => {
-  const [actionRes, setActionRes] = useState<string>();
-  const [actionErr, setActionErr] = useState<string>();
+  const [res, setRes] = useState<string>();
+  const [err, setErr] = useError();
   const { client } = useTeamsClientContext();
   if (!client) return null;
   return (
@@ -22,21 +23,17 @@ export const BotActionExample: FC = () => {
                     input: "hello world",
                   }
                 );
-                setActionRes(JSON.stringify(response, null, 4));
-              } catch (err: unknown) {
-                const message: string =
-                  typeof (err as any)?.message === "string"
-                    ? (err as any).message
-                    : "An unknown error occurred";
-                setActionErr(message);
+                setRes(JSON.stringify(response, null, 4));
+              } catch (error: unknown) {
+                setErr(error);
               }
             }}
           >
             {"Test action"}
           </Button>
         </FlexRow>
-        {actionRes && <CodeBlock text={actionRes}></CodeBlock>}
-        {actionErr && <Text>{actionErr}</Text>}
+        {res && <CodeBlock text={res}></CodeBlock>}
+        {err && <Text>{err}</Text>}
       </FlexColumn>
     </>
   );

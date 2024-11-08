@@ -3,12 +3,14 @@ import {
   IPublicClientApplication,
   Configuration,
   AccountInfo,
+  AuthenticationResult,
 } from "@azure/msal-browser";
 import * as teamsJs from "@microsoft/teams-js";
+import { IEntraConfiguration } from "./EntraAuthentication-types";
 
 export class EntraAuthentication {
   private teamsJsContext: teamsJs.app.Context;
-  public configuration?: Configuration;
+  public configuration?: IEntraConfiguration;
   private _client?: IPublicClientApplication;
 
   constructor(
@@ -68,5 +70,35 @@ export class EntraAuthentication {
       return;
     }
     this._client.setActiveAccount(accountWithFilter);
+  }
+
+  public async acquireToken(): Promise<string> {
+    if (!this.configuration) {
+      throw new Error("EntraAuthentication.configuration not set prior to calling `acquireToken`");
+    }
+    const scopes = this.configuration?.scopes ?? [
+      "https://graph.microsoft.com/profile",
+      "https://graph.microsoft.com/openid",
+    ];
+    const tokenRequest = {
+      scopes,
+      account: this.client.getActiveAccount() ?? undefined,
+    };
+    let entraResult: AuthenticationResult | null = null;
+    try {
+      entraResult =
+        await this.client.acquireTokenSilent(
+          tokenRequest
+        );
+    } catch (error) {
+      console.error(error);
+    }
+    if (!entraResult) {
+      entraResult =
+        await this.client.acquireTokenPopup(
+          tokenRequest
+        );
+    }
+    return entraResult.accessToken;
   }
 }

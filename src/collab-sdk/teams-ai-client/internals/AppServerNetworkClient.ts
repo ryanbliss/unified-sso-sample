@@ -6,7 +6,6 @@ import {
 } from "../client-bot-interop-types";
 import { Conversation } from "../Conversation";
 import { Application } from "../Application";
-import { AuthenticationResult } from "@azure/msal-browser";
 import { IBotInteropRequestData } from "@/collab-sdk/shared/request-types";
 
 export class AppServerNetworkClient {
@@ -38,51 +37,28 @@ export class AppServerNetworkClient {
         "Entra authentication not initialized, please call `Application.authentication.entra.initialize` before making requests"
       );
     }
-    let entraResult: AuthenticationResult | null = null;
-    const tokenRequest = {
-      scopes: [
-        "https://graph.microsoft.com/profile",
-        "https://graph.microsoft.com/openid",
-      ],
-      account:
-        this.application.authentication.entra.client.getActiveAccount() ??
-        undefined,
-    };
-    try {
-      entraResult =
-        await this.application.authentication.entra.client.acquireTokenSilent(
-          tokenRequest
-        );
-    } catch (error) {
-      console.error(error);
-    }
-    if (!entraResult) {
-      entraResult =
-        await this.application.authentication.entra.client.acquireTokenPopup(
-          tokenRequest
-        );
-    }
+    const entraToken = this.application.authentication.entra.acquireToken();
 
     const { authentication } = this._configuration;
 
     if (isIBotInteropEntraAuth(authentication)) {
       return {
         "authorization-type": `EntraAuth`,
-        "entra-authorization": `Bearer ${entraResult.accessToken}`,
+        "entra-authorization": `Bearer ${entraToken}`,
       };
     }
     if (isIBotInteropAuthCookie(authentication)) {
       return {
         "authorization-type": `Cookie`,
         AuthCookieKey: authentication.cookieKey,
-        "entra-authorization": `Bearer ${entraResult.accessToken}`,
+        "entra-authorization": `Bearer ${entraToken}`,
       };
     }
     if (isIBotInteropAuthHeader(authentication)) {
       return {
         "authorization-type": `Header`,
         Authorization: authentication.headerValue,
-        "entra-authorization": `Bearer ${entraResult.accessToken}`,
+        "entra-authorization": `Bearer ${entraToken}`,
       };
     }
     throw new Error("Unexpected `configuration.authentication` format.");
@@ -111,11 +87,19 @@ export class AppServerNetworkClient {
         }),
       });
 
+      const json = await response.json();
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (typeof json === "object") {
+          if (typeof json.error === "string") {
+            throw new Error(json.error);
+          }
+          throw new Error(JSON.stringify(json));
+        }
+        throw new Error(`An unknown error occurred with status: ${response.status}`);
       }
 
-      const responseData: { data: TResponse } = await response.json();
+      const responseData: { data: TResponse } = json;
       return responseData.data;
     } catch (error) {
       console.error("Error making POST request:", error);

@@ -1,9 +1,15 @@
 import * as teamsJs from "@microsoft/teams-js";
 import { Application } from "./Application";
 import { Bot } from "./Bot";
-import { TeamsPagedMembersResult } from "./roster-types";
-import { IGraphMember, isIGraphMemberDetailsResponse, isTPermissionsList, TPermissionList, TThreadType } from "../shared";
+import {
+  IGraphMember,
+  isIGraphMemberDetailsResponse,
+  isTPermissionsList,
+  TPermissionList,
+  TThreadType,
+} from "../shared";
 import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
+import { IGetRosterOptions } from "./Conversation-types";
 
 export class Conversation {
   private application: Application;
@@ -72,28 +78,72 @@ export class Conversation {
     );
   }
 
-  public async getRoster(): Promise<IGraphMember[]> {
-    if (!this._networkClient.configuration) {
-      throw new Error("Thread.getRoster: bot config not set");
+  /**
+   *
+   * @param options Optional. Request {@link IGetRosterOptions} options.
+   * @param options.requestType Optional. See {@link IGetRosterOptions.requestType} for more details.
+   * @returns
+   */
+  public async getRoster(options?: IGetRosterOptions): Promise<IGraphMember[]> {
+    if (this.type === "personal") {
+      throw new Error("Conversation.getRoster: Cannot get roster for personal chat");
+    }
+    let requestType: "server" | "client" | undefined = options?.requestType;
+
+    if (requestType === "server" && !this._networkClient.configuration) {
+      throw new Error(
+        "Conversation.getRoster: `Application.serverConfiguration` is not set. Set `Application.serverConfiguration` before calling this method. For more information about how to use this API, visit https://aka.ms/TODOPLACEHOLDER"
+      );
+    } else if (
+      requestType === "client" &&
+      !this.application.authentication.entra.isInitialized
+    ) {
+      throw new Error(
+        "Conversation.getRoster: `Application.authentication.entra` has not been initialized. Await `Application.authentication.entra.initialize()` before calling this method. For more information about how to use this API, visit https://aka.ms/TODOPLACEHOLDER"
+      );
+    } else if (!this._networkClient.configuration && !requestType) {
+      if (!this.application.authentication.entra.isInitialized) {
+        throw new Error(
+          "Conversation.getRoster: `Application.serverConfiguration` is not set, nor has `Application.authentication.entra` been initialized. For more information about how to use this API, visit https://aka.ms/TODOPLACEHOLDER"
+        );
+      }
+      requestType = "client";
+    } else if (!requestType) {
+      requestType = "server";
     }
 
-    const requestData = {
-      type: "get-graph-roster",
-    };
+    // Request via server
+    if (requestType === "server") {
+      const requestData = {
+        type: "get-graph-roster",
+      };
 
-    const response = await this._networkClient.request<any>(
-      this._networkClient.configuration.endpoint,
-      requestData
-    );
+      const response = await this._networkClient.request<any>(
+        this._networkClient.configuration!.endpoint,
+        requestData
+      );
+      if (!isIGraphMemberDetailsResponse(response)) {
+        throw new Error(
+          `Conversation.getRoster: Unexpected response from get-paged-roster request, ${response}`
+        );
+      }
+      return response.value;
+    }
+
+    // Request via client
+    const prefix = this.type === "chat" ? "chats" : "teams";
+    const response = await this.application.graph.api(`/${prefix}/${this.id}/members`).get();
     if (!isIGraphMemberDetailsResponse(response)) {
-      throw new Error(`Thread.getRoster: Unexpected response from get-paged-roster request, ${response}`);
+      throw new Error(
+        `Conversation.getRoster: Unexpected response from get-paged-roster request, ${response}`
+      );
     }
     return response.value;
   }
 
-  public async getInstalledRscPermissions(): Promise<TPermissionList> {
+  public async getEnabledRscPermissions(): Promise<TPermissionList> {
     if (!this._networkClient.configuration) {
-      throw new Error("Thread.getRoster: bot config not set");
+      throw new Error("Conversation.getRoster: bot config not set");
     }
 
     const requestData = {
@@ -105,7 +155,9 @@ export class Conversation {
       requestData
     );
     if (!isTPermissionsList(response)) {
-      throw new Error(`Thread.getRoster: Unexpected response from get-paged-roster request, ${response}`);
+      throw new Error(
+        `Conversation.getRoster: Unexpected response from get-paged-roster request, ${response}`
+      );
     }
     return response;
   }

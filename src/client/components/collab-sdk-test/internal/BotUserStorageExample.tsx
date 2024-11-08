@@ -3,12 +3,13 @@ import { Button, Text } from "@fluentui/react-components";
 import { FC, useEffect, useState } from "react";
 import { FlexColumn, FlexRow } from "../../flex";
 import CodeBlock from "../../code-block/CodeBlock";
+import { useError } from "@/client/hooks/useError";
 
 export const BotUserStorageExample: FC = () => {
   const { client } = useTeamsClientContext();
   const count = client?.conversation.bot.storage.user.get<number | undefined>("count") ?? 0;
   const [res, setRes] = useState<string>(`key: count\nvalue: ${count}`);
-  const [err, setErr] = useState<string>();
+  const [err, setErr] = useError();
 
   useEffect(() => {
     const listener = (key: string, value: any) => {
@@ -36,12 +37,8 @@ export const BotUserStorageExample: FC = () => {
                   "count",
                   currentValue + 1
                 );
-              } catch (err: unknown) {
-                const message: string =
-                  typeof (err as any)?.message === "string"
-                    ? (err as any).message
-                    : "An unknown error occurred";
-                setErr(message);
+              } catch (error: unknown) {
+                setErr(error);
               }
             }}
           >

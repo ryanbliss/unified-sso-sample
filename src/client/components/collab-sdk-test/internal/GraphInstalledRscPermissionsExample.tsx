@@ -3,10 +3,11 @@ import { Button, Text } from "@fluentui/react-components";
 import { FC, useState } from "react";
 import { FlexColumn, FlexRow } from "../../flex";
 import CodeBlock from "../../code-block/CodeBlock";
+import { useError } from "@/client/hooks/useError";
 
 export const GraphGetInstalledRscPermissionsExample: FC = () => {
   const [res, setRes] = useState<string>();
-  const [err, setErr] = useState<string>();
+  const [err, setErr] = useError();
   const { client } = useTeamsClientContext();
   if (!client) return null;
   return (
@@ -16,14 +17,10 @@ export const GraphGetInstalledRscPermissionsExample: FC = () => {
           <Button
             onClick={async () => {
               try {
-                const response = await client.conversation.getInstalledRscPermissions();
+                const response = await client.conversation.getEnabledRscPermissions();
                 setRes(JSON.stringify(response, null, 4));
-              } catch (err: unknown) {
-                const message: string =
-                  typeof (err as any)?.message === "string"
-                    ? (err as any).message
-                    : "An unknown error occurred";
-                setErr(message);
+              } catch (error: unknown) {
+                setErr(error);
               }
             }}
           >
