@@ -21,7 +21,7 @@ export const GraphGetRosterExample: FC = () => {
                 client.authentication.entra.configuration!.scopes = [
                   "https://graph.microsoft.com/profile",
                   "https://graph.microsoft.com/openid",
-                  "ChatMember.Read.Chat",
+                  "https://graph.microsoft.com/ChatMember.Read.Chat",
                 ];
               } else {
                 client.authentication.entra.configuration!.scopes = [
