@@ -16,12 +16,12 @@ export class Team {
     return this.application.teamsJsContext;
   }
   public get id(): string {
-    if (!this.context.team?.internalId) {
+    if (!this.context.team?.groupId) {
       throw new Error(
         "team.id not found, which is an unexpected error. Only construct Team if teamsJs app.Context.team.id is defined."
       );
     }
-    return this.context.team.internalId;
+    return this.context.team.groupId;
   }
 
   public get displayName(): string | undefined {
@@ -42,13 +42,13 @@ export class Team {
     return this.context.team.type;
   }
 
-  public get groupId(): string | undefined {
+  public get internalId(): string | undefined {
     if (!this.context.team) {
       throw new Error(
         "team is undefined, which is an unexpected error. Only construct Team if teamsJs app.Context.team is defined."
       );
     }
-    return this.context.team.groupId;
+    return this.context.team.internalId;
   }
 
   public get isArchived(): boolean {
