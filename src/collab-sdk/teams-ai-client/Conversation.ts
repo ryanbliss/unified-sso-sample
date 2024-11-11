@@ -123,7 +123,10 @@ export class Conversation {
     if (requestType === "server") {
       const requestData = {
         type: "get-graph-roster",
-        subtype: this.type,
+        // TODO: uncomment when channel RSC permission is added to Teams
+        // subtype: this.type,
+        // TODO: remove when channel RSC permission is added to Teams
+        subtype: this.type === "chat" ? "chat" : "team",
       };
 
       const response = await this._networkClient.request<any>(
