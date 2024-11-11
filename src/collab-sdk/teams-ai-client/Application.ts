@@ -1,15 +1,12 @@
 import * as teamsJs from "@microsoft/teams-js";
 import { IAppServerConfig } from "./client-bot-interop-types";
 import { Conversation } from "./Conversation";
-import { Configuration } from "@azure/msal-browser";
 import { Authentication } from "./Authentication";
 import { Host } from "./Host";
 import { User } from "./User";
 import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
-import {
-  Client as GraphClient,
-  AuthProvider as GraphAuthProvider,
-} from "@microsoft/microsoft-graph-client";
+import { Client as GraphClient } from "@microsoft/microsoft-graph-client";
+import { IEntraConfiguration } from "./EntraAuthentication-types";
 
 export class Application {
   protected teamsJsContext: teamsJs.app.Context;
@@ -32,7 +29,7 @@ export class Application {
   constructor(
     teamsJsContext: teamsJs.app.Context,
     serverConfig?: IAppServerConfig,
-    entraConfiguration?: Configuration
+    entraConfiguration?: IEntraConfiguration
   ) {
     this.teamsJsContext = teamsJsContext;
     this._networkClient = new AppServerNetworkClient(this, serverConfig);

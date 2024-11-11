@@ -14,7 +14,11 @@ import {
   useState,
 } from "react";
 import { LoadErrorWrapper } from "../../components/view-wrappers";
-import { teamsDarkTheme, teamsHighContrastTheme, Theme } from "@fluentui/react-components";
+import {
+  teamsDarkTheme,
+  teamsHighContrastTheme,
+  Theme,
+} from "@fluentui/react-components";
 import { isTeamsJsPath } from "@/client/utils/teams-js-utils";
 import { Application, ApplicationBuilder } from "@/collab-sdk/teams-ai-client";
 import { getTestContext } from "./internals/teams-app-context/test-teams-utils";
@@ -45,6 +49,11 @@ const applicationBuilder = new ApplicationBuilder()
       clientId: "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
       authority: "https://login.microsoftonline.com/common",
     },
+    scopes: [
+      "https://graph.microsoft.com/profile",
+      "https://graph.microsoft.com/openid",
+      "https://graph.microsoft.com/ChatMember.Read.Chat",
+    ],
   });
 
 // React Context Provider
@@ -82,9 +91,7 @@ export const TeamsClientProvider: FC<{
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    const maybeTestContext = isTeamsJsPath()
-      ? undefined
-      : getTestContext();
+    const maybeTestContext = isTeamsJsPath() ? undefined : getTestContext();
 
     applicationBuilder
       .withTestContext(maybeTestContext)

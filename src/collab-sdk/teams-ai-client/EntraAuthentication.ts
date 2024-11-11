@@ -1,7 +1,6 @@
 import {
   createNestablePublicClientApplication,
   IPublicClientApplication,
-  Configuration,
   AccountInfo,
   AuthenticationResult,
 } from "@azure/msal-browser";
@@ -15,7 +14,7 @@ export class EntraAuthentication {
 
   constructor(
     teamsJsContext: teamsJs.app.Context,
-    entraConfiguration?: Configuration
+    entraConfiguration?: IEntraConfiguration
   ) {
     this.teamsJsContext = teamsJsContext;
     this.configuration = entraConfiguration;

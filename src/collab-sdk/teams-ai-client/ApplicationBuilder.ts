@@ -2,12 +2,13 @@ import { Application } from "./Application";
 import * as teamsJs from "@microsoft/teams-js";
 import { IAppServerConfig } from "./client-bot-interop-types";
 import { Configuration } from "@azure/msal-browser";
+import { IEntraConfiguration } from "./EntraAuthentication-types";
 
 export class ApplicationBuilder {
   private overrideContext: teamsJs.app.Context | undefined;
   private validMessageOrigins: string[] | undefined;
   private botInteropConfig?: IAppServerConfig;
-  private entraConfiguration?: Configuration;
+  private entraConfiguration?: IEntraConfiguration;
   public async build(): Promise<Application> {
     await teamsJs.app.initialize(this.validMessageOrigins);
     const context = this.overrideContext ?? (await teamsJs.app.getContext());
@@ -43,7 +44,7 @@ export class ApplicationBuilder {
     return this;
   }
   public withEntraAuthentication(
-    configuration: Configuration
+    configuration: IEntraConfiguration
   ): ApplicationBuilder {
     this.entraConfiguration = configuration;
     return this;

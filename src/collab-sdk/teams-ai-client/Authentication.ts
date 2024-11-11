@@ -1,13 +1,13 @@
 import * as teamsJs from "@microsoft/teams-js";
 import { EntraAuthentication } from "./EntraAuthentication";
-import { Configuration } from "@azure/msal-browser";
+import { IEntraConfiguration } from "./EntraAuthentication-types";
 
 export class Authentication {
   private teamsJsContext: teamsJs.app.Context;
   public readonly entra: EntraAuthentication;
   constructor(
     teamsJsContext: teamsJs.app.Context,
-    entraConfiguration?: Configuration
+    entraConfiguration?: IEntraConfiguration
   ) {
     this.teamsJsContext = teamsJsContext;
     this.entra = new EntraAuthentication(teamsJsContext, entraConfiguration);
