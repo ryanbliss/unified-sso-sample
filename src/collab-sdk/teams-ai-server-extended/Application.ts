@@ -140,6 +140,8 @@ export class Application<
             message ?? "Unknown error, check server logs for more details"
           );
         }
+      } else {
+        turnContext.embed.onEmbedFailure(500, "Invalid request type");
       }
       return true;
     }

@@ -99,7 +99,7 @@ export function isIBotInteropGetGraphRosterData(
   value: any
 ): value is IBotInteropGetValuesRequestData {
   return (
-    value?.subtype === "string" &&
+    typeof value?.subtype === "string" &&
     isIBotInteropRequestData(value) &&
     value.type === "get-graph-roster"
   );
