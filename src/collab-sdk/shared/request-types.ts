@@ -2,8 +2,10 @@ export type TThreadType = "chat" | "channel" | "personal";
 
 export interface IBotInteropRequestData {
   type: string;
+  subtype?: string | undefined;
   threadId: string;
   threadType: TThreadType;
+  teamId: string | undefined;
 }
 export function isIBotInteropRequestData(
   value: any
@@ -14,6 +16,11 @@ export function isIBotInteropRequestData(
     typeof value.threadId === "string"
   );
 }
+
+export type TBotInteropRequestBase = Omit<
+  IBotInteropRequestData,
+  "threadId" | "threadType" | "teamId"
+>;
 
 export interface IBotInteropActionData<TData> {
   type: string;
@@ -61,7 +68,8 @@ export function isIBotInteropGetRosterRequestData(
 ): value is IBotInteropGetRosterRequestData {
   return isIBotInteropRequestData(value) && value.type === "get-paged-roster";
 }
-export interface IBotInteropGetRosterRequestData extends IBotInteropRequestData {
+export interface IBotInteropGetRosterRequestData
+  extends IBotInteropRequestData {
   type: "get-paged-roster";
   continuationToken?: string;
 }
@@ -71,20 +79,28 @@ export function isIBotInteropGetValuesRequestData(
   return isIBotInteropRequestData(value) && value.type === "get-values";
 }
 
-export interface IBotInteropGetInstalledRscPermissionsData extends IBotInteropRequestData {
+export interface IBotInteropGetInstalledRscPermissionsData
+  extends IBotInteropRequestData {
   type: "get-rsc-permissions";
 }
 export function isIBotInteropGetInstalledRscPermissionsData(
   value: any
 ): value is IBotInteropGetValuesRequestData {
-  return isIBotInteropRequestData(value) && value.type === "get-rsc-permissions";
+  return (
+    isIBotInteropRequestData(value) && value.type === "get-rsc-permissions"
+  );
 }
 
 export interface IBotInteropGetGraphRosterData extends IBotInteropRequestData {
   type: "get-graph-roster";
+  subtype: "chat" | "channel" | "team";
 }
 export function isIBotInteropGetGraphRosterData(
   value: any
 ): value is IBotInteropGetValuesRequestData {
-  return isIBotInteropRequestData(value) && value.type === "get-graph-roster";
+  return (
+    value?.subtype === "string" &&
+    isIBotInteropRequestData(value) &&
+    value.type === "get-graph-roster"
+  );
 }

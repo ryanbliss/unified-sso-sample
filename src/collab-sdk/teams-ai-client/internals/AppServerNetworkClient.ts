@@ -6,7 +6,7 @@ import {
 } from "../client-bot-interop-types";
 import { Conversation } from "../Conversation";
 import { Application } from "../Application";
-import { IBotInteropRequestData } from "@/collab-sdk/shared/request-types";
+import { TBotInteropRequestBase } from "@/collab-sdk/shared/request-types";
 
 export class AppServerNetworkClient {
   private application: Application;
@@ -37,7 +37,8 @@ export class AppServerNetworkClient {
         "Entra authentication not initialized, please call `Application.authentication.entra.initialize` before making requests"
       );
     }
-    const entraToken: string = await this.application.authentication.entra.acquireToken();
+    const entraToken: string =
+      await this.application.authentication.entra.acquireToken();
 
     const { authentication } = this._configuration;
 
@@ -66,7 +67,7 @@ export class AppServerNetworkClient {
 
   public async request<TResponse extends any = unknown>(
     url: string,
-    data: Omit<IBotInteropRequestData, "threadId" | "threadType">
+    data: TBotInteropRequestBase
   ): Promise<TResponse> {
     if (!this.conversation.id) {
       throw new Error(
@@ -84,6 +85,7 @@ export class AppServerNetworkClient {
           ...data,
           threadId: this.conversation.id,
           threadType: this.conversation.type,
+          teamId: this.conversation.team?.id,
         }),
       });
 
@@ -96,7 +98,9 @@ export class AppServerNetworkClient {
           }
           throw new Error(JSON.stringify(json));
         }
-        throw new Error(`An unknown error occurred with status: ${response.status}`);
+        throw new Error(
+          `An unknown error occurred with status: ${response.status}`
+        );
       }
 
       const responseData: { data: TResponse } = json;

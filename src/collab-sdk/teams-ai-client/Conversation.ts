@@ -10,15 +10,20 @@ import {
 } from "../shared";
 import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
 import { IGetRosterOptions } from "./Conversation-types";
+import { Team } from "./Team";
 
 export class Conversation {
   private application: Application;
   public readonly bot: Bot;
+  public readonly team: Team | undefined;
   private _networkClient: AppServerNetworkClient;
   constructor(application: Application, networkClient: AppServerNetworkClient) {
     this.application = application;
     this._networkClient = networkClient;
     this.bot = new Bot(this._networkClient);
+    if (this.context.team) {
+      this.team = new Team(this.application, this._networkClient);
+    }
   }
   private get context(): teamsJs.app.Context {
     // @ts-expect-error using protected property intentionally
@@ -118,6 +123,7 @@ export class Conversation {
     if (requestType === "server") {
       const requestData = {
         type: "get-graph-roster",
+        subtype: this.type,
       };
 
       const response = await this._networkClient.request<any>(
@@ -133,10 +139,20 @@ export class Conversation {
     }
 
     // Request via client
-    const prefix = this.type === "chat" ? "chats" : "teams";
-    const response = await this.application.graph
-      .api(`/${prefix}/${this.id}/members`)
-      .get();
+    let endpoint: string;
+    if (this.type === "chat") {
+      endpoint = `/chats/${this.id}/members`;
+    } else if (this.type === "channel") {
+      if (!this.team) {
+        throw new Error(
+          "Conversation.getRoster: Team instance not available for channel, which is unexpected when `Conversation.type` is `channel`"
+        );
+      }
+      endpoint = `/teams/${this.team.id}/channels/${this.id}/members`;
+    } else {
+      throw new Error("Conversation.getRoster: Unexpected conversation type");
+    }
+    const response = await this.application.graph.api(endpoint).get();
     if (!isIGraphMemberDetailsResponse(response)) {
       throw new Error(
         `Conversation.getRoster: Unexpected response from get-paged-roster request, ${response}`

@@ -172,7 +172,7 @@ export class Application<
     const endpoint =
       context.embed.threadType === "chat"
         ? `https://graph.microsoft.com/beta/chats/${context.embed.threadId}/permissionGrants`
-        : `https://graph.microsoft.com/beta/teams/${context.embed.threadId}/permissionGrants`;
+        : `https://graph.microsoft.com/beta/teams/${context.embed.teamId}/permissionGrants`;
     const graphRequestParams = {
       method: "GET",
       headers: {
@@ -209,10 +209,24 @@ export class Application<
       throw new Error("Personal scope is not supported for this operation");
     }
     const token = await this.getAppAccessToken(context);
-    const endpoint =
-      context.embed.threadType === "chat"
-        ? `https://graph.microsoft.com/v1.0/chats/${context.embed.threadId}/members`
-        : `https://graph.microsoft.com/v1.0/teams/${context.embed.threadId}/members`;
+    let endpoint: string;
+    if (context.embed.threadType === "chat") {
+      endpoint = `https://graph.microsoft.com/v1.0/chats/${context.embed.threadId}/members`;
+    } else if (context.embed.subtype === "channel") {
+      if (!context.embed.teamId) {
+        throw new Error("`teamId` is required to get channel roster");
+      }
+      endpoint = `https://graph.microsoft.com/v1.0/teams/${context.embed.teamId}/channels/${context.embed.threadId}/members`;
+    } else if (context.embed.subtype === "team") {
+      if (!context.embed.teamId) {
+        throw new Error("`teamId` is required to get team roster");
+      }
+      endpoint = `https://graph.microsoft.com/v1.0/teams/${context.embed.teamId}/members`;
+    } else {
+      throw new Error(
+        `Invalid request subtype of ${context.embed.subtype} for 'getRoster'. Valid subtypes include 'chat', 'channel', or 'team'.`
+      );
+    }
     const graphRequestParams = {
       method: "GET",
       headers: {
@@ -262,6 +276,4 @@ export class Application<
     }
     return responseData.access_token;
   }
-
-  
 }
