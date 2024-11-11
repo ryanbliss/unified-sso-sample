@@ -52,7 +52,7 @@ const applicationBuilder = new ApplicationBuilder()
     scopes: [
       "https://graph.microsoft.com/profile",
       "https://graph.microsoft.com/openid",
-      "https://graph.microsoft.com/ChatMember.Read.Chat",
+      // "https://graph.microsoft.com/ChatMember.Read.Chat",
     ],
   });
 

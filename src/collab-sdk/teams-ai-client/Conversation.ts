@@ -86,7 +86,9 @@ export class Conversation {
    */
   public async getRoster(options?: IGetRosterOptions): Promise<IGraphMember[]> {
     if (this.type === "personal") {
-      throw new Error("Conversation.getRoster: Cannot get roster for personal chat");
+      throw new Error(
+        "Conversation.getRoster: Cannot get roster for personal chat"
+      );
     }
     let requestType: "server" | "client" | undefined = options?.requestType;
 
@@ -132,7 +134,9 @@ export class Conversation {
 
     // Request via client
     const prefix = this.type === "chat" ? "chats" : "teams";
-    const response = await this.application.graph.api(`/${prefix}/${this.id}/members`).get();
+    const response = await this.application.graph
+      .api(`/${prefix}/${this.id}/members`)
+      .get();
     if (!isIGraphMemberDetailsResponse(response)) {
       throw new Error(
         `Conversation.getRoster: Unexpected response from get-paged-roster request, ${response}`
