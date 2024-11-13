@@ -1,10 +1,24 @@
 import { ApplicationOptions, TurnState } from "@microsoft/teams-ai";
-import { ConfigurationServiceClientCredentialFactory, TeamsInfo, TurnContext } from "botbuilder";
+import {
+  ConfigurationServiceClientCredentialFactory,
+  TeamsInfo,
+  TurnContext,
+} from "botbuilder";
 import { EmbedStorage } from "./EmbedStorage";
 import { IEmbedTurnContext } from "./turn-context-extended";
-import { IGraphMemberDetailsResponse, IPermission, isIBotInteropActionRequestData, isIGetGraphMembersData, isIBotInteropGetInstalledRscPermissionsData, isIBotInteropGetRosterRequestData, isIBotInteropGetValuesRequestData, isIBotInteropSetValueRequestData } from "../shared";
+import {
+  IGraphMemberDetailsResponse,
+  IPermission,
+  isIBotInteropActionRequestData,
+  isIGetGraphMembersData,
+  isIBotInteropGetInstalledRscPermissionsData,
+  isIBotInteropGetRosterRequestData,
+  isIBotInteropGetValuesRequestData,
+  isIBotInteropSetValueRequestData,
+  isIGetGraphMemberData,
+} from "../shared";
 import { getRscPermissions } from "./utils/getRscPermissions";
-import { getGraphMembers } from "./utils/getGraphMembers";
+import { getGraphMember, getGraphMembers } from "./utils/getGraphMembers";
 import { getAppAccessToken } from "./utils/getAppAccessToken";
 
 export class Embed<TState extends TurnState = TurnState> {
@@ -77,7 +91,10 @@ export class Embed<TState extends TurnState = TurnState> {
   public async run(turnContext: IEmbedTurnContext): Promise<boolean> {
     // First, check to see if user is actually a member of this conversation
     try {
-      await TeamsInfo.getMember(turnContext, turnContext.embed.user.aadObjectId);
+      await TeamsInfo.getMember(
+        turnContext,
+        turnContext.embed.user.aadObjectId
+      );
     } catch (err) {
       // TODO: check error codes, not all errors are likely to be "Unauthorized"
       console.error(err);
@@ -155,8 +172,45 @@ export class Embed<TState extends TurnState = TurnState> {
       }
     } else if (isIGetGraphMembersData(turnContext.embed)) {
       try {
-        const roster = await this.getGraphRoster(turnContext);
+        if (turnContext.embed.threadType === "personal") {
+          throw new Error("Personal scope is not supported for this operation");
+        }
+        const token = await this.getAppAccessToken(turnContext);
+        if (!turnContext.embed.subtype) {
+          throw new Error("`subtype` is required to get members");
+        }
+        const roster = await getGraphMembers(
+          token,
+          turnContext.embed.subtype,
+          turnContext.embed.threadId,
+          turnContext.embed.teamId
+        );
         turnContext.embed.onEmbedSuccess(roster);
+      } catch (err) {
+        console.error(err);
+        const message = (err as any)?.message;
+        turnContext.embed.onEmbedFailure(
+          500,
+          message ?? "Unknown error, check server logs for more details"
+        );
+      }
+    } else if (isIGetGraphMemberData(turnContext.embed)) {
+      try {
+        if (turnContext.embed.threadType === "personal") {
+          throw new Error("Personal scope is not supported for this operation");
+        }
+        const token = await this.getAppAccessToken(turnContext);
+        if (!turnContext.embed.subtype) {
+          throw new Error("`subtype` is required to get member");
+        }
+        const member = await getGraphMember(
+          token,
+          turnContext.embed.subtype,
+          turnContext.embed.threadId,
+          turnContext.embed.userAadObjectId,
+          turnContext.embed.teamId
+        );
+        turnContext.embed.onEmbedSuccess(member);
       } catch (err) {
         console.error(err);
         const message = (err as any)?.message;
@@ -186,19 +240,6 @@ export class Embed<TState extends TurnState = TurnState> {
         : context.embed.teamId!,
       this._credentialsFactory.appId!
     );
-  }
-
-  private async getGraphRoster(
-    context: IEmbedTurnContext
-  ): Promise<IGraphMemberDetailsResponse> {
-    if (context.embed.threadType === "personal") {
-      throw new Error("Personal scope is not supported for this operation");
-    }
-    const token = await this.getAppAccessToken(context);
-    if (!context.embed.subtype) {
-      throw new Error("`subtype` is required to get roster");
-    }
-    return await getGraphMembers(token, context.embed.subtype, context.embed.threadId, context.embed.teamId);
   }
 
   private async getAppAccessToken(context: IEmbedTurnContext): Promise<string> {

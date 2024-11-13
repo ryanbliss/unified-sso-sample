@@ -97,7 +97,7 @@ export interface IGetGraphMembersData extends IBotInteropRequestData {
 }
 export function isIGetGraphMembersData(
   value: any
-): value is IBotInteropGetValuesRequestData {
+): value is IGetGraphMembersData {
   return (
     typeof value?.subtype === "string" &&
     isIBotInteropRequestData(value) &&
@@ -106,17 +106,17 @@ export function isIGetGraphMembersData(
 }
 
 export interface IGetGraphMemberData extends IBotInteropRequestData {
-  type: "get-graph-members";
+  type: "get-graph-member";
   subtype: "chat" | "channel" | "team";
   userAadObjectId: string;
 }
 export function isIGetGraphMemberData(
   value: any
-): value is IBotInteropGetValuesRequestData {
+): value is IGetGraphMemberData {
   return (
     typeof value?.subtype === "string" &&
     typeof value?.userAadObjectId === "string" &&
     isIBotInteropRequestData(value) &&
-    value.type === "get-graph-members"
+    value.type === "get-graph-member"
   );
 }
