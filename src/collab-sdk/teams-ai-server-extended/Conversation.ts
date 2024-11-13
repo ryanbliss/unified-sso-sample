@@ -135,7 +135,8 @@ export class Conversation<TState extends TurnState = TurnState> {
     const token = await this.getAppAccessToken();
     const response = await getGraphRoster(
       token,
-      threadType,
+      // TODO: replace "team" with "channel" when Teams supports channel RSC
+      threadType === "chat" ? "chat" : "team",
       this.id,
       threadType === "chat" ? undefined : await this.getGroupId()
     );
