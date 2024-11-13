@@ -91,16 +91,32 @@ export function isIBotInteropGetInstalledRscPermissionsData(
   );
 }
 
-export interface IBotInteropGetGraphRosterData extends IBotInteropRequestData {
-  type: "get-graph-roster";
+export interface IGetGraphMembersData extends IBotInteropRequestData {
+  type: "get-graph-members";
   subtype: "chat" | "channel" | "team";
 }
-export function isIBotInteropGetGraphRosterData(
+export function isIGetGraphMembersData(
   value: any
 ): value is IBotInteropGetValuesRequestData {
   return (
     typeof value?.subtype === "string" &&
     isIBotInteropRequestData(value) &&
-    value.type === "get-graph-roster"
+    value.type === "get-graph-members"
+  );
+}
+
+export interface IGetGraphMemberData extends IBotInteropRequestData {
+  type: "get-graph-members";
+  subtype: "chat" | "channel" | "team";
+  userAadObjectId: string;
+}
+export function isIGetGraphMemberData(
+  value: any
+): value is IBotInteropGetValuesRequestData {
+  return (
+    typeof value?.subtype === "string" &&
+    typeof value?.userAadObjectId === "string" &&
+    isIBotInteropRequestData(value) &&
+    value.type === "get-graph-members"
   );
 }

@@ -59,7 +59,7 @@ export async function getGraphMember(
   conversationId: string,
   userAadObjectId: string,
   teamId?: string
-): Promise<IGraphMember | null> {
+): Promise<IGraphMember> {
   const filter = `(microsoft.graph.aadUserConversationMember/userId eq '${userAadObjectId}')`;
   const response = await getGraphMembers(
     token,
@@ -69,7 +69,7 @@ export async function getGraphMember(
     filter
   );
   if (response["@odata.count"] === 0) {
-    return null;
+    throw new Error("User is not a member of the conversation.");
   }
   if (response["@odata.count"] > 1) {
     throw new Error(

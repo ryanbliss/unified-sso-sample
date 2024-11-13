@@ -2,7 +2,7 @@ import { ApplicationOptions, TurnState } from "@microsoft/teams-ai";
 import { ConfigurationServiceClientCredentialFactory, TeamsInfo, TurnContext } from "botbuilder";
 import { EmbedStorage } from "./EmbedStorage";
 import { IEmbedTurnContext } from "./turn-context-extended";
-import { IGraphMemberDetailsResponse, IPermission, isIBotInteropActionRequestData, isIBotInteropGetGraphRosterData, isIBotInteropGetInstalledRscPermissionsData, isIBotInteropGetRosterRequestData, isIBotInteropGetValuesRequestData, isIBotInteropSetValueRequestData } from "../shared";
+import { IGraphMemberDetailsResponse, IPermission, isIBotInteropActionRequestData, isIGetGraphMembersData, isIBotInteropGetInstalledRscPermissionsData, isIBotInteropGetRosterRequestData, isIBotInteropGetValuesRequestData, isIBotInteropSetValueRequestData } from "../shared";
 import { getRscPermissions } from "./utils/getRscPermissions";
 import { getGraphMembers } from "./utils/getGraphMembers";
 import { getAppAccessToken } from "./utils/getAppAccessToken";
@@ -153,7 +153,7 @@ export class Embed<TState extends TurnState = TurnState> {
           message ?? "Unknown error, check server logs for more details"
         );
       }
-    } else if (isIBotInteropGetGraphRosterData(turnContext.embed)) {
+    } else if (isIGetGraphMembersData(turnContext.embed)) {
       try {
         const roster = await this.getGraphRoster(turnContext);
         turnContext.embed.onEmbedSuccess(roster);
@@ -205,7 +205,7 @@ export class Embed<TState extends TurnState = TurnState> {
     const credentialsFactory = this._credentialsFactory;
 
     return await getAppAccessToken(
-      context.embed.user.tenantId,
+      context.conversation.tenantId,
       credentialsFactory.appId!,
       credentialsFactory.password!
     );

@@ -103,7 +103,7 @@ export class Team {
     // Request via server
     if (requestType === "server") {
       const requestData = {
-        type: "get-graph-roster",
+        type: "get-graph-members",
         subtype: "team",
       };
 

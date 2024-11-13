@@ -7,6 +7,7 @@ import {
   isTPermissionsList,
   TPermissionList,
   TConversationType,
+  isIGraphMember,
 } from "../shared";
 import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
 import { IGetMembersOptions } from "./Conversation-types";
@@ -18,7 +19,11 @@ export class Conversation {
   public readonly bot: Bot;
   public readonly team: Team | undefined;
   private _networkClient: AppServerNetworkClient;
-  constructor(application: Application, teamsJsContext: teamsJs.app.Context, networkClient: AppServerNetworkClient) {
+  constructor(
+    application: Application,
+    teamsJsContext: teamsJs.app.Context,
+    networkClient: AppServerNetworkClient
+  ) {
     this.application = application;
     this.context = teamsJsContext;
     this._networkClient = networkClient;
@@ -87,7 +92,9 @@ export class Conversation {
    * @param options.requestType Optional. See {@link IGetMembersOptions.requestType} for more details.
    * @returns roster of the conversation
    */
-  public async getMembers(options?: IGetMembersOptions): Promise<IGraphMember[]> {
+  public async getMembers(
+    options?: IGetMembersOptions
+  ): Promise<IGraphMember[]> {
     if (this.type === "personal") {
       throw new Error(
         "Conversation.getRoster: Cannot get roster for personal chat"
@@ -120,7 +127,7 @@ export class Conversation {
     // Request via server
     if (requestType === "server") {
       const requestData = {
-        type: "get-graph-roster",
+        type: "get-graph-members",
         // TODO: uncomment when channel RSC permission is added to Teams
         // subtype: this.type,
         // TODO: remove when channel RSC permission is added to Teams
@@ -160,6 +167,101 @@ export class Conversation {
       );
     }
     return response.value;
+  }
+
+  /**
+   * Get a specific member of the conversation.
+   *
+   * @param userId user's aadObjectId
+   * @param options Optional. Request {@link IGetMembersOptions} options.
+   * @param options.requestType Optional. See {@link IGetMembersOptions.requestType} for more details.
+   * @returns roster of the conversation
+   */
+  public async getMember(
+    userId: string,
+    options?: IGetMembersOptions
+  ): Promise<IGraphMember> {
+    if (this.type === "personal") {
+      throw new Error(
+        "Conversation.getRoster: Cannot get roster for personal chat"
+      );
+    }
+    let requestType: "server" | "client" | undefined = options?.requestType;
+
+    if (requestType === "server" && !this._networkClient.configuration) {
+      throw new Error(
+        "Conversation.getRoster: `Application.serverConfiguration` is not set. Set `Application.serverConfiguration` before calling this method. For more information about how to use this API, visit https://aka.ms/TODOPLACEHOLDER"
+      );
+    } else if (
+      requestType === "client" &&
+      !this.application.authentication.entra.isInitialized
+    ) {
+      throw new Error(
+        "Conversation.getRoster: `Application.authentication.entra` has not been initialized. Await `Application.authentication.entra.initialize()` before calling this method. For more information about how to use this API, visit https://aka.ms/TODOPLACEHOLDER"
+      );
+    } else if (!this._networkClient.configuration && !requestType) {
+      if (!this.application.authentication.entra.isInitialized) {
+        throw new Error(
+          "Conversation.getRoster: `Application.serverConfiguration` is not set, nor has `Application.authentication.entra` been initialized. For more information about how to use this API, visit https://aka.ms/TODOPLACEHOLDER"
+        );
+      }
+      requestType = "client";
+    } else if (!requestType) {
+      requestType = "server";
+    }
+
+    // Request via server
+    if (requestType === "server") {
+      const requestData = {
+        type: "get-graph-member",
+        // TODO: uncomment when channel RSC permission is added to Teams
+        // subtype: this.type,
+        // TODO: remove when channel RSC permission is added to Teams
+        subtype: this.type === "chat" ? "chat" : "team",
+        userAadObjectId: userId,
+      };
+
+      const response = await this._networkClient.request<any>(
+        this._networkClient.configuration!.endpoint,
+        requestData
+      );
+      if (!isIGraphMember(response)) {
+        throw new Error(
+          `Conversation.getRoster: Unexpected response from get-paged-roster request, ${response}`
+        );
+      }
+      return response;
+    }
+
+    // Request via client
+    let endpoint: string;
+    if (this.type === "chat") {
+      endpoint = `/chats/${this.id}/members?$filter=(microsoft.graph.aadUserConversationMember/userId eq '${userId}')`;
+    } else if (this.type === "channel") {
+      if (!this.team) {
+        throw new Error(
+          "Conversation.getRoster: Team instance not available for channel, which is unexpected when `Conversation.type` is `channel`"
+        );
+      }
+      endpoint = `/teams/${this.team.id}/channels/${this.id}/members?$filter=(microsoft.graph.aadUserConversationMember/userId eq '${userId}')`;
+    } else {
+      throw new Error("Conversation.getRoster: Unexpected conversation type");
+    }
+    const response = await this.application.graph.api(endpoint).get();
+    if (!isIGraphMemberDetailsResponse(response)) {
+      throw new Error(
+        `Conversation.getRoster: Unexpected response from get-paged-roster request, ${response}`
+      );
+    }
+    if (response["@odata.count"] === 0) {
+      throw new Error("User is not a member of the conversation.");
+    }
+    if (response["@odata.count"] > 1) {
+      throw new Error(
+        "Unexpected Error: more than one member found for the given aadObjectId"
+      );
+    }
+    return response.value[0];
   }
 
   public async getEnabledRscPermissions(): Promise<TPermissionList> {

@@ -149,7 +149,7 @@ export class Conversation<TState extends TurnState = TurnState> {
    * @param userId user's aadObjectId
    * @returns user's graph member details
    */
-  public async getMember(userId: string): Promise<IGraphMember | null> {
+  public async getMember(userId: string): Promise<IGraphMember> {
     if (this.context.activity.conversation.conversationType === "personal") {
       throw new Error(
         "Conversation.getRoster: Cannot get roster for personal chat"
