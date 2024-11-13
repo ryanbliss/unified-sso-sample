@@ -33,6 +33,7 @@ import { IAppJwtToken } from "@/server/utils/app-auth-utils";
 import { isIUserClientState } from "@/shared/models/user-client-state";
 import { TeamsAdapter } from "@/collab-sdk/teams-ai-server-extended/TeamsAdapter";
 import { ApplicationBuilder } from "@/collab-sdk/teams-ai-server-extended/ApplicationBuilder";
+import { IConversationContext } from "@/collab-sdk/teams-ai-server-extended/turn-context-extended";
 
 interface ConversationState {
   count: number;
@@ -143,11 +144,29 @@ export const botApp = new ApplicationBuilder<ApplicationTurnState>()
 // Listen for user to say '/reset' and then delete conversation state
 botApp.message(
   "/reset",
-  async (context: TurnContext, state: ApplicationTurnState) => {
+  async (context: IConversationContext, state: ApplicationTurnState) => {
     state.deleteConversationState();
     await context.sendActivity(
       `Ok I've deleted the current conversation state.`
     );
+  }
+);
+
+// Get roster
+botApp.message(
+  "/members",
+  async (context: IConversationContext, state: ApplicationTurnState) => {
+    const roster = await context.conversation.getMembers();
+    await context.sendActivity(JSON.stringify(roster, null, 4));
+  }
+);
+
+// Get rsc permissions
+botApp.message(
+  "/rsc",
+  async (context: IConversationContext, state: ApplicationTurnState) => {
+    const rsc = await context.conversation.getEnabledRscPermissions();
+    await context.sendActivity(JSON.stringify(rsc, null, 4));
   }
 );
 
@@ -162,7 +181,7 @@ setupBotDebugMessageHandlers();
 botApp.ai.action(
   "GetNotes",
   async (
-    context: TurnContext,
+    context: IConversationContext,
     state: ApplicationTurnState,
     paramaters: undefined
   ) => {
@@ -210,7 +229,7 @@ botApp.ai.action(
 botApp.ai.action(
   "CreateNote",
   async (
-    context: TurnContext,
+    context: IConversationContext,
     state: ApplicationTurnState,
     paramaters: {
       text: string;
@@ -263,7 +282,7 @@ botApp.ai.action(
 // Create a new note
 botApp.ai.action(
   "SuggestEdits",
-  async (context: TurnContext, state: ApplicationTurnState) => {
+  async (context: IConversationContext, state: ApplicationTurnState) => {
     console.log("bot-app.ai.SuggestEdits: action start");
     let jwtPayload: IAppJwtToken;
     try {
@@ -297,7 +316,7 @@ botApp.ai.action(
 botApp.adaptiveCards.actionExecute(
   "approve-suggestion",
   async (
-    context: TurnContext,
+    context: IConversationContext,
     state: ApplicationTurnState,
     data: Record<string, any>
   ) => {

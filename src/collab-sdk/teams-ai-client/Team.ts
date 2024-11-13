@@ -2,7 +2,7 @@ import * as teamsJs from "@microsoft/teams-js";
 import { Application } from "./Application";
 import { IGraphMember, isIGraphMemberDetailsResponse } from "../shared";
 import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
-import { IGetRosterOptions } from "./Conversation-types";
+import { IGetMembersOptions } from "./Conversation-types";
 
 export class Team {
   private application: Application;
@@ -71,11 +71,11 @@ export class Team {
 
   /**
    *
-   * @param options Optional. Request {@link IGetRosterOptions} options.
-   * @param options.requestType Optional. See {@link IGetRosterOptions.requestType} for more details.
+   * @param options Optional. Request {@link IGetMembersOptions} options.
+   * @param options.requestType Optional. See {@link IGetMembersOptions.requestType} for more details.
    * @returns roster of the team
    */
-  public async getRoster(options?: IGetRosterOptions): Promise<IGraphMember[]> {
+  public async getRoster(options?: IGetMembersOptions): Promise<IGraphMember[]> {
     let requestType: "server" | "client" | undefined = options?.requestType;
 
     if (requestType === "server" && !this._networkClient.configuration) {

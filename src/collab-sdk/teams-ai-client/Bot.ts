@@ -32,7 +32,7 @@ export class Bot {
     );
   }
 
-  public async getPagedRoster(continuationToken?: string): Promise<TeamsPagedMembersResult> {
+  public async getPagedMembers(continuationToken?: string): Promise<TeamsPagedMembersResult> {
     if (!this._networkClient.configuration) {
       throw new Error("Thread.getRoster: bot config not set");
     }

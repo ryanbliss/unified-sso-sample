@@ -18,7 +18,7 @@ export const GraphGetRosterExample: FC = () => {
           <Button
             onClick={async () => {
               try {
-                const response = await client.conversation.getRoster({
+                const response = await client.conversation.getMembers({
                   requestType: isClient ? "client" : "server",
                 });
                 setRes(JSON.stringify(response, null, 4));

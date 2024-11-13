@@ -7,6 +7,7 @@ import { User } from "./User";
 import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
 import { Client as GraphClient } from "@microsoft/microsoft-graph-client";
 import { IEntraConfiguration } from "./EntraAuthentication-types";
+import { IContinueConversation, TContinueConversation } from "../shared";
 
 export class Application {
   protected teamsJsContext: teamsJs.app.Context;
@@ -33,7 +34,12 @@ export class Application {
   ) {
     this.teamsJsContext = teamsJsContext;
     this._networkClient = new AppServerNetworkClient(this, serverConfig);
-    this.conversation = new Conversation(this, this._networkClient);
+    this.conversation = new Conversation(
+      this,
+      teamsJsContext,
+      this._networkClient
+    );
+    this._networkClient.conversation = this.conversation;
     this.authentication = new Authentication(
       teamsJsContext,
       entraConfiguration
@@ -50,5 +56,29 @@ export class Application {
         }
       },
     });
+  }
+
+  public async continueConversation(
+    conversationSelector: TContinueConversation,
+    logic: (conversation: Conversation) => Promise<void>
+  ): Promise<void> {
+    const { type, id, teamId } = conversationSelector as IContinueConversation;
+    if (type === "channel" && !teamId) {
+      throw new Error(
+        "Application.continueConversationAsync: teamId must be provided when continuing a channel conversation"
+      );
+    }
+    const newContext: teamsJs.app.Context = {
+      ...this.teamsJsContext,
+      chat: type === "chat" ? { id } : undefined,
+      // TODO: consider getting channel details via Graph to fill in other values, or adding new teamsJs API to help with this
+      channel: type === "channel" ? { id } : undefined,
+      // TODO: consider getting team details via Graph to fill in other values, or adding new teamsJs API to help with this
+      team: teamId ? { internalId: "", groupId: teamId } : undefined,
+    };
+    const newNetworkClient = new AppServerNetworkClient(this, this._networkClient.configuration);
+    const newConversation = new Conversation(this, newContext, this._networkClient);
+    newNetworkClient.conversation = newConversation;
+    await logic(newConversation);
   }
 }

@@ -3,6 +3,7 @@ import {
   IBotInteropRequestData,
   isIBotInteropRequestData,
 } from "../shared/request-types";
+import { Conversation } from "./Conversation";
 
 export interface IEmbedUser {
   aadObjectId: string;
@@ -15,7 +16,11 @@ export interface IEmbedContext extends IBotInteropRequestData {
   onEmbedFailure: (statusCode: StatusCodes, message: string) => void;
 }
 
-export interface IEmbedTurnContext extends TurnContext {
+export interface IConversationContext extends TurnContext {
+  conversation: Conversation;
+}
+
+export interface IEmbedTurnContext extends IConversationContext {
   embed: IEmbedContext;
 }
 

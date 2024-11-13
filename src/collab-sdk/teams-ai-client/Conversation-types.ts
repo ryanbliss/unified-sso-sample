@@ -1,5 +1,5 @@
 
-export interface IGetRosterOptions {
+export interface IGetMembersOptions {
     /**
      * Where to make the request.
      * @remarks

@@ -17,7 +17,7 @@ export const BotGetRosterExample: FC = () => {
           <Button
             onClick={async () => {
               try {
-                const response = await client.conversation.bot.getPagedRoster();
+                const response = await client.conversation.bot.getPagedMembers();
                 setRes(JSON.stringify(response, null, 4));
               } catch (error: unknown) {
                 setErr(error);

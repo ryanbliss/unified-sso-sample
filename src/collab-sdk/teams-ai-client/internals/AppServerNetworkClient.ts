@@ -4,20 +4,38 @@ import {
   isIBotInteropAuthHeader,
   isIBotInteropEntraAuth,
 } from "../client-bot-interop-types";
-import { Conversation } from "../Conversation";
 import { Application } from "../Application";
-import { TBotInteropRequestBase } from "@/collab-sdk/shared/request-types";
+import {
+  TBotInteropRequestBase,
+  TConversationType,
+} from "@/collab-sdk/shared/request-types";
+
+export interface IConversationMetadata {
+  id: string | undefined;
+  type: TConversationType;
+  team?: {
+    id: string;
+  };
+}
 
 export class AppServerNetworkClient {
   private application: Application;
+  private _conversation: IConversationMetadata | undefined;
   private _configuration?: IAppServerConfig;
   constructor(application: Application, config?: IAppServerConfig) {
     this.application = application;
     this._configuration = config;
   }
 
-  private get conversation(): Conversation {
-    return this.application.conversation;
+  public get conversation(): IConversationMetadata {
+    if (!this._conversation) {
+      throw new Error("Conversation not set");
+    }
+    return this._conversation;
+  }
+
+  public set conversation(conversation: IConversationMetadata) {
+    this._conversation = conversation;
   }
 
   public get configuration(): IAppServerConfig | undefined {

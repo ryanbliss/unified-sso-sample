@@ -6,28 +6,26 @@ import {
   isIGraphMemberDetailsResponse,
   isTPermissionsList,
   TPermissionList,
-  TThreadType,
+  TConversationType,
 } from "../shared";
 import { AppServerNetworkClient } from "./internals/AppServerNetworkClient";
-import { IGetRosterOptions } from "./Conversation-types";
+import { IGetMembersOptions } from "./Conversation-types";
 import { Team } from "./Team";
 
 export class Conversation {
   private application: Application;
+  private context: teamsJs.app.Context;
   public readonly bot: Bot;
   public readonly team: Team | undefined;
   private _networkClient: AppServerNetworkClient;
-  constructor(application: Application, networkClient: AppServerNetworkClient) {
+  constructor(application: Application, teamsJsContext: teamsJs.app.Context, networkClient: AppServerNetworkClient) {
     this.application = application;
+    this.context = teamsJsContext;
     this._networkClient = networkClient;
     this.bot = new Bot(this._networkClient);
     if (this.context.team) {
       this.team = new Team(this.application, this._networkClient);
     }
-  }
-  private get context(): teamsJs.app.Context {
-    // @ts-expect-error using protected property intentionally
-    return this.application.teamsJsContext;
   }
   public get id(): string | undefined {
     const knownThreadId = this.context.chat?.id ?? this.context.channel?.id;
@@ -45,7 +43,7 @@ export class Conversation {
     return knownThreadId;
   }
   // TODO: replace return type with something more strongly typed
-  public get type(): TThreadType {
+  public get type(): TConversationType {
     if (this.context.chat?.id) {
       return "chat";
     }
@@ -59,25 +57,25 @@ export class Conversation {
    * Indicates whether the conversation contains more than two participants at the time the
    * activity was generated.
    */
-  public isGroup(): boolean {
+  public get isGroup(): boolean {
     throw new Error("Not implemented");
   }
   /**
    * This conversation's tenant ID
    */
-  public tenantId(): boolean {
+  public get tenantId(): string {
     throw new Error("Not implemented, teams-js only exposes user tenantId");
   }
   /**
    * Display friendly name
    */
-  public name(): string {
+  public get name(): string {
     throw new Error("Not implemented");
   }
   /**
    * This account's object ID within Azure Active Directory (AAD)
    */
-  public aadObjectId(): string | undefined {
+  public get aadObjectId(): string | undefined {
     throw new Error(
       "Not implemented, teams-js only exposes local user tenantId"
     );
@@ -85,11 +83,11 @@ export class Conversation {
 
   /**
    *
-   * @param options Optional. Request {@link IGetRosterOptions} options.
-   * @param options.requestType Optional. See {@link IGetRosterOptions.requestType} for more details.
-   * @returns
+   * @param options Optional. Request {@link IGetMembersOptions} options.
+   * @param options.requestType Optional. See {@link IGetMembersOptions.requestType} for more details.
+   * @returns roster of the conversation
    */
-  public async getRoster(options?: IGetRosterOptions): Promise<IGraphMember[]> {
+  public async getMembers(options?: IGetMembersOptions): Promise<IGraphMember[]> {
     if (this.type === "personal") {
       throw new Error(
         "Conversation.getRoster: Cannot get roster for personal chat"

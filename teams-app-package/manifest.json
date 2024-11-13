@@ -1,12 +1,12 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "manifestVersion": "1.16",
-  "id": "82ba2551-3f4a-4bd0-83d4-9dd9b1900202",
+  "id": "82ba2551-3f4a-4bd0-83d4-9dd9b1900203",
   "packageName": "ryanbliss.unify.app",
   "name": {
-    "short": "Unify",
-    "full": "Echo Bot"
+    "short": "Notes AI",
+    "full": "Notes AI"
   },
   "developer": {
     "name": "Microsoft",
