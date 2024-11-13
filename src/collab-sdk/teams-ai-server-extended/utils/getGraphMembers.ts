@@ -58,15 +58,23 @@ export async function getGraphMember(
   conversationType: string,
   conversationId: string,
   userAadObjectId: string,
-  teamId?: string,
+  teamId?: string
 ): Promise<IGraphMember | null> {
-  const filter = `userId eq '${userAadObjectId}'`;
-  const response = await getGraphMembers(token, conversationType, conversationId, teamId, filter);
+  const filter = `(microsoft.graph.aadUserConversationMember/userId eq '${userAadObjectId}')`;
+  const response = await getGraphMembers(
+    token,
+    conversationType,
+    conversationId,
+    teamId,
+    filter
+  );
   if (response["@odata.count"] === 0) {
     return null;
   }
   if (response["@odata.count"] > 1) {
-    throw new Error("Unexpected Error: more than one member found for the given aadObjectId");
+    throw new Error(
+      "Unexpected Error: more than one member found for the given aadObjectId"
+    );
   }
   return response.value[0];
 }
