@@ -5,7 +5,7 @@ import { FlexColumn, FlexRow } from "../../flex";
 import CodeBlock from "../../code-block/CodeBlock";
 import { useError } from "@/client/hooks/useError";
 
-export const GraphGetRosterExample: FC = () => {
+export const GraphGetMembersExample: FC = () => {
   const [res, setRes] = useState<string>();
   const [err, setErr] = useError();
   const [isClient, setIsClient] = useState<boolean>(false);
