@@ -1,6 +1,11 @@
 import { ApplicationOptions, TurnState } from "@microsoft/teams-ai";
-import { TurnContext } from "botbuilder";
+import { ConfigurationServiceClientCredentialFactory, TeamsInfo, TurnContext } from "botbuilder";
 import { EmbedStorage } from "./EmbedStorage";
+import { IEmbedTurnContext } from "./turn-context-extended";
+import { IGraphMemberDetailsResponse, IPermission, isIBotInteropActionRequestData, isIBotInteropGetGraphRosterData, isIBotInteropGetInstalledRscPermissionsData, isIBotInteropGetRosterRequestData, isIBotInteropGetValuesRequestData, isIBotInteropSetValueRequestData } from "../shared";
+import { getRscPermissions } from "./utils/getRscPermissions";
+import { getGraphMembers } from "./utils/getGraphMembers";
+import { getAppAccessToken } from "./utils/getAppAccessToken";
 
 export class Embed<TState extends TurnState = TurnState> {
   private _options: ApplicationOptions<TState>;
@@ -15,6 +20,22 @@ export class Embed<TState extends TurnState = TurnState> {
     string,
     (context: TurnContext, state: TState, data: any) => Promise<any>
   > = new Map();
+
+  private get _credentialsFactory(): ConfigurationServiceClientCredentialFactory {
+    const credentialsFactory = this._options.adapter?.credentialsFactory;
+    if (
+      !credentialsFactory ||
+      !(
+        credentialsFactory instanceof
+        ConfigurationServiceClientCredentialFactory
+      )
+    ) {
+      throw new Error(
+        "Credentials factory is not of type ConfigurationServiceClientCredentialFactory"
+      );
+    }
+    return credentialsFactory;
+  }
 
   /**
    * Registers an embed action handler.
@@ -48,5 +69,145 @@ export class Embed<TState extends TurnState = TurnState> {
     const state = turnStateFactory();
     await state.load(context, storage);
     return await handler(context, state, data);
+  }
+
+  /**
+   * @hidden
+   */
+  public async run(turnContext: IEmbedTurnContext): Promise<boolean> {
+    // First, check to see if user is actually a member of this conversation
+    try {
+      await TeamsInfo.getMember(turnContext, turnContext.embed.user.aadObjectId);
+    } catch (err) {
+      // TODO: check error codes, not all errors are likely to be "Unauthorized"
+      console.error(err);
+      turnContext.embed.onEmbedFailure(401, "Unauthorized");
+      return false;
+    }
+    if (isIBotInteropActionRequestData(turnContext.embed)) {
+      try {
+        const response = await this.processAction(
+          turnContext.embed.action.type,
+          turnContext,
+          turnContext.embed.action.customData
+        );
+        turnContext.embed.onEmbedSuccess(response);
+      } catch (err) {
+        console.error(err);
+        turnContext.embed.onEmbedFailure(
+          500,
+          "Unable to process the action. Check server logs for more details."
+        );
+      }
+    } else if (isIBotInteropGetValuesRequestData(turnContext.embed)) {
+      try {
+        const response = await this.storage.processGetValues(turnContext);
+        turnContext.embed.onEmbedSuccess(response);
+      } catch (err) {
+        console.error(err);
+        turnContext.embed.onEmbedFailure(
+          500,
+          "Unable to get the values. Check server logs for more details."
+        );
+      }
+    } else if (isIBotInteropSetValueRequestData(turnContext.embed)) {
+      try {
+        await this.storage.processSetValue(
+          turnContext,
+          turnContext.embed.scope,
+          turnContext.embed.key,
+          turnContext.embed.value
+        );
+        turnContext.embed.onEmbedSuccess({ result: "success" });
+      } catch (err) {
+        console.error(err);
+        turnContext.embed.onEmbedFailure(
+          500,
+          "Unable to set the value. Check server logs for more details."
+        );
+      }
+    } else if (isIBotInteropGetRosterRequestData(turnContext.embed)) {
+      try {
+        const pagedMembers = await TeamsInfo.getPagedMembers(
+          turnContext,
+          100,
+          turnContext.embed.continuationToken
+        );
+        turnContext.embed.onEmbedSuccess(pagedMembers);
+      } catch (err) {
+        console.error(err);
+        turnContext.embed.onEmbedFailure(
+          500,
+          "Unable to set the value. Check server logs for more details."
+        );
+      }
+    } else if (isIBotInteropGetInstalledRscPermissionsData(turnContext.embed)) {
+      try {
+        const permissions = await this.getRscPermissions(turnContext);
+        turnContext.embed.onEmbedSuccess(permissions);
+      } catch (err) {
+        console.error(err);
+        const message = (err as any)?.message;
+        turnContext.embed.onEmbedFailure(
+          500,
+          message ?? "Unknown error, check server logs for more details"
+        );
+      }
+    } else if (isIBotInteropGetGraphRosterData(turnContext.embed)) {
+      try {
+        const roster = await this.getGraphRoster(turnContext);
+        turnContext.embed.onEmbedSuccess(roster);
+      } catch (err) {
+        console.error(err);
+        const message = (err as any)?.message;
+        turnContext.embed.onEmbedFailure(
+          500,
+          message ?? "Unknown error, check server logs for more details"
+        );
+      }
+    } else {
+      turnContext.embed.onEmbedFailure(500, "Invalid request type");
+    }
+    return true;
+  }
+
+  private async getRscPermissions(
+    context: IEmbedTurnContext
+  ): Promise<IPermission[]> {
+    if (context.embed.threadType === "personal") {
+      throw new Error("Personal scope is not supported for this operation");
+    }
+    const token = await this.getAppAccessToken(context);
+    return getRscPermissions(
+      token,
+      context.embed.threadType,
+      context.embed.threadType === "chat"
+        ? context.embed.threadId
+        : context.embed.teamId!,
+      this._credentialsFactory.appId!
+    );
+  }
+
+  private async getGraphRoster(
+    context: IEmbedTurnContext
+  ): Promise<IGraphMemberDetailsResponse> {
+    if (context.embed.threadType === "personal") {
+      throw new Error("Personal scope is not supported for this operation");
+    }
+    const token = await this.getAppAccessToken(context);
+    if (!context.embed.subtype) {
+      throw new Error("`subtype` is required to get roster");
+    }
+    return await getGraphMembers(token, context.embed.subtype, context.embed.threadId, context.embed.teamId);
+  }
+
+  private async getAppAccessToken(context: IEmbedTurnContext): Promise<string> {
+    const credentialsFactory = this._credentialsFactory;
+
+    return await getAppAccessToken(
+      context.embed.user.tenantId,
+      credentialsFactory.appId!,
+      credentialsFactory.password!
+    );
   }
 }
