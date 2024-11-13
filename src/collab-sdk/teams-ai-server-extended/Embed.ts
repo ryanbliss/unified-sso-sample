@@ -5,9 +5,8 @@ import {
   TurnContext,
 } from "botbuilder";
 import { EmbedStorage } from "./EmbedStorage";
-import { IEmbedTurnContext } from "./turn-context-extended";
+import { IConversationContext, IEmbedTurnContext } from "./turn-context-extended";
 import {
-  IGraphMemberDetailsResponse,
   IPermission,
   isIBotInteropActionRequestData,
   isIGetGraphMembersData,
@@ -32,7 +31,7 @@ export class Embed<TState extends TurnState = TurnState> {
 
   private handlers: Map<
     string,
-    (context: TurnContext, state: TState, data: any) => Promise<any>
+    (context: IConversationContext, state: TState, data: any) => Promise<any>
   > = new Map();
 
   private get _credentialsFactory(): ConfigurationServiceClientCredentialFactory {
@@ -63,7 +62,7 @@ export class Embed<TState extends TurnState = TurnState> {
   public action<TActionPayload = any, TResponseType = any>(
     type: string,
     handler: (
-      context: TurnContext,
+      context: IConversationContext,
       state: TState,
       data: TActionPayload
     ) => Promise<TResponseType>
@@ -74,7 +73,7 @@ export class Embed<TState extends TurnState = TurnState> {
   /**
    * @hidden
    */
-  async processAction(type: string, context: TurnContext, data: any) {
+  private async processAction(type: string, context: IConversationContext, data: any) {
     const handler = this.handlers.get(type);
     if (!handler) {
       throw new Error(`No handler for action type "${type}"`);

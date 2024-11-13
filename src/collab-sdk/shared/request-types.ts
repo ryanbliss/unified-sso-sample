@@ -2,7 +2,6 @@ export type TConversationType = "chat" | "channel" | "personal";
 
 export interface IBotInteropRequestData {
   type: string;
-  subtype?: string | undefined;
   threadId: string;
   threadType: TConversationType;
   teamId: string | undefined;

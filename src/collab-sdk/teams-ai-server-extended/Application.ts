@@ -40,6 +40,7 @@ import { Meetings } from "./Meetings";
 import { MessageExtensions } from "./MessageExtensions";
 import { TaskModules } from "./TaskModules";
 import { Conversation } from "./Conversation";
+import { User } from "./User";
 
 /**
  * Function for handling an incoming request.
@@ -181,11 +182,13 @@ export class Application<TState extends TurnState = TurnState> {
       this,
       turnContext
     );
+    (turnContext as any).user = new User(turnContext);
     if (isEmbedTurnContext(turnContext)) {
       return await this.embed.run(turnContext);
     }
     return await this.startLongRunningCall(turnContext, async (bContext) => {
       (bContext as any).conversation = new Conversation<TState>(this, bContext);
+      (bContext as any).user = new User(bContext);
       const context = bContext as IConversationContext;
       // Start typing indicator timer
       this.startTypingTimer(context);
@@ -1161,6 +1164,7 @@ export class Application<TState extends TurnState = TurnState> {
         const state = turnStateFactory();
         await state.load(context, storage);
         (context as any).conversation = new Conversation(this, context);
+        (context as any).user = new User(context);
         await logic(context as IConversationContext, state);
       }
     );

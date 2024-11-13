@@ -4,6 +4,7 @@ import {
   isIBotInteropRequestData,
 } from "../shared/request-types";
 import { Conversation } from "./Conversation";
+import { User } from "./User";
 
 export interface IEmbedUser {
   aadObjectId: string;
@@ -18,6 +19,7 @@ export interface IEmbedContext extends IBotInteropRequestData {
 
 export interface IConversationContext extends TurnContext {
   conversation: Conversation;
+  user: User;
 }
 
 export interface IEmbedTurnContext extends IConversationContext {

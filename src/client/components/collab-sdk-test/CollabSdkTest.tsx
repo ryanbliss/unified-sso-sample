@@ -8,6 +8,7 @@ import { BotGetRosterExample } from "./internal/BotGetRosterExample";
 import { GraphGetInstalledRscPermissionsExample } from "./internal/GraphInstalledRscPermissionsExample";
 import { GraphGetMembersExample } from "./internal/GraphGetMembersExample";
 import { GraphGetMemberExample } from "./internal/GraphGetMemberExample";
+import { BotNotificationExample } from "./internal/BotNotificationExample";
 
 export const CollabSdkTest: FC = () => {
   return (
@@ -21,6 +22,7 @@ export const CollabSdkTest: FC = () => {
         <GraphGetMembersExample />
         <GraphGetMemberExample />
         <GraphGetInstalledRscPermissionsExample />
+        <BotNotificationExample />
       </FlexColumn>
     </>
   );

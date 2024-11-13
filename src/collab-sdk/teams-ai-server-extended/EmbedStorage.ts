@@ -10,6 +10,7 @@ import {
   TBotStorageScopeType,
 } from "../shared";
 import { EmbedStorageScope } from "./EmbedStorageScope";
+import { IConversationContext } from "./turn-context-extended";
 
 export class EmbedStorage<TState extends TurnState = TurnState> {
   private _options: ApplicationOptions<TState>;
@@ -24,7 +25,7 @@ export class EmbedStorage<TState extends TurnState = TurnState> {
    * @hidden
    */
   async processSetValue(
-    context: TurnContext,
+    context: IConversationContext,
     scope: TBotStorageScopeType,
     key: string,
     value: any
@@ -67,7 +68,7 @@ export class EmbedStorage<TState extends TurnState = TurnState> {
    * @hidden
    */
   async processGetValues(
-    context: TurnContext
+    context: IConversationContext
   ): Promise<IBotInteropGetValuesRequestResponseData> {
     const { storage } = this._options;
     const state = new EmbedTurnState();

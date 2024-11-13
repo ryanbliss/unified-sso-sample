@@ -1,11 +1,12 @@
 import { TurnState } from "@microsoft/teams-ai";
 import { TurnContext } from "botbuilder";
+import { IConversationContext } from "./turn-context-extended";
 
 export class EmbedStorageScope<TState extends TurnState = TurnState> {
   private didSetHandlers: Map<
     string,
     (
-      context: TurnContext,
+      context: IConversationContext,
       state: TState,
       value: any,
       previousValue: any
@@ -25,7 +26,7 @@ export class EmbedStorageScope<TState extends TurnState = TurnState> {
   public didSet<TValue = any>(
     key: string,
     handler: (
-      context: TurnContext,
+      context: IConversationContext,
       state: TState,
       value: TValue,
       previousValue: TValue
@@ -38,7 +39,7 @@ export class EmbedStorageScope<TState extends TurnState = TurnState> {
    * @hidden
    */
   async processDidSet(
-    context: TurnContext,
+    context: IConversationContext,
     state: TState,
     key: string,
     value: any,

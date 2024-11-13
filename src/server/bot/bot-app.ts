@@ -170,6 +170,22 @@ botApp.message(
   }
 );
 
+// Notify me
+botApp.message(
+  "/notify",
+  async (context: IConversationContext, state: ApplicationTurnState) => {
+    await context.user.sendNotification(
+      "Consider yourself notified",
+      "You've got mail...",
+      {
+        source: "text",
+        value: "Website",
+        webUrl: "https://www.microsoft.com",
+      }
+    );
+  }
+);
+
 // Some additional bot message handlers for commands that can be helpful during debugging
 setupBotDebugMessageHandlers();
 
@@ -464,6 +480,20 @@ botApp.embed.action("some-action", async (context, state, data) => {
   return {
     foo: "bar",
   };
+});
+
+botApp.embed.action<string>("notify", async (context, state, data) => {
+  // Notify me
+  await context.user.sendNotification(
+    "Consider yourself notified...initiated via a tab!",
+    "You've got mail...",
+    {
+      source: "text",
+      value: "Website",
+      webUrl: data,
+    }
+  );
+  return "success!";
 });
 
 botApp.embed.storage.user.didSet(
