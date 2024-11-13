@@ -279,6 +279,27 @@ botApp.ai.action(
   }
 );
 
+// Get member by UUID
+botApp.ai.action(
+  "GetMember",
+  async (
+    context: IConversationContext,
+    state: ApplicationTurnState,
+    paramaters: {
+      id: string;
+    }
+  ) => {
+    try {
+      const member = await context.conversation.getMember(paramaters.id);
+      await context.sendActivity(JSON.stringify(member, null, 4));
+    } catch (err) {
+      console.error(`bot-app.ai.GetMember: error ${err}`);
+      return "Error getting member";
+    }
+    return "Here you go! What else can I help you with?";
+  }
+);
+
 // Create a new note
 botApp.ai.action(
   "SuggestEdits",

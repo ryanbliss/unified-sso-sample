@@ -8,7 +8,7 @@ import { TeamsAdapter, TurnState } from "@microsoft/teams-ai";
 import { IGraphMember, IPermission, TConversationType } from "../shared";
 import { getRscPermissions } from "./utils/getRscPermissions";
 import { getAppAccessToken } from "./utils/getAppAccessToken";
-import { getGraphRoster } from "./utils/getGraphRoster";
+import { getGraphMember, getGraphMembers } from "./utils/getGraphMembers";
 
 export class Conversation<TState extends TurnState = TurnState> {
   private application: Application<TState>;
@@ -133,7 +133,7 @@ export class Conversation<TState extends TurnState = TurnState> {
     }
     const threadType = this.type;
     const token = await this.getAppAccessToken();
-    const response = await getGraphRoster(
+    const response = await getGraphMembers(
       token,
       // TODO: replace "team" with "channel" when Teams supports channel RSC
       threadType === "chat" ? "chat" : "team",
@@ -141,6 +141,31 @@ export class Conversation<TState extends TurnState = TurnState> {
       threadType === "chat" ? undefined : await this.getGroupId()
     );
     return response.value;
+  }
+
+  /**
+   * Get member details of a user in a conversation using Graph.
+   *
+   * @param userId user's aadObjectId
+   * @returns user's graph member details
+   */
+  public async getMember(userId: string): Promise<IGraphMember | null> {
+    if (this.context.activity.conversation.conversationType === "personal") {
+      throw new Error(
+        "Conversation.getRoster: Cannot get roster for personal chat"
+      );
+    }
+    const threadType = this.type;
+    const token = await this.getAppAccessToken();
+    const response = await getGraphMember(
+      token,
+      // TODO: replace "team" with "channel" when Teams supports channel RSC
+      threadType === "chat" ? "chat" : "team",
+      this.id,
+      userId,
+      threadType === "chat" ? undefined : await this.getGroupId()
+    );
+    return response;
   }
 
   private async getGroupId(): Promise<string> {

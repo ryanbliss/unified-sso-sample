@@ -57,7 +57,7 @@ import { TaskModules } from "./TaskModules";
 import { Conversation } from "./Conversation";
 import { getAppAccessToken } from "./utils/getAppAccessToken";
 import { getRscPermissions } from "./utils/getRscPermissions";
-import { getGraphRoster } from "./utils/getGraphRoster";
+import { getGraphMembers } from "./utils/getGraphMembers";
 
 /**
  * Function for handling an incoming request.
@@ -1275,7 +1275,7 @@ export class Application<TState extends TurnState = TurnState> {
     if (!context.embed.subtype) {
       throw new Error("`subtype` is required to get roster");
     }
-    return await getGraphRoster(token, context.embed.subtype, context.embed.threadId, context.embed.teamId);
+    return await getGraphMembers(token, context.embed.subtype, context.embed.threadId, context.embed.teamId);
   }
 
   private async getAppAccessToken(context: IEmbedTurnContext): Promise<string> {
