@@ -62,7 +62,7 @@ export class OpenPersonalAppTopic extends NotificationTopicFactory<IOpenPersonal
       JSON.stringify({ subEntityId: this.config.data })
     );
     const webUrl =
-      `https://teams.microsoft.com/l/entity/${this.dependencies.appId}/${this.config.entityId}?webUrl=` +
+      `https://teams.microsoft.com/l/entity/${app.teamsAppDefinition.teamsAppId}/${this.config.entityId}?webUrl=` +
       encodedWebUrl +
       "&context=" +
       encodedContext;
