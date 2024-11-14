@@ -78,6 +78,7 @@ export async function getTeamsAppInstallation(
   if (!IAppInstallationResponse(json)) {
     throw new Error("Invalid response from Graph API");
   }
+  console.log("getTeamsAppInstallation: response:", JSON.stringify(json.value, null, 4));
   const appInstallation = json.value.find(
     (app) => app.teamsAppDefinition.azureADAppId === appId
   );

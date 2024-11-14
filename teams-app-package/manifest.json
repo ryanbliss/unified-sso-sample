@@ -62,6 +62,10 @@
       "orgWide": [],
       "resourceSpecific": [
         {
+          "name": "TeamsAppInstallation.Read.User",
+          "type": "Application"
+        },
+        {
           "name": "TeamsAppInstallation.Read.Chat",
           "type": "Application"
         },
