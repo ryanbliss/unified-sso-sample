@@ -40,25 +40,31 @@ export async function sendUserActivityFeedNotification(
         source: "entityUrl",
         value: `https://graph.microsoft.com/v1.0/users/${userId}/teamwork/installedApps/${app.id}`,
       };
+    } else {
+      throw new Error("Invalid topic type");
     }
-  } else {
+  } else if (typeof topic === "object") {
     topicData = topic;
+  } else {
+    throw new Error("Invalid topic type");
   }
   const endpoint = `https://graph.microsoft.com/v1.0/users/${userId}/teamwork/sendActivityNotification`;
+  const body = {
+    activityType,
+    previewText: {
+      content: previewText,
+    },
+    topic: topicData,
+    templateParameters,
+  };
+  console.log("Sending activity feed notification to user", userId, "with body", body);
   const graphRequestParams = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: "bearer " + token,
     },
-    body: JSON.stringify({
-      activityType,
-      previewText: {
-        content: previewText,
-      },
-      topic,
-      templateParameters,
-    }),
+    body: JSON.stringify(body),
   };
 
   const response = await fetch(endpoint, graphRequestParams);
