@@ -1,3 +1,4 @@
+import { NotificationTopicFactory, OpenPersonalAppTopic } from "../NotificationTopics";
 import { getTeamsAppInstallation } from "./app-installations";
 
 export interface IActivityFeedTemplateParameter {
@@ -19,35 +20,19 @@ export interface IActivityFeedEntityTopic {
 export type TActivityFeedTopicData = IActivityFeedUrlTopic
 | IActivityFeedEntityTopic;
 
-export type TActivityFeedTopic =
-  "app-deep-link"
-  | TActivityFeedTopicData;
-
 export async function sendUserActivityFeedNotification(
   token: string,
   userId: string,
   activityType: string,
   previewText: string,
   templateParameters: IActivityFeedTemplateParameter[],
-  topic: TActivityFeedTopic,
+  topicFactory: NotificationTopicFactory<any>,
   appId: string,
 ): Promise<void> {
-  let topicData: TActivityFeedTopicData;
-  if (typeof topic === "string") {
-    if (topic === "app-deep-link") {
-      const app = await getTeamsAppInstallation(token, "personal", userId, appId);
-      topicData = {
-        source: "entityUrl",
-        value: `https://graph.microsoft.com/v1.0/users/${userId}/teamwork/installedApps/${app.id}`,
-      };
-    } else {
-      throw new Error("Invalid topic type");
-    }
-  } else if (typeof topic === "object") {
-    topicData = topic;
-  } else {
-    throw new Error("Invalid topic type");
+  if (topicFactory instanceof OpenPersonalAppTopic) {
+    topicFactory.setDependencies({ token, userId, appId });
   }
+  let topicData: TActivityFeedTopicData = await topicFactory.toTopic();
   const endpoint = `https://graph.microsoft.com/v1.0/users/${userId}/teamwork/sendActivityNotification`;
   const body = {
     activityType,

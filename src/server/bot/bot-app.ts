@@ -34,6 +34,7 @@ import { isIUserClientState } from "@/shared/models/user-client-state";
 import { TeamsAdapter } from "@/collab-sdk/teams-ai-server-extended/TeamsAdapter";
 import { ApplicationBuilder } from "@/collab-sdk/teams-ai-server-extended/ApplicationBuilder";
 import { IConversationContext } from "@/collab-sdk/teams-ai-server-extended/turn-context-extended";
+import { NotificationTopics } from "@/collab-sdk/teams-ai-server-extended/NotificationTopics";
 
 interface ConversationState {
   count: number;
@@ -177,8 +178,17 @@ botApp.message(
     await context.user.sendNotification(
       "Consider yourself notified",
       "You've got mail...",
-      "app-deep-link"
+      NotificationTopics.OpenPersonalApp({
+        // Dashboard entityId in staticTabs in appDefinition
+        entityId: "5c74502b-ff48-455e-a57b-20c9d458b323",
+        fallbackWebUrl: "https://unified-sso-sample.vercel.app",
+        label: "Notes AI Content",
+        data: {
+          source: "bot message",
+        },
+      })
     );
+    await context.sendActivity("I've notified you! Check your activity feed.");
   }
 );
 
@@ -483,7 +493,15 @@ botApp.embed.action<string>("notify", async (context, state, data) => {
   await context.user.sendNotification(
     "Consider yourself notified...initiated via a tab!",
     "You've got mail...",
-    "app-deep-link"
+    NotificationTopics.OpenPersonalApp({
+      // Dashboard entityId in staticTabs in appDefinition
+      entityId: "5c74502b-ff48-455e-a57b-20c9d458b323",
+      fallbackWebUrl: "https://unified-sso-sample.vercel.app",
+      label: "Notes AI Content",
+      data: {
+        source: "embed action",
+      },
+    })
   );
   return "success!";
 });

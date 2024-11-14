@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "manifestVersion": "1.16",
   "id": "82ba2551-3f4a-4bd0-83d4-9dd9b1900203",
   "packageName": "ryanbliss.unify.app",
@@ -26,10 +26,6 @@
   "accentColor": "#FFFFFF",
   "staticTabs": [
     {
-      "entityId": "conversations",
-      "scopes": ["personal"]
-    },
-    {
       "entityId": "5c74502b-ff48-455e-a57b-20c9d458b323",
       "name": "Dashboard",
       "contentUrl": "https://unified-sso-sample.vercel.app",
@@ -41,6 +37,10 @@
         "channelTab",
         "meetingSidePanel"
       ]
+    },
+    {
+      "entityId": "conversations",
+      "scopes": ["personal"]
     },
     {
       "entityId": "about",
@@ -84,6 +84,14 @@
         {
           "name": "TeamsActivity.Send.User",
           "type": "Application"
+        },
+        {
+          "type": "Application",
+          "name": "TeamsActivity.Send.Group"
+        },
+        {
+          "type": "Application",
+          "name": "TeamsActivity.Send.Chat"
         }
       ]
     }

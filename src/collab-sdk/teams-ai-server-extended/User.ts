@@ -6,10 +6,10 @@ import { isEmbedTurnContext } from "./turn-context-extended";
 import { getAppAccessToken } from "./utils/getAppAccessToken";
 import { TeamsAdapter } from "@microsoft/teams-ai";
 import {
-    IActivityFeedTemplateParameter,
+  IActivityFeedTemplateParameter,
   sendUserActivityFeedNotification,
-  TActivityFeedTopic,
 } from "./utils/activity-notifications";
+import { NotificationTopicFactory } from "./NotificationTopics";
 
 export class User {
   private context: TurnContext;
@@ -68,18 +68,18 @@ export class User {
   public async sendNotification(
     notificationText: string,
     previewText: string,
-    topic: TActivityFeedTopic
+    topic: NotificationTopicFactory<any>
   ): Promise<void> {
     return await this.sendTemplatedNotification(
-        "systemDefault",
-        [
-          {
-            name: "systemDefaultText",
-            value: notificationText,
-          },
-        ],
-        previewText,
-        topic,
+      "systemDefault",
+      [
+        {
+          name: "systemDefaultText",
+          value: notificationText,
+        },
+      ],
+      previewText,
+      topic
     );
   }
 
@@ -87,7 +87,7 @@ export class User {
     type: string,
     templateParameters: IActivityFeedTemplateParameter[],
     previewText: string,
-    topic: TActivityFeedTopic
+    topic: NotificationTopicFactory<any>
   ): Promise<void> {
     const token = await this.getAppAccessToken();
     const credentialsFactory = this._credentialsFactory;
