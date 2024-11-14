@@ -75,3 +75,46 @@ export function isIGraphMemberDetailsResponse(
     value.value.every(isIGraphMember)
   );
 }
+
+export interface ITeamsAppDefinition {
+  id: string;
+  teamsAppId: string;
+  azureADAppId: string;
+  displayName: string;
+  version: string;
+  // TODO: type safety
+  requiredResourceSpecificApplicationPermissions: any[];
+  publishingState: string;
+  shortdescription: string;
+  description: string;
+  lastModifiedDateTime: string | null;
+  createdBy: string | null;
+}
+
+export interface IAppInstallation {
+  id: string;
+  teamsAppDefinition: ITeamsAppDefinition;
+}
+
+export function isIAppInstallation(value: any): value is IAppInstallation {
+  return (
+    typeof value === "object" &&
+    typeof value.id === "string" &&
+    typeof value.teamsAppDefinition === "object"
+  );
+}
+
+export interface IAppInstallationResponse {
+  "@odata.context": string;
+  value: IAppInstallation[];
+}
+export function IAppInstallationResponse(
+  value: any
+): value is IAppInstallationResponse {
+  return (
+    typeof value === "object" &&
+    typeof value["@odata.context"] === "string" &&
+    Array.isArray(value.value) &&
+    value.value.every(isIAppInstallation)
+  );
+}

@@ -6,7 +6,7 @@ import {
 import { Application } from "./Application";
 import { TeamsAdapter, TurnState } from "@microsoft/teams-ai";
 import { IGraphMember, IPermission, TConversationType } from "../shared";
-import { getRscPermissions } from "./utils/getRscPermissions";
+import { getRscPermissions } from "./utils/app-installations";
 import { getAppAccessToken } from "./utils/getAppAccessToken";
 import { getGraphMember, getGraphMembers } from "./utils/getGraphMembers";
 

@@ -16,7 +16,7 @@ import {
   isIBotInteropSetValueRequestData,
   isIGetGraphMemberData,
 } from "../shared";
-import { getRscPermissions } from "./utils/getRscPermissions";
+import { getRscPermissions } from "./utils/app-installations";
 import { getGraphMember, getGraphMembers } from "./utils/getGraphMembers";
 import { getAppAccessToken } from "./utils/getAppAccessToken";
 

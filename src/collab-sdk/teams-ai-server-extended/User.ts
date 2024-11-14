@@ -90,13 +90,15 @@ export class User {
     topic: TActivityFeedTopic
   ): Promise<void> {
     const token = await this.getAppAccessToken();
+    const credentialsFactory = this._credentialsFactory;
     await sendUserActivityFeedNotification(
       token,
       this.id,
       type,
       previewText,
       templateParameters,
-      topic
+      topic,
+      credentialsFactory.appId!
     );
   }
 

@@ -1,3 +1,4 @@
+import { getTeamsAppInstallation } from "./app-installations";
 
 export interface IActivityFeedTemplateParameter {
   name: string;
@@ -15,9 +16,12 @@ export interface IActivityFeedEntityTopic {
   value: string;
 }
 
+export type TActivityFeedTopicData = IActivityFeedUrlTopic
+| IActivityFeedEntityTopic;
+
 export type TActivityFeedTopic =
-  | IActivityFeedUrlTopic
-  | IActivityFeedEntityTopic;
+  "app-deep-link"
+  | TActivityFeedTopicData;
 
 export async function sendUserActivityFeedNotification(
   token: string,
@@ -25,8 +29,21 @@ export async function sendUserActivityFeedNotification(
   activityType: string,
   previewText: string,
   templateParameters: IActivityFeedTemplateParameter[],
-  topic: TActivityFeedTopic
+  topic: TActivityFeedTopic,
+  appId: string,
 ): Promise<void> {
+  let topicData: TActivityFeedTopicData;
+  if (typeof topic === "string") {
+    if (topic === "app-deep-link") {
+      const app = await getTeamsAppInstallation(token, "personal", userId, appId);
+      topicData = {
+        source: "entityUrl",
+        value: `https://graph.microsoft.com/v1.0/users/${userId}/teamwork/installedApps/${app.id}`,
+      };
+    }
+  } else {
+    topicData = topic;
+  }
   const endpoint = `https://graph.microsoft.com/v1.0/users/${userId}/teamwork/sendActivityNotification`;
   const graphRequestParams = {
     method: "POST",

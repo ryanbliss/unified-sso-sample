@@ -177,11 +177,7 @@ botApp.message(
     await context.user.sendNotification(
       "Consider yourself notified",
       "You've got mail...",
-      {
-        source: "text",
-        value: "Website",
-        webUrl: "https://www.microsoft.com",
-      }
+      "app-deep-link"
     );
   }
 );
@@ -487,11 +483,7 @@ botApp.embed.action<string>("notify", async (context, state, data) => {
   await context.user.sendNotification(
     "Consider yourself notified...initiated via a tab!",
     "You've got mail...",
-    {
-      source: "text",
-      value: "Website",
-      webUrl: data,
-    }
+    "app-deep-link"
   );
   return "success!";
 });
