@@ -1,4 +1,4 @@
-import { NotificationTopicFactory, OpenPersonalAppTopic } from "../NotificationTopics";
+import { NotificationTopicFactory, OpenPersonalAppTopicFactory } from "../NotificationTopics";
 import { getTeamsAppInstallation } from "./app-installations";
 
 export interface IActivityFeedTemplateParameter {
@@ -29,7 +29,7 @@ export async function sendUserActivityFeedNotification(
   topicFactory: NotificationTopicFactory<any>,
   appId: string,
 ): Promise<void> {
-  if (topicFactory instanceof OpenPersonalAppTopic) {
+  if (topicFactory instanceof OpenPersonalAppTopicFactory) {
     topicFactory.setDependencies({ token, userId, appId });
   }
   let topicData: TActivityFeedTopicData = await topicFactory.toTopic();

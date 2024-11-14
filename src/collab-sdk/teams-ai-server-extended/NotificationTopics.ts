@@ -37,7 +37,14 @@ export interface IOpenPersonalAppDependencies extends ICommonDependencies {
   userId: string;
 }
 
-export class OpenPersonalAppTopic extends NotificationTopicFactory<IOpenPersonalAppDependencies> {
+export interface IPersonalAppDeepLinkConfiguration {
+  entityId: string;
+  fallbackWebUrl: string;
+  label: string;
+  data?: any;
+}
+
+export class OpenPersonalAppTopicFactory extends NotificationTopicFactory<IOpenPersonalAppDependencies> {
   constructor(private config?: IPersonalAppDeepLinkConfiguration) {
     super();
   }
@@ -74,17 +81,23 @@ export class OpenPersonalAppTopic extends NotificationTopicFactory<IOpenPersonal
   }
 }
 
-export interface IPersonalAppDeepLinkConfiguration {
-  entityId: string;
-  fallbackWebUrl: string;
-  label: string;
-  data?: any;
+export class CustomTopicFactory extends NotificationTopicFactory<IOpenPersonalAppDependencies> {
+  constructor(private topic: TActivityFeedTopicData) {
+    super();
+  }
+  async toTopic(): Promise<TActivityFeedTopicData> {
+    return this.topic;
+  }
 }
 
 export class NotificationTopics {
   static OpenPersonalApp(
     config?: IPersonalAppDeepLinkConfiguration
-  ): OpenPersonalAppTopic {
-    return new OpenPersonalAppTopic(config);
+  ): OpenPersonalAppTopicFactory {
+    return new OpenPersonalAppTopicFactory(config);
+  }
+
+  static Custom(topic: TActivityFeedTopicData): CustomTopicFactory {
+    return new CustomTopicFactory(topic);
   }
 }

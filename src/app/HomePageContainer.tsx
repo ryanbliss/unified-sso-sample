@@ -7,9 +7,13 @@ import { DebugInfo } from "@/client/components/debug-info/DebugInfo";
 import { ViewNotes } from "@/client/components/notes/ViewNotes";
 import { useRouter } from "next/navigation";
 import { CollabSdkTest } from "@/client/components/collab-sdk-test/CollabSdkTest";
+import { useTeamsClientContext } from "@/client/context-providers";
 
 export default function HomePageContainer() {
-  const [selectedTab, setSelectedTab] = useState("tab1");
+  const { client } = useTeamsClientContext();
+  const [selectedTab, setSelectedTab] = useState(
+    client?.host.page.customData ? "tab3" : "tab1"
+  );
   const router = useRouter();
   return (
     <main>
