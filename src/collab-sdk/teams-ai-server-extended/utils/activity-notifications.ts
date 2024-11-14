@@ -53,8 +53,8 @@ export async function sendUserActivityFeedNotification(
   };
 
   const response = await fetch(endpoint, graphRequestParams);
-  const json = await response.json();
   if (!response.ok) {
+    const json = await response.json();
     throw new Error(
       json.error?.message || `HTTP error! status: ${response.status}`
     );
