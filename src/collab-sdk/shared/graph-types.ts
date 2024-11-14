@@ -79,11 +79,13 @@ export function isIGraphMemberDetailsResponse(
 export interface ITeamsAppDefinition {
   id: string;
   teamsAppId: string;
-  azureADAppId: string;
+  authorization: {
+    clientAppId: string;
+    // TODO: strongly type
+    requiredPermissionSet: any;
+  } | null;
   displayName: string;
   version: string;
-  // TODO: type safety
-  requiredResourceSpecificApplicationPermissions: any[];
   publishingState: string;
   shortdescription: string;
   description: string;

@@ -80,7 +80,7 @@ export async function getTeamsAppInstallation(
   }
   console.log("getTeamsAppInstallation: response:", JSON.stringify(json.value, null, 4));
   const appInstallation = json.value.find(
-    (app) => app.teamsAppDefinition.azureADAppId === appId
+    (app) => app.teamsAppDefinition.authorization?.clientAppId === appId
   );
   if (!appInstallation) {
     throw new Error("App not installed in conversation");
