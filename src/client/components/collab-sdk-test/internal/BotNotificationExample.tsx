@@ -15,7 +15,11 @@ export const BotNotificationExample: FC = () => {
       <FlexColumn marginSpacer="small">
         {client.host.page.customData && (
           <CodeBlock
-            text={`Opened via deep link with custom data:\n${client.host.page.customData}`}
+            text={`Opened via deep link with custom data:\n${JSON.stringify(
+              client.host.page.customData,
+              null,
+              4
+            )}`}
           ></CodeBlock>
         )}
         <FlexRow>
