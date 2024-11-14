@@ -500,6 +500,7 @@ botApp.embed.action<string>("notify", async (context, state, data) => {
       label: "Notes AI Content",
       data: {
         source: "embed action",
+        embedData: data,
       },
     })
   );
