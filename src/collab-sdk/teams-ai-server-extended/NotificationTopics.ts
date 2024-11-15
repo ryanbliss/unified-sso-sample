@@ -35,8 +35,8 @@ export abstract class NotificationTopicFactory<
 
 export interface IOpenPersonalAppDependencies extends ICommonDependencies {
   token: string;
-  conversationId: string;
-  conversationType: TConversationType;
+  resourceId: string;
+  resourceType: TConversationType;
 }
 
 export interface IPersonalAppDeepLinkConfiguration {
@@ -56,8 +56,8 @@ export class OpenPersonalAppTopicFactory extends NotificationTopicFactory<IOpenP
   async toTopic(): Promise<TActivityFeedTopicData> {
     const app = await getTeamsAppInstallation(
       this.dependencies.token,
-      this.dependencies.conversationType,
-      this.dependencies.conversationId,
+      this.dependencies.resourceType,
+      this.dependencies.resourceId,
       this.dependencies.appId
     );
     const encodedWebUrl = encodeURIComponent(this.config.fallbackWebUrl);

@@ -1,9 +1,8 @@
-import { TConversationType, TGroupConversationType } from "@/collab-sdk/shared";
+import { TGroupConversationType } from "@/collab-sdk/shared";
 import {
   NotificationTopicFactory,
   OpenPersonalAppTopicFactory,
 } from "../NotificationTopics";
-import { getTeamsAppInstallation } from "./app-installations";
 
 export interface IActivityFeedTemplateParameter {
   name: string;
@@ -37,8 +36,8 @@ export async function sendUserActivityFeedNotification(
   if (topicFactory instanceof OpenPersonalAppTopicFactory) {
     topicFactory.setDependencies({
       token,
-      conversationId: userId,
-      conversationType: "personal",
+      resourceId: userId,
+      resourceType: "personal",
       appId,
     });
   }
@@ -79,8 +78,8 @@ export async function sendUserActivityFeedNotification(
 
 export async function sendConversationActivityFeedNotification(
   token: string,
-  conversationType: TGroupConversationType,
-  conversationId: string,
+  resourceType: TGroupConversationType,
+  resourceId: string,
   activityType: string,
   previewText: string,
   templateParameters: IActivityFeedTemplateParameter[],
@@ -90,14 +89,24 @@ export async function sendConversationActivityFeedNotification(
   if (topicFactory instanceof OpenPersonalAppTopicFactory) {
     topicFactory.setDependencies({
       token,
-      conversationId,
-      conversationType: conversationType,
+      resourceId,
+      resourceType,
       appId,
     });
   }
   let topicData: TActivityFeedTopicData = await topicFactory.toTopic();
-  const prefix = conversationType === "chat" ? "chats" : "teams";
-  const endpoint = `https://graph.microsoft.com/v1.0/${prefix}/${conversationId}/sendActivityNotification`;
+  const prefix = resourceType === "chat" ? "chats" : "teams";
+  const endpoint = `https://graph.microsoft.com/v1.0/${prefix}/${resourceId}/sendActivityNotification`;
+  const recipient =
+    resourceType === "chat"
+      ? {
+          "@odata.type": "microsoft.graph.chatMembersNotificationRecipient",
+          chatId: resourceId,
+        }
+      : {
+          "@odata.type": "microsoft.graph.teamMembersNotificationRecipient",
+          teamId: resourceId,
+        };
   const body = {
     activityType,
     previewText: {
@@ -105,12 +114,13 @@ export async function sendConversationActivityFeedNotification(
     },
     topic: topicData,
     templateParameters,
+    recipient,
   };
   console.log(
     "Sending activity feed notification to",
-    conversationType,
+    resourceType,
     "with id",
-    conversationId,
+    resourceId,
     "with body",
     body
   );
