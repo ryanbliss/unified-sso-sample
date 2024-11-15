@@ -1,3 +1,4 @@
+import { TConversationType } from "../shared";
 import { TActivityFeedTopicData } from "./utils/activity-notifications";
 import { getTeamsAppInstallation } from "./utils/app-installations";
 
@@ -34,7 +35,8 @@ export abstract class NotificationTopicFactory<
 
 export interface IOpenPersonalAppDependencies extends ICommonDependencies {
   token: string;
-  userId: string;
+  conversationId: string;
+  conversationType: TConversationType;
 }
 
 export interface IPersonalAppDeepLinkConfiguration {
@@ -45,7 +47,7 @@ export interface IPersonalAppDeepLinkConfiguration {
 }
 
 export class OpenPersonalAppTopicFactory extends NotificationTopicFactory<IOpenPersonalAppDependencies> {
-  constructor(private config?: IPersonalAppDeepLinkConfiguration) {
+  constructor(private config: IPersonalAppDeepLinkConfiguration) {
     super();
   }
   /**
@@ -54,16 +56,10 @@ export class OpenPersonalAppTopicFactory extends NotificationTopicFactory<IOpenP
   async toTopic(): Promise<TActivityFeedTopicData> {
     const app = await getTeamsAppInstallation(
       this.dependencies.token,
-      "personal",
-      this.dependencies.userId,
+      this.dependencies.conversationType,
+      this.dependencies.conversationId,
       this.dependencies.appId
     );
-    if (!this.config) {
-      return {
-        source: "entityUrl",
-        value: `https://graph.microsoft.com/v1.0/users/${this.dependencies.userId}/teamwork/installedApps/${app.id}`,
-      };
-    }
     const encodedWebUrl = encodeURIComponent(this.config.fallbackWebUrl);
     const encodedContext = encodeURIComponent(
       JSON.stringify({ subEntityId: this.config.data })
@@ -92,7 +88,7 @@ export class CustomTopicFactory extends NotificationTopicFactory<IOpenPersonalAp
 
 export class NotificationTopics {
   static OpenPersonalApp(
-    config?: IPersonalAppDeepLinkConfiguration
+    config: IPersonalAppDeepLinkConfiguration
   ): OpenPersonalAppTopicFactory {
     return new OpenPersonalAppTopicFactory(config);
   }

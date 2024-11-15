@@ -1,7 +1,6 @@
 import {
   ConfigurationServiceClientCredentialFactory,
   TeamsInfo,
-  TurnContext,
 } from "botbuilder";
 import { Application } from "./Application";
 import { TeamsAdapter, TurnState } from "@microsoft/teams-ai";
@@ -9,25 +8,35 @@ import { IGraphMember, IPermission, TConversationType } from "../shared";
 import { getRscPermissions } from "./utils/app-installations";
 import { getAppAccessToken } from "./utils/getAppAccessToken";
 import { getGraphMember, getGraphMembers } from "./utils/getGraphMembers";
+import { NotificationTopicFactory } from "./NotificationTopics";
+import {
+  IActivityFeedTemplateParameter,
+  sendConversationActivityFeedNotification,
+} from "./utils/activity-notifications";
+import { IConversationContext } from "./turn-context-extended";
 
 export class Conversation<TState extends TurnState = TurnState> {
   private application: Application<TState>;
-  private context: TurnContext;
-  constructor(application: Application<TState>, context: TurnContext) {
+  private context: IConversationContext;
+  constructor(application: Application<TState>, context: IConversationContext) {
     this.application = application;
     this.context = context;
   }
 
   public get id(): string {
     if (this.type === "channel") {
-        if (!this.context.activity.channelData) {
-            throw new Error("Unexpected Error: missing 'activity.channelData' when conversation type is 'channel'");
-        }
-        const channelId = this.context.activity.channelData.teamsChannelId;
-        if (typeof channelId !== "string") {
-            throw new Error("Unexpected Error: 'activity.channelData.teamsChannelId' is not a string");
-        }
-        return channelId;
+      if (!this.context.activity.channelData) {
+        throw new Error(
+          "Unexpected Error: missing 'activity.channelData' when conversation type is 'channel'"
+        );
+      }
+      const channelId = this.context.activity.channelData.teamsChannelId;
+      if (typeof channelId !== "string") {
+        throw new Error(
+          "Unexpected Error: 'activity.channelData.teamsChannelId' is not a string"
+        );
+      }
+      return channelId;
     }
     // TODO: polyfill threadId when in personal scope, since id in TurnContext is encrypted
     return this.context.activity.conversation.id;
@@ -168,11 +177,59 @@ export class Conversation<TState extends TurnState = TurnState> {
     return response;
   }
 
+  public async sendNotification(
+    notificationText: string,
+    previewText: string,
+    topic: NotificationTopicFactory<any>
+  ): Promise<void> {
+    return await this.sendTemplatedNotification(
+      "systemDefault",
+      [
+        {
+          name: "systemDefaultText",
+          value: notificationText,
+        },
+      ],
+      previewText,
+      topic
+    );
+  }
+
+  public async sendTemplatedNotification(
+    type: string,
+    templateParameters: IActivityFeedTemplateParameter[],
+    previewText: string,
+    topic: NotificationTopicFactory<any>
+  ): Promise<void> {
+    const token = await this.getAppAccessToken();
+    const credentialsFactory = this._credentialsFactory;
+    if (this.type === "personal") {
+      await this.context.user.sendTemplatedNotification(
+        type,
+        templateParameters,
+        previewText,
+        topic
+      );
+      return;
+    }
+    const resourceId = this.type === "chat" ? this.id : await this.getGroupId();
+    await sendConversationActivityFeedNotification(
+      token,
+      this.type,
+      resourceId,
+      type,
+      previewText,
+      templateParameters,
+      topic,
+      credentialsFactory.appId!
+    );
+  }
+
   private async getGroupId(): Promise<string> {
     // Gets the details for the given team id.
     const teamDetails = await TeamsInfo.getTeamDetails(this.context);
     if (!teamDetails?.aadGroupId) {
-        throw new Error("Team details not found");
+      throw new Error("Team details not found");
     }
     return teamDetails.aadGroupId;
   }

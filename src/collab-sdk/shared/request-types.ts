@@ -1,4 +1,6 @@
-export type TConversationType = "chat" | "channel" | "personal";
+export type TGroupConversationType = "chat" | "channel";
+
+export type TConversationType = TGroupConversationType | "personal";
 
 export interface IBotInteropRequestData {
   type: string;

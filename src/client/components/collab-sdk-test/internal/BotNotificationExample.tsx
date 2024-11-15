@@ -1,5 +1,5 @@
 import { useTeamsClientContext } from "@/client/context-providers";
-import { Button, Text } from "@fluentui/react-components";
+import { Button, Switch, Text } from "@fluentui/react-components";
 import { FC, useState } from "react";
 import { FlexColumn, FlexRow } from "../../flex";
 import CodeBlock from "../../code-block/CodeBlock";
@@ -8,6 +8,7 @@ import { useError } from "@/client/hooks/useError";
 export const BotNotificationExample: FC = () => {
   const [res, setRes] = useState<string>();
   const [err, setErr] = useError();
+  const [notifyEveryone, setNotifyEveryone] = useState<boolean>(false);
   const { client } = useTeamsClientContext();
   if (!client) return null;
   return (
@@ -28,7 +29,7 @@ export const BotNotificationExample: FC = () => {
               try {
                 const response = await client.conversation.bot.triggerAction(
                   "notify",
-                  "https://aka.ms/teamsliveshare"
+                  notifyEveryone
                 );
                 setRes(JSON.stringify(response, null, 4));
               } catch (error: unknown) {
@@ -36,8 +37,13 @@ export const BotNotificationExample: FC = () => {
               }
             }}
           >
-            {"Notify me!"}
+            {"Send notification"}
           </Button>
+          <Switch
+            checked={notifyEveryone}
+            label="Notify everyone"
+            onChange={(_e, data) => setNotifyEveryone(data.checked)}
+          />
         </FlexRow>
         {res && <CodeBlock text={res}></CodeBlock>}
         {err && <Text>{err}</Text>}

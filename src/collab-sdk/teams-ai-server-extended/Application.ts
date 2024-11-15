@@ -180,15 +180,19 @@ export class Application<TState extends TurnState = TurnState> {
   public async run(turnContext: TurnContext): Promise<boolean> {
     (turnContext as any).conversation = new Conversation<TState>(
       this,
-      turnContext
+      // Safe to cast because nothing happens on construction, but ensure all properties are set before calling any IConversationContext methods / getters
+      turnContext as IConversationContext
     );
-    (turnContext as any).user = new User(turnContext);
+    // Safe to cast because nothing happens on construction, but ensure all properties are set before calling any IConversationContext methods / getters
+    (turnContext as any).user = new User(turnContext as IConversationContext);
     if (isEmbedTurnContext(turnContext)) {
       return await this.embed.run(turnContext);
     }
     return await this.startLongRunningCall(turnContext, async (bContext) => {
-      (bContext as any).conversation = new Conversation<TState>(this, bContext);
-      (bContext as any).user = new User(bContext);
+      // Safe to cast because nothing happens on construction, but ensure all properties are set before calling any IConversationContext methods / getters
+      (bContext as any).conversation = new Conversation<TState>(this, bContext as IConversationContext);
+      // Safe to cast because nothing happens on construction, but ensure all properties are set before calling any IConversationContext methods / getters
+      (bContext as any).user = new User(bContext as IConversationContext);
       const context = bContext as IConversationContext;
       // Start typing indicator timer
       this.startTypingTimer(context);
@@ -1163,8 +1167,9 @@ export class Application<TState extends TurnState = TurnState> {
         const { storage, turnStateFactory } = this._options;
         const state = turnStateFactory();
         await state.load(context, storage);
-        (context as any).conversation = new Conversation(this, context);
-        (context as any).user = new User(context);
+        // safe to cast because nothing happens right upon constructing the conversation, but it is still a hack
+        (context as any).conversation = new Conversation(this, context as IConversationContext);
+        (context as any).user = new User(context as IConversationContext);
         await logic(context as IConversationContext, state);
       }
     );

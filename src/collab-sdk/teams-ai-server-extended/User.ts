@@ -1,8 +1,8 @@
+import { ConfigurationServiceClientCredentialFactory } from "botbuilder";
 import {
-  ConfigurationServiceClientCredentialFactory,
-  TurnContext,
-} from "botbuilder";
-import { isEmbedTurnContext } from "./turn-context-extended";
+  IConversationContext,
+  isEmbedTurnContext,
+} from "./turn-context-extended";
 import { getAppAccessToken } from "./utils/getAppAccessToken";
 import { TeamsAdapter } from "@microsoft/teams-ai";
 import {
@@ -12,9 +12,9 @@ import {
 import { NotificationTopicFactory } from "./NotificationTopics";
 
 export class User {
-  private context: TurnContext;
+  private context: IConversationContext;
 
-  constructor(context: TurnContext) {
+  constructor(context: IConversationContext) {
     this.context = context;
   }
 

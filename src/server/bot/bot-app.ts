@@ -175,7 +175,7 @@ botApp.message(
 botApp.message(
   "/notify",
   async (context: IConversationContext, state: ApplicationTurnState) => {
-    await context.user.sendNotification(
+    await context.conversation.sendNotification(
       "Consider yourself notified",
       "You've got mail...",
       NotificationTopics.OpenPersonalApp({
@@ -488,24 +488,39 @@ botApp.embed.action("some-action", async (context, state, data) => {
   };
 });
 
-botApp.embed.action<string>("notify", async (context, state, data) => {
-  // Notify me
-  await context.user.sendNotification(
-    "Consider yourself notified...initiated via a tab!",
-    "You've got mail...",
-    NotificationTopics.OpenPersonalApp({
+botApp.embed.action<boolean>(
+  "notify",
+  async (context, state, notifyEveryone) => {
+    // Define the topic (aka link the notification will open)
+    const topic = NotificationTopics.OpenPersonalApp({
       // Dashboard entityId in staticTabs in appDefinition
       entityId: "5c74502b-ff48-455e-a57b-20c9d458b323",
       fallbackWebUrl: "https://unified-sso-sample.vercel.app",
       label: "Notes AI Content",
       data: {
         source: "embed action",
-        embedData: data,
       },
-    })
-  );
-  return "success!";
-});
+    });
+
+    if (notifyEveryone) {
+      // Notify everyone in the current conversation
+      await context.conversation.sendNotification(
+        "Consider yourself notified...initiated via a tab!",
+        "You've got mail...",
+        topic
+      );
+    } else {
+      // Notify me
+      await context.user.sendNotification(
+        "Consider yourself notified...initiated via a tab!",
+        "You've got mail...",
+        topic
+      );
+    }
+
+    return "success!";
+  }
+);
 
 botApp.embed.storage.user.didSet(
   "count",
