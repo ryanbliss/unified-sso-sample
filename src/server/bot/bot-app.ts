@@ -59,6 +59,11 @@ botAdapter.use(async (context, next) => {
     addConversationReference(context.activity).catch((err) =>
       console.error(err)
     );
+  } else {
+    console.warn(
+      "botAdapter adding generic conversation reference: no aadObjectId found",
+      JSON.stringify(context.activity)
+    );
   }
 
   await next();
