@@ -1150,15 +1150,9 @@ export class Application<TState extends TurnState = TurnState> {
   }
 
   public async continueConversation(
-    conversationSelector: TContinueConversation,
+    id: string,
     logic: (context: IConversationContext, state: TState) => Promise<void>
   ): Promise<void> {
-    const { type, id, teamId } = conversationSelector as IContinueConversation;
-    if (type === "channel" && !teamId) {
-      throw new Error(
-        "Application.continueConversationAsync: teamId must be provided when continuing a channel conversation"
-      );
-    }
     const conversationReference = await findReference(id);
     await this.adapter.continueConversationAsync(
       this._credentialsFactory.appId!,

@@ -58,10 +58,9 @@ export class Application {
     });
   }
 
-  public async continueConversation(
+  public async getConversation(
     conversationSelector: TContinueConversation,
-    logic: (conversation: Conversation) => Promise<void>
-  ): Promise<void> {
+  ): Promise<Conversation> {
     const { type, id, teamId } = conversationSelector as IContinueConversation;
     if (type === "channel" && !teamId) {
       throw new Error(
@@ -79,6 +78,6 @@ export class Application {
     const newNetworkClient = new AppServerNetworkClient(this, this._networkClient.configuration);
     const newConversation = new Conversation(this, newContext, this._networkClient);
     newNetworkClient.conversation = newConversation;
-    await logic(newConversation);
+    return newConversation;
   }
 }
